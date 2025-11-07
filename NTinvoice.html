@@ -1172,6 +1172,13 @@
       return totalInput ? parseNumber(totalInput.value).toString() : '0';
     }
 
+    // 날짜 형식 확인 함수 (YYYY-MM-DD)
+    function isDateFormat(value) {
+      if (!value) return false;
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      return dateRegex.test(value.trim());
+    }
+
     // (-)Save 버튼 전용 저장 함수
     async function saveMinusAccountingData() {
       try {
@@ -1184,7 +1191,13 @@
         }
         
         if (!orderDateInput || !orderDateInput.value.trim()) {
-          alert('입고 날짜에 deliveryNo를 입력해주세요.');
+          alert('발생 날짜에 deliveryNo를 입력해주세요.');
+          return;
+        }
+        
+        // 날짜 형식인지 확인
+        if (isDateFormat(orderDateInput.value)) {
+          alert('발생 날짜에 deliveryNo를 적어주세요.');
           return;
         }
         
@@ -1263,7 +1276,13 @@
         }
         
         if (!orderDateInput || !orderDateInput.value) {
-          alert('입고 날짜에 deliveryNo를 입력해주세요.');
+          alert('발생 날짜에 deliveryNo를 입력해주세요.');
+          return;
+        }
+        
+        // 날짜 형식인지 확인
+        if (isDateFormat(orderDateInput.value)) {
+          alert('발생 날짜에 deliveryNo를 적어주세요.');
           return;
         }
         
