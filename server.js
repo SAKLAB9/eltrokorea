@@ -31,10 +31,10 @@ app.use(session({
   resave: true, // 세션 저장 강제
   saveUninitialized: true, // 초기화되지 않은 세션도 저장
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // Railway는 HTTPS 제공
+    secure: true, // Railway는 항상 HTTPS 제공
     httpOnly: true,
     maxAge: 4 * 60 * 60 * 1000, // 4시간
-    sameSite: 'lax' // 쿠키 전송을 위해 필요
+    sameSite: 'none' // HTTPS에서 크로스 사이트 쿠키 전송을 위해 필요
   }
 }));
 
@@ -58,9 +58,16 @@ const requireAuth = (req, res, next) => {
 app.post('/api/login', (req, res) => {
   const { section, password } = req.body;
   
+  console.log('Login attempt:', { section, hasPassword: !!password });
+  console.log('Current session:', req.session);
+  
   if (passwords[section] && password === passwords[section]) {
     req.session.authenticated = true;
     req.session.section = section;
+    
+    console.log('Session set:', { authenticated: req.session.authenticated, section: req.session.section });
+    console.log('Session ID:', req.sessionID);
+    console.log('Cookie will be set:', req.session.cookie);
     
     // 세션 저장 후 응답
     req.session.save((err) => {
@@ -69,6 +76,8 @@ app.post('/api/login', (req, res) => {
         return res.status(500).json({ success: false, message: '세션 저장 실패' });
       }
       
+      console.log('Session saved successfully');
+      
       const sectionPages = {
         "EK": "eltrokorea9.html",
         "SM": "sungmoon.html",
@@ -76,6 +85,9 @@ app.post('/api/login', (req, res) => {
         "TF": "treofan.html"
       };
       const targetPage = sectionPages[section] || section + ".html";
+      
+      // 쿠키 헤더 확인
+      console.log('Response headers:', res.getHeaders());
       
       // 서버 사이드 리다이렉트로 변경
       res.json({ 
