@@ -208,18 +208,26 @@
         console.log('Response status:', response.status);
         console.log('Response ok:', response.ok);
         
+        // 응답 본문 파싱 (성공/실패 모두)
+        const result = await response.json();
+        console.log('Response result:', result);
+        
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Response error:', errorText);
-          alert("서버 오류가 발생했습니다: " + response.status);
+          // 401은 비밀번호 오류
+          if (response.status === 401) {
+            console.log('Login failed:', result.message);
+            alert(result.message || "비밀번호가 틀렸습니다.");
+          } else {
+            // 기타 서버 오류
+            console.error('Response error:', result);
+            alert("서버 오류가 발생했습니다: " + response.status);
+          }
           return;
         }
         
-        const result = await response.json();
-        console.log('Response result:', result);
-        console.log('Session ID:', result.sessionId);
-        
+        // 성공한 경우
         if (result.success) {
+          console.log('Session ID:', result.sessionId);
           // 비밀번호 일치 시 페이지 이동
           const targetPage = result.redirect || sectionPages[section] || section + ".html";
           console.log('Login successful! Redirecting to:', targetPage);
