@@ -3304,7 +3304,7 @@ app.post('/api/admin/upload-json', upload.single('file'), (req, res) => {
             calendarStore = sortCalendarData(jsonData);
             dataToSave = calendarStore;
           } catch (sortError) {
-            return res.status(400).json({ error: '캘린더 데이터 정렬 중 오류가 발생했습니다.', details: sortError.message });
+            return res.status(400).json({ error: '캘린더 데이터 정렬 중 오류가 발생했습니다.', details: sortError.message, stack: sortError.stack });
           }
           break;
         case 'accounting.json':
@@ -3314,21 +3314,26 @@ app.post('/api/admin/upload-json', upload.single('file'), (req, res) => {
             sortAccountingData(accountingStore);
             dataToSave = accountingStore;
           } catch (sortError) {
-            return res.status(400).json({ error: '회계 데이터 정렬 중 오류가 발생했습니다.', details: sortError.message });
+            return res.status(400).json({ error: '회계 데이터 정렬 중 오류가 발생했습니다.', details: sortError.message, stack: sortError.stack });
           }
           break;
         default:
           return res.status(400).json({ error: '지원하지 않는 파일입니다.' });
       }
     } catch (processError) {
-      return res.status(500).json({ error: '데이터 처리 중 오류가 발생했습니다.', details: processError.message });
+      return res.status(500).json({ error: '데이터 처리 중 오류가 발생했습니다.', details: processError.message, stack: processError.stack });
     }
     
     // 파일 저장 (정렬된 데이터 저장)
     try {
+      // 디렉토리가 없으면 생성
+      const dir = path.dirname(filePath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
       fs.writeFileSync(filePath, JSON.stringify(dataToSave, null, 2), 'utf8');
     } catch (writeError) {
-      return res.status(500).json({ error: '파일 저장 중 오류가 발생했습니다.', details: writeError.message });
+      return res.status(500).json({ error: '파일 저장 중 오류가 발생했습니다.', details: writeError.message, stack: writeError.stack, filePath: filePath });
     }
     
     res.json({ success: true, message: `${fileName}이(가) 업로드되었습니다.` });
