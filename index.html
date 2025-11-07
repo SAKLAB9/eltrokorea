@@ -217,16 +217,18 @@
         
         const result = await response.json();
         console.log('Response result:', result);
+        console.log('Session ID:', result.sessionId);
         
         if (result.success) {
           // 비밀번호 일치 시 페이지 이동
-          const targetPage = sectionPages[section] || section + ".html";
+          const targetPage = result.redirect || sectionPages[section] || section + ".html";
           console.log('Login successful! Redirecting to:', targetPage);
-          console.log('Response result:', result);
-          // 리다이렉트 전에 로그를 확인할 수 있도록 약간의 지연
+          
+          // 세션 쿠키가 설정될 시간을 주기 위해 약간의 지연
           setTimeout(() => {
+            console.log('Executing redirect to:', targetPage);
             window.location.href = targetPage;
-          }, 500);
+          }, 300);
         } else {
           console.log('Login failed:', result.message);
           alert(result.message || "비밀번호가 틀렸습니다.");

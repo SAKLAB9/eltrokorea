@@ -28,8 +28,8 @@ app.use((req, res, next) => {
 // 세션 설정
 app.use(session({
   secret: process.env.SESSION_SECRET || 'eltrokorea-secret-key-2024',
-  resave: false,
-  saveUninitialized: false,
+  resave: true, // 세션 저장 강제
+  saveUninitialized: true, // 초기화되지 않은 세션도 저장
   cookie: {
     secure: process.env.NODE_ENV === 'production', // Railway는 HTTPS 제공
     httpOnly: true,
@@ -61,7 +61,30 @@ app.post('/api/login', (req, res) => {
   if (passwords[section] && password === passwords[section]) {
     req.session.authenticated = true;
     req.session.section = section;
-    res.json({ success: true, section: section });
+    
+    // 세션 저장 후 응답
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ success: false, message: '세션 저장 실패' });
+      }
+      
+      const sectionPages = {
+        "EK": "eltrokorea9.html",
+        "SM": "sungmoon.html",
+        "NT": "nuintek.html",
+        "TF": "treofan.html"
+      };
+      const targetPage = sectionPages[section] || section + ".html";
+      
+      // 서버 사이드 리다이렉트로 변경
+      res.json({ 
+        success: true, 
+        section: section,
+        redirect: targetPage,
+        sessionId: req.sessionID
+      });
+    });
   } else {
     res.status(401).json({ success: false, message: '비밀번호가 틀렸습니다.' });
   }
