@@ -3250,57 +3250,76 @@ app.post('/api/admin/upload-json', upload.single('file'), (req, res) => {
     
     // 파일 내용을 JSON으로 파싱
     const fileContent = req.file.buffer.toString('utf8');
-    const jsonData = JSON.parse(fileContent);
+    let jsonData;
+    try {
+      jsonData = JSON.parse(fileContent);
+    } catch (parseError) {
+      return res.status(400).json({ error: 'JSON 파일 형식이 올바르지 않습니다.', details: parseError.message });
+    }
     
     // save-json API와 동일한 로직 사용
     let filePath;
-    
     let dataToSave = jsonData;
     
-    switch (fileName) {
-      case 'priceData.json':
-        filePath = DATA_FILE;
-        priceStore = jsonData;
-        break;
-      case 'orderData.json':
-        filePath = ORDER_DATA_FILE;
-        orderStore = jsonData;
-        orderStore = sortOrderStore(orderStore);
-        dataToSave = orderStore;
-        break;
-      case 'creditnote.json':
-        filePath = CREDIT_NOTE_FILE;
-        creditNoteStore = jsonData;
-        break;
-      case 'transfer.json':
-        filePath = TRANSFER_DATA_FILE;
-        transferStore = jsonData;
-        break;
-      case 'calendar.json':
-        filePath = CALENDAR_DATA_FILE;
-        calendarStore = sortCalendarData(jsonData);
-        dataToSave = calendarStore;
-        break;
-      case 'accounting.json':
-        filePath = ACCOUNTING_DATA_FILE;
-        accountingStore = jsonData;
-        sortAccountingData(accountingStore);
-        dataToSave = accountingStore;
-        break;
-      default:
-        return res.status(400).json({ error: '지원하지 않는 파일입니다.' });
+    try {
+      switch (fileName) {
+        case 'priceData.json':
+          filePath = DATA_FILE;
+          priceStore = jsonData;
+          break;
+        case 'orderData.json':
+          filePath = ORDER_DATA_FILE;
+          if (!Array.isArray(jsonData)) {
+            return res.status(400).json({ error: 'orderData.json은 배열 형식이어야 합니다.' });
+          }
+          orderStore = jsonData;
+          orderStore = sortOrderStore(orderStore);
+          dataToSave = orderStore;
+          break;
+        case 'creditnote.json':
+          filePath = CREDIT_NOTE_FILE;
+          creditNoteStore = jsonData;
+          break;
+        case 'transfer.json':
+          filePath = TRANSFER_DATA_FILE;
+          transferStore = jsonData;
+          break;
+        case 'calendar.json':
+          filePath = CALENDAR_DATA_FILE;
+          try {
+            calendarStore = sortCalendarData(jsonData);
+            dataToSave = calendarStore;
+          } catch (sortError) {
+            return res.status(400).json({ error: '캘린더 데이터 정렬 중 오류가 발생했습니다.', details: sortError.message });
+          }
+          break;
+        case 'accounting.json':
+          filePath = ACCOUNTING_DATA_FILE;
+          accountingStore = jsonData;
+          try {
+            sortAccountingData(accountingStore);
+            dataToSave = accountingStore;
+          } catch (sortError) {
+            return res.status(400).json({ error: '회계 데이터 정렬 중 오류가 발생했습니다.', details: sortError.message });
+          }
+          break;
+        default:
+          return res.status(400).json({ error: '지원하지 않는 파일입니다.' });
+      }
+    } catch (processError) {
+      return res.status(500).json({ error: '데이터 처리 중 오류가 발생했습니다.', details: processError.message });
     }
     
     // 파일 저장 (정렬된 데이터 저장)
-    fs.writeFileSync(filePath, JSON.stringify(dataToSave, null, 2), 'utf8');
+    try {
+      fs.writeFileSync(filePath, JSON.stringify(dataToSave, null, 2), 'utf8');
+    } catch (writeError) {
+      return res.status(500).json({ error: '파일 저장 중 오류가 발생했습니다.', details: writeError.message });
+    }
     
     res.json({ success: true, message: `${fileName}이(가) 업로드되었습니다.` });
   } catch (error) {
-    if (error instanceof SyntaxError) {
-      res.status(400).json({ error: 'JSON 파일 형식이 올바르지 않습니다.', details: error.message });
-    } else {
-      res.status(500).json({ error: 'JSON 업로드 중 오류가 발생했습니다.', details: error.message });
-    }
+    res.status(500).json({ error: 'JSON 업로드 중 오류가 발생했습니다.', details: error.message, stack: error.stack });
   }
 });
 
