@@ -166,8 +166,9 @@ app.get('/', (req, res) => {
 });
 
 // HTML 파일 제공 라우트 (인증 후) - 모든 HTML 파일 처리 (express.static보다 먼저 처리)
-app.get(/\.html$/, (req, res) => {
-  const filePath = path.join(__dirname, req.path);
+app.get(/\.html$/i, (req, res) => {
+  const requestedPath = req.path.toLowerCase();
+  const filePath = path.join(__dirname, requestedPath);
   const normalizedPath = path.normalize(filePath);
   
   // 보안: __dirname 밖으로 나가는 경로 차단
@@ -176,8 +177,21 @@ app.get(/\.html$/, (req, res) => {
     return res.status(403).send('Forbidden');
   }
   
-  if (fs.existsSync(normalizedPath)) {
-    res.sendFile(normalizedPath);
+  // 대소문자 구분 없이 파일 찾기
+  let actualPath = normalizedPath;
+  if (!fs.existsSync(actualPath)) {
+    // 파일명을 소문자로 변환해서 찾기
+    const dir = path.dirname(actualPath);
+    const fileName = path.basename(actualPath);
+    const files = fs.readdirSync(dir);
+    const foundFile = files.find(f => f.toLowerCase() === fileName.toLowerCase());
+    if (foundFile) {
+      actualPath = path.join(dir, foundFile);
+    }
+  }
+  
+  if (fs.existsSync(actualPath)) {
+    res.sendFile(actualPath);
   } else {
     res.status(404).send('File not found');
   }
