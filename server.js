@@ -105,9 +105,6 @@ app.use((req, res, next) => {
     console.log('Unauthorized access attempt to:', req.path, 'Session:', req.session);
     return res.redirect('/');
   }
-  
-  // 기타 파일은 통과
-  return next();
 });
 
 // 정적 파일 제공 (HTML 제외)
