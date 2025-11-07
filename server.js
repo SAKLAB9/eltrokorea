@@ -3241,8 +3241,23 @@ app.post('/api/admin/save-json', (req, res) => {
         return res.status(400).json({ error: '지원하지 않는 파일입니다.' });
     }
     
-    // 파일 저장
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+    // 파일 저장 (정렬된 데이터 저장)
+    let dataToSave = data;
+    if (fileName === 'accounting.json') {
+      dataToSave = accountingStore;
+    } else if (fileName === 'calendar.json') {
+      dataToSave = calendarStore;
+    } else if (fileName === 'orderData.json') {
+      dataToSave = orderStore;
+    }
+    
+    // 디렉토리가 없으면 생성
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    
+    fs.writeFileSync(filePath, JSON.stringify(dataToSave, null, 2), 'utf8');
     
     res.json({ success: true, message: `${fileName}이(가) 저장되었습니다.` });
   } catch (error) {
