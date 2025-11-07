@@ -12,7 +12,10 @@ app.use(express.json());
 
 // CORS 설정 (세션 쿠키 전송을 위해 필요)
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -30,7 +33,8 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === 'production', // Railway는 HTTPS 제공
     httpOnly: true,
-    maxAge: 4 * 60 * 60 * 1000 // 4시간
+    maxAge: 4 * 60 * 60 * 1000, // 4시간
+    sameSite: 'lax' // 쿠키 전송을 위해 필요
   }
 }));
 
@@ -89,13 +93,17 @@ app.use((req, res, next) => {
     return next();
   }
   
+  // 정적 파일 (이미지, CSS, JS 등)은 허용
+  if (!req.path.endsWith('.html')) {
+    return next();
+  }
+  
   // HTML 파일은 인증 필요
-  if (req.path.endsWith('.html')) {
-    if (req.session && req.session.authenticated) {
-      return next();
-    } else {
-      return res.redirect('/');
-    }
+  if (req.session && req.session.authenticated) {
+    return next();
+  } else {
+    console.log('Unauthorized access attempt to:', req.path, 'Session:', req.session);
+    return res.redirect('/');
   }
   
   // 기타 파일은 통과
