@@ -3235,7 +3235,7 @@ app.post('/api/admin/save-json', (req, res) => {
       case 'accounting.json':
         filePath = ACCOUNTING_DATA_FILE;
         accountingStore = data;
-        accountingStore = sortAccountingData(accountingStore);
+        sortAccountingData(accountingStore);
         break;
       default:
         return res.status(400).json({ error: '지원하지 않는 파일입니다.' });
