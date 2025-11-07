@@ -3236,6 +3236,70 @@ app.post('/api/admin/save-json', (req, res) => {
   }
 });
 
+// JSON 파일 업로드 API (admin 페이지용)
+app.post('/api/admin/upload-json', upload.single('file'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: '파일이 선택되지 않았습니다.' });
+    }
+    
+    const { fileName } = req.body;
+    if (!fileName) {
+      return res.status(400).json({ error: 'fileName이 필요합니다.' });
+    }
+    
+    // 파일 내용을 JSON으로 파싱
+    const fileContent = req.file.buffer.toString('utf8');
+    const jsonData = JSON.parse(fileContent);
+    
+    // save-json API와 동일한 로직 사용
+    let filePath;
+    
+    switch (fileName) {
+      case 'priceData.json':
+        filePath = DATA_FILE;
+        priceStore = jsonData;
+        break;
+      case 'orderData.json':
+        filePath = ORDER_DATA_FILE;
+        orderStore = jsonData;
+        orderStore = sortOrderStore(orderStore);
+        break;
+      case 'creditnote.json':
+        filePath = CREDIT_NOTE_FILE;
+        creditNoteStore = jsonData;
+        break;
+      case 'transfer.json':
+        filePath = TRANSFER_DATA_FILE;
+        transferStore = jsonData;
+        break;
+      case 'calendar.json':
+        filePath = CALENDAR_DATA_FILE;
+        calendarStore = jsonData;
+        calendarStore = sortCalendarData(calendarStore);
+        break;
+      case 'accounting.json':
+        filePath = ACCOUNTING_DATA_FILE;
+        accountingStore = jsonData;
+        accountingStore = sortAccountingData(accountingStore);
+        break;
+      default:
+        return res.status(400).json({ error: '지원하지 않는 파일입니다.' });
+    }
+    
+    // 파일 저장
+    fs.writeFileSync(filePath, JSON.stringify(jsonData, null, 2), 'utf8');
+    
+    res.json({ success: true, message: `${fileName}이(가) 업로드되었습니다.` });
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      res.status(400).json({ error: 'JSON 파일 형식이 올바르지 않습니다.', details: error.message });
+    } else {
+      res.status(500).json({ error: 'JSON 업로드 중 오류가 발생했습니다.', details: error.message });
+    }
+  }
+});
+
 // 서버 재시동 API (Railway에서는 자동 배포가 되므로 안내만)
 app.post('/api/admin/restart', (req, res) => {
   res.json({ 
