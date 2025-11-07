@@ -328,7 +328,12 @@ function syncFromHardDrive() {
 }
 
 // 서버 시작 시 동기화 실행
-syncFromHardDrive();
+try {
+  syncFromHardDrive();
+  console.log('Data synchronization completed');
+} catch (error) {
+  console.error('Error during data synchronization:', error);
+}
 
 //===================================================
 // pricedata.json API 모음
@@ -3070,4 +3075,5 @@ app.delete('/api/deleteFile/tax/:year/:headerName/:rowName/:filename', (req, res
 // 서버 시작
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
