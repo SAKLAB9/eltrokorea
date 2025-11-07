@@ -30,21 +30,22 @@ app.use((req, res, next) => {
   next();
 });
 
-// 세션 설정
+// 세션 설정 (로컬/Railway 구분)
+const isProduction = process.env.NODE_ENV === 'production';
 app.use(session({
   secret: process.env.SESSION_SECRET || 'eltrokorea-secret-key-2024',
   resave: false,
   saveUninitialized: false,
   name: 'connect.sid',
   cookie: {
-    secure: true, // Railway는 항상 HTTPS
+    secure: isProduction, // 로컬: false, Railway: true
     httpOnly: true,
     maxAge: 4 * 60 * 60 * 1000, // 4시간
-    sameSite: 'none', // Railway 프록시 환경에서는 none 필요
+    sameSite: isProduction ? 'none' : 'lax', // 로컬: lax, Railway: none
     path: '/',
     domain: undefined // 도메인 제한 없음
   },
-  proxy: true // Railway 프록시 사용
+  proxy: isProduction // Railway 프록시 사용
 }));
 
 // 비밀번호 설정
@@ -161,9 +162,15 @@ app.use(express.static(__dirname, {
   }
 }));
 
+// 저장 경로 설정 (환경 변수로 로컬/Railway 구분)
+// 로컬: __dirname 사용 (컴퓨터 하드)
+// Railway: /uploads 사용 (Volume)
+const DATA_DIR = process.env.DATA_DIR || __dirname;
+const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
+
 // uploads 폴더 구조 생성
 const createUploadStructure = () => {
-  const basePath = path.join(__dirname, 'uploads');
+  const basePath = UPLOAD_DIR;
   const modes = ['NT', 'SM'];
   const categories = ['OrderID', 'OrderNO', 'DeliveryNO'];
   
@@ -175,6 +182,9 @@ const createUploadStructure = () => {
   
   // 세무자료 폴더 구조 생성 (년도별로 동적 생성되므로 기본 구조만 생성)
   fs.mkdirSync(path.join(basePath, '세무자료'), { recursive: true });
+  
+  // JSON 데이터 저장 폴더 생성 (Volume에 저장하기 위해)
+  fs.mkdirSync(path.join(DATA_DIR), { recursive: true });
 };
 
 // 서버 시작 시 폴더 구조 생성
@@ -197,13 +207,13 @@ const upload = multer({
   }
 });
 
-// 데이터 파일 경로 설정
-const DATA_FILE = path.join(__dirname, "priceData.json");
-const ORDER_DATA_FILE = path.join(__dirname, "orderData.json");
-const CREDIT_NOTE_FILE = path.join(__dirname, "creditnote.json");
-const TRANSFER_DATA_FILE = path.join(__dirname, "transfer.json");
-const CALENDAR_DATA_FILE = path.join(__dirname, "calendar.json");
-const ACCOUNTING_DATA_FILE = path.join(__dirname, "accounting.json");
+// 데이터 파일 경로 설정 (JSON과 PDF 동일한 방식으로 저장)
+const DATA_FILE = path.join(DATA_DIR, "priceData.json");
+const ORDER_DATA_FILE = path.join(DATA_DIR, "orderData.json");
+const CREDIT_NOTE_FILE = path.join(DATA_DIR, "creditnote.json");
+const TRANSFER_DATA_FILE = path.join(DATA_DIR, "transfer.json");
+const CALENDAR_DATA_FILE = path.join(DATA_DIR, "calendar.json");
+const ACCOUNTING_DATA_FILE = path.join(DATA_DIR, "accounting.json");
 
 // 서버 메모리 저장 변수들 (MongoDB 대신 사용)
 let priceStore = {};
@@ -370,23 +380,23 @@ function syncFromHardDrive() {
   };
   
   try {
-    // 1. Price Data 동기화
-    priceStore = loadJsonFile(DATA_FILE, {}, "Price Data");
-    
-    // 2. Order Data 동기화
-    orderStore = loadJsonFile(ORDER_DATA_FILE, [], "Order Data");
-    if (orderStore.length > 0) {
-      orderStore = sortOrderStore(orderStore);
-    }
-    
-    // 3. Calendar Data 동기화
+  // 1. Price Data 동기화
+  priceStore = loadJsonFile(DATA_FILE, {}, "Price Data");
+  
+  // 2. Order Data 동기화
+  orderStore = loadJsonFile(ORDER_DATA_FILE, [], "Order Data");
+  if (orderStore.length > 0) {
+    orderStore = sortOrderStore(orderStore);
+  }
+  
+  // 3. Calendar Data 동기화
     calendarStore = loadJsonFile(CALENDAR_DATA_FILE, {}, "Calendar Data");
-    
+  
     // 4. Credit Note Data 동기화
-    creditNoteStore = loadJsonFile(CREDIT_NOTE_FILE, [], "Credit Note Data");
-    
-    // 5. Transfer Data 동기화
-    transferStore = loadJsonFile(TRANSFER_DATA_FILE, { transfers: [], payrolls: [], deposits: [] }, "Transfer Data");
+  creditNoteStore = loadJsonFile(CREDIT_NOTE_FILE, [], "Credit Note Data");
+  
+  // 5. Transfer Data 동기화
+  transferStore = loadJsonFile(TRANSFER_DATA_FILE, { transfers: [], payrolls: [], deposits: [] }, "Transfer Data");
     
     // 6. Accounting Data 동기화
     accountingStore = loadJsonFile(ACCOUNTING_DATA_FILE, { balance: [] }, "Accounting Data");
@@ -405,7 +415,7 @@ try {
   console.log('Starting data synchronization...');
   syncFromHardDrive();
   console.log('Data synchronization completed');
-} catch (error) {
+  } catch (error) {
   console.error('Error during data synchronization:', error);
   // 에러가 발생해도 서버는 계속 실행되도록 함
 }
@@ -991,7 +1001,7 @@ app.post("/api/updateOrder", (req, res) => {
                     if (newItem[field] === '' || newItem[field] === null) {
                       delete matchingItem[field];
                     } else {
-                      matchingItem[field] = newItem[field];
+                    matchingItem[field] = newItem[field];
                     }
                   }
                 });
@@ -1020,7 +1030,7 @@ app.post("/api/updateOrder", (req, res) => {
                 if (newItem[field] === '' || newItem[field] === null) {
                   delete existingItem[field];
                 } else {
-                  existingItem[field] = newItem[field];
+                existingItem[field] = newItem[field];
                 }
               }
             });
@@ -1291,10 +1301,21 @@ app.post('/api/uploadFile', upload.single('file'), (req, res) => {
     // 경로 구조 결정
     let finalPath, fileInfo;
     
-    if (mode === '세무자료' && year && headerName && rowName) {
+    if (mode === 'admin') {
+      // admin.html용 (uploads/엘트로코리아 경로 구조)
+      finalPath = path.join(UPLOAD_DIR, '엘트로코리아');
+      fileInfo = {
+        originalName: req.file.originalname,
+        filename: originalFileName || req.file.originalname,
+        path: '',
+        size: req.file.size,
+        mode: 'admin',
+        uploadDate: new Date().toISOString()
+      };
+    } else if (mode === '세무자료' && year && headerName && rowName) {
       // taxreport.html용 (세무자료 경로 구조)
       // uploads/세무자료/{year}/{headerName}/{rowName}/
-      finalPath = path.join(__dirname, 'uploads', '세무자료', year, headerName, rowName);
+      finalPath = path.join(UPLOAD_DIR, '세무자료', year, headerName, rowName);
       fileInfo = {
         originalName: req.file.originalname,
         filename: originalFileName || req.file.originalname,
@@ -1311,7 +1332,7 @@ app.post('/api/uploadFile', upload.single('file'), (req, res) => {
       // req.body에서 전달받은 mode 사용 (클라이언트에서 설정한 모드 사용)
       const uploadMode = mode || 'NT'; // req.body의 mode 사용, 없으면 기본값 NT
       
-      finalPath = path.join(__dirname, 'uploads', uploadMode, 'DeliveryNO', deliveryNo, fileType);
+      finalPath = path.join(UPLOAD_DIR, uploadMode, 'DeliveryNO', deliveryNo, fileType);
       fileInfo = {
         originalName: req.file.originalname,
         filename: originalFileName || req.file.originalname,
@@ -1324,7 +1345,7 @@ app.post('/api/uploadFile', upload.single('file'), (req, res) => {
       };
     } else if (mode && orderId && fileType) {
       // orderarchive.html용 (OrderID 경로 구조)
-      finalPath = path.join(__dirname, 'uploads', mode, 'OrderID', orderId, fileType);
+      finalPath = path.join(UPLOAD_DIR, mode, 'OrderID', orderId, fileType);
       fileInfo = {
         originalName: req.file.originalname,
         filename: originalFileName || req.file.originalname,
@@ -1337,7 +1358,7 @@ app.post('/api/uploadFile', upload.single('file'), (req, res) => {
       };
     } else if (mode && orderNo && itemNo) {
       // production.html용 (OrderNO 경로 구조)
-      finalPath = path.join(__dirname, 'uploads', mode, 'OrderNO', orderNo, itemNo);
+      finalPath = path.join(UPLOAD_DIR, mode, 'OrderNO', orderNo, itemNo);
       fileInfo = {
         originalName: req.file.originalname,
         filename: originalFileName || req.file.originalname,
@@ -1382,7 +1403,7 @@ app.post('/api/uploadFile', upload.single('file'), (req, res) => {
 app.get('/api/listFiles/:mode/:orderId/:fileType', (req, res) => {
   try {
     const { mode, orderId, fileType } = req.params;
-    const dirPath = path.join(__dirname, 'uploads', mode, 'OrderID', orderId, fileType);
+    const dirPath = path.join(UPLOAD_DIR, mode, 'OrderID', orderId, fileType);
     
     if (!fs.existsSync(dirPath)) {
       return res.json({ files: [] });
@@ -1408,7 +1429,7 @@ app.get('/api/previewFile/:mode/:orderId/:fileType/:filename', (req, res) => {
   try {
     const { mode, orderId, fileType, filename } = req.params;
     const decodedFilename = decodeURIComponent(filename);
-    const filePath = path.join(__dirname, 'uploads', mode, 'OrderID', orderId, fileType, decodedFilename);
+    const filePath = path.join(UPLOAD_DIR, mode, 'OrderID', orderId, fileType, decodedFilename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
@@ -1441,7 +1462,7 @@ app.get('/api/downloadFile/:mode/:orderId/:fileType/:filename', (req, res) => {
   try {
     const { mode, orderId, fileType, filename } = req.params;
     const decodedFilename = decodeURIComponent(filename);
-    const filePath = path.join(__dirname, 'uploads', mode, 'OrderID', orderId, fileType, decodedFilename);
+    const filePath = path.join(UPLOAD_DIR, mode, 'OrderID', orderId, fileType, decodedFilename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
@@ -1460,7 +1481,7 @@ app.delete('/api/deleteFile/:mode/:orderId/:fileType/:filename', (req, res) => {
     const decodedFilename = decodeURIComponent(filename);
     
     // OrderID 경로에서 파일 찾기 (주로 사용되는 경로)
-    const filePath = path.join(__dirname, 'uploads', mode, 'OrderID', orderId, fileType, decodedFilename);
+    const filePath = path.join(UPLOAD_DIR, mode, 'OrderID', orderId, fileType, decodedFilename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
@@ -1481,7 +1502,7 @@ app.delete('/api/deleteFile/:mode/:orderId/:fileType/:filename', (req, res) => {
 app.get('/api/listFiles/:mode/OrderNO/:orderNo/:itemNo', (req, res) => {
   try {
     const { mode, orderNo, itemNo } = req.params;
-    const dirPath = path.join(__dirname, 'uploads', mode, 'OrderNO', orderNo, itemNo);
+    const dirPath = path.join(UPLOAD_DIR, mode, 'OrderNO', orderNo, itemNo);
     
     if (!fs.existsSync(dirPath)) {
       return res.json({ files: [] });
@@ -1506,7 +1527,7 @@ app.get('/api/previewFile/:mode/OrderNO/:orderNo/:itemNo/:filename', (req, res) 
   try {
     const { mode, orderNo, itemNo, filename } = req.params;
     const decodedFilename = decodeURIComponent(filename);
-    const filePath = path.join(__dirname, 'uploads', mode, 'OrderNO', orderNo, itemNo, decodedFilename);
+    const filePath = path.join(UPLOAD_DIR, mode, 'OrderNO', orderNo, itemNo, decodedFilename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
@@ -1537,7 +1558,7 @@ app.get('/api/downloadFile/:mode/OrderNO/:orderNo/:itemNo/:filename', (req, res)
   try {
     const { mode, orderNo, itemNo, filename } = req.params;
     const decodedFilename = decodeURIComponent(filename);
-    const filePath = path.join(__dirname, 'uploads', mode, 'OrderNO', orderNo, itemNo, decodedFilename);
+    const filePath = path.join(UPLOAD_DIR, mode, 'OrderNO', orderNo, itemNo, decodedFilename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
@@ -1555,7 +1576,7 @@ app.delete('/api/deleteFile/:mode/OrderNO/:orderNo/:itemNo/:filename', (req, res
   try {
     const { mode, orderNo, itemNo, filename } = req.params;
     const decodedFilename = decodeURIComponent(filename);
-    const filePath = path.join(__dirname, 'uploads', mode, 'OrderNO', orderNo, itemNo, decodedFilename);
+    const filePath = path.join(UPLOAD_DIR, mode, 'OrderNO', orderNo, itemNo, decodedFilename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
@@ -1576,7 +1597,7 @@ app.delete('/api/deleteFile/:mode/OrderNO/:orderNo/:itemNo/:filename', (req, res
 app.get('/api/listFiles/:mode/DeliveryNO/:deliveryNo/:fileType', (req, res) => {
   try {
     const { mode, deliveryNo, fileType } = req.params;
-    const dirPath = path.join(__dirname, 'uploads', mode, 'DeliveryNO', deliveryNo, fileType);
+    const dirPath = path.join(UPLOAD_DIR, mode, 'DeliveryNO', deliveryNo, fileType);
     
     if (!fs.existsSync(dirPath)) {
       return res.json({ files: [] });
@@ -1603,7 +1624,7 @@ app.get('/api/previewFile/:mode/DeliveryNO/:deliveryNo/:fileType/:filename', (re
     const { mode, deliveryNo, fileType, filename } = req.params;
     const decodedFilename = decodeURIComponent(filename);
     
-    const filePath = path.join(__dirname, 'uploads', mode, 'DeliveryNO', deliveryNo, fileType, decodedFilename);
+    const filePath = path.join(UPLOAD_DIR, mode, 'DeliveryNO', deliveryNo, fileType, decodedFilename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
@@ -1621,7 +1642,7 @@ app.get('/api/downloadFile/:mode/DeliveryNO/:deliveryNo/:fileType/:filename', (r
     const { mode, deliveryNo, fileType, filename } = req.params;
     const decodedFilename = decodeURIComponent(filename);
     
-    const filePath = path.join(__dirname, 'uploads', mode, 'DeliveryNO', deliveryNo, fileType, decodedFilename);
+    const filePath = path.join(UPLOAD_DIR, mode, 'DeliveryNO', deliveryNo, fileType, decodedFilename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
@@ -1639,7 +1660,7 @@ app.delete('/api/deleteFile/:mode/DeliveryNO/:deliveryNo/:fileType/:filename', (
     const { mode, deliveryNo, fileType, filename } = req.params;
     const decodedFilename = decodeURIComponent(filename);
     
-    const filePath = path.join(__dirname, 'uploads', mode, 'DeliveryNO', deliveryNo, fileType, decodedFilename);
+    const filePath = path.join(UPLOAD_DIR, mode, 'DeliveryNO', deliveryNo, fileType, decodedFilename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
@@ -1683,13 +1704,13 @@ app.post('/api/copyAnalysisFiles', async (req, res) => {
     
     // 분석표 복사 작업
     const copyResults = [];
-    const targetDir = path.join(__dirname, 'uploads', mode, 'DeliveryNO', deliveryNo, '분석표');
+    const targetDir = path.join(UPLOAD_DIR, mode, 'DeliveryNO', deliveryNo, '분석표');
     
     // 대상 디렉토리 생성
     fs.mkdirSync(targetDir, { recursive: true });
     
     for (const { orderNo, itemNo } of matchingOrders) {
-      const sourceDir = path.join(__dirname, 'uploads', mode, 'OrderNO', orderNo, itemNo);
+      const sourceDir = path.join(UPLOAD_DIR, mode, 'OrderNO', orderNo, itemNo);
       
       if (fs.existsSync(sourceDir)) {
         const files = fs.readdirSync(sourceDir);
@@ -1734,7 +1755,7 @@ app.post('/api/copyAnalysisFiles', async (req, res) => {
 // 분석표 폴더 ZIP 다운로드 API
 app.get('/api/downloadAnalysisFolder/:mode/:deliveryNo', (req, res) => {
   const { mode, deliveryNo } = req.params;
-  const analysisDir = path.join(__dirname, 'uploads', mode, 'DeliveryNO', deliveryNo, '분석표');
+  const analysisDir = path.join(UPLOAD_DIR, mode, 'DeliveryNO', deliveryNo, '분석표');
   
   // 분석표 폴더가 존재하는지 확인
   if (!fs.existsSync(analysisDir)) {
@@ -2781,56 +2802,56 @@ app.delete('/api/accounting', (req, res) => {
     
     // mode: 'by-name' - name으로 여러 카테고리에서 삭제 (기존 delete-by-name 기능)
     if (mode === 'by-name') {
-      if (!name) {
-        return res.status(400).json({ error: '명칭이 필요합니다.' });
-      }
-      
-      let deleted = false;
-      
-      // balance 배열에서 삭제
+    if (!name) {
+      return res.status(400).json({ error: '명칭이 필요합니다.' });
+    }
+    
+    let deleted = false;
+    
+    // balance 배열에서 삭제
       if (!accountingStore.balance) {
         accountingStore.balance = [];
       }
       const originalBalanceLength = accountingStore.balance.length;
       accountingStore.balance = accountingStore.balance.filter(item => item.name !== name);
       if (accountingStore.balance.length < originalBalanceLength) {
-        deleted = true;
-      }
-      
-      // loanto에서 삭제 (날짜별로 검색)
+      deleted = true;
+    }
+    
+    // loanto에서 삭제 (날짜별로 검색)
       if (accountingStore.loanto) {
         for (const date in accountingStore.loanto) {
           const originalLength = accountingStore.loanto[date].length;
           accountingStore.loanto[date] = accountingStore.loanto[date].filter(item => item.company !== name);
           if (accountingStore.loanto[date].length < originalLength) {
-            deleted = true;
-          }
-          // 빈 배열이면 날짜 키 삭제
+          deleted = true;
+        }
+        // 빈 배열이면 날짜 키 삭제
           if (accountingStore.loanto[date].length === 0) {
             delete accountingStore.loanto[date];
-          }
         }
       }
-      
-      // debt에서 삭제 (날짜별로 검색)
+    }
+    
+    // debt에서 삭제 (날짜별로 검색)
       if (accountingStore.debt) {
         for (const date in accountingStore.debt) {
           const originalLength = accountingStore.debt[date].length;
           accountingStore.debt[date] = accountingStore.debt[date].filter(item => item.company !== name);
           if (accountingStore.debt[date].length < originalLength) {
-            deleted = true;
-          }
-          // 빈 배열이면 날짜 키 삭제
+          deleted = true;
+        }
+        // 빈 배열이면 날짜 키 삭제
           if (accountingStore.debt[date].length === 0) {
             delete accountingStore.debt[date];
-          }
         }
       }
-      
-      if (!deleted) {
-        return res.status(404).json({ error: '해당 명칭의 항목을 찾을 수 없습니다.' });
-      }
-      
+    }
+    
+    if (!deleted) {
+      return res.status(404).json({ error: '해당 명칭의 항목을 찾을 수 없습니다.' });
+    }
+    
       // 정렬 후 하드에 저장
       sortAccountingData(accountingStore);
       fs.writeFileSync(ACCOUNTING_DATA_FILE, JSON.stringify(accountingStore, null, 2));
@@ -3066,7 +3087,7 @@ app.get('/api/listFiles/tax/:year/:headerName/:rowName', (req, res) => {
     const { year, headerName, rowName } = req.params;
     const decodedHeaderName = decodeURIComponent(headerName);
     const decodedRowName = decodeURIComponent(rowName);
-    const dirPath = path.join(__dirname, 'uploads', '세무자료', year, decodedHeaderName, decodedRowName);
+    const dirPath = path.join(UPLOAD_DIR, '세무자료', year, decodedHeaderName, decodedRowName);
     
     if (!fs.existsSync(dirPath)) {
       return res.json({ files: [] });
@@ -3094,7 +3115,7 @@ app.get('/api/previewFile/tax/:year/:headerName/:rowName/:filename', (req, res) 
     const decodedHeaderName = decodeURIComponent(headerName);
     const decodedRowName = decodeURIComponent(rowName);
     const decodedFilename = decodeURIComponent(filename);
-    const filePath = path.join(__dirname, 'uploads', '세무자료', year, decodedHeaderName, decodedRowName, decodedFilename);
+    const filePath = path.join(UPLOAD_DIR, '세무자료', year, decodedHeaderName, decodedRowName, decodedFilename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
@@ -3127,7 +3148,7 @@ app.get('/api/downloadFile/tax/:year/:headerName/:rowName/:filename', (req, res)
     const decodedHeaderName = decodeURIComponent(headerName);
     const decodedRowName = decodeURIComponent(rowName);
     const decodedFilename = decodeURIComponent(filename);
-    const filePath = path.join(__dirname, 'uploads', '세무자료', year, decodedHeaderName, decodedRowName, decodedFilename);
+    const filePath = path.join(UPLOAD_DIR, '세무자료', year, decodedHeaderName, decodedRowName, decodedFilename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
@@ -3146,7 +3167,7 @@ app.delete('/api/deleteFile/tax/:year/:headerName/:rowName/:filename', (req, res
     const decodedHeaderName = decodeURIComponent(headerName);
     const decodedRowName = decodeURIComponent(rowName);
     const decodedFilename = decodeURIComponent(filename);
-    const filePath = path.join(__dirname, 'uploads', '세무자료', year, decodedHeaderName, decodedRowName, decodedFilename);
+    const filePath = path.join(UPLOAD_DIR, '세무자료', year, decodedHeaderName, decodedRowName, decodedFilename);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
@@ -3156,6 +3177,259 @@ app.delete('/api/deleteFile/tax/:year/:headerName/:rowName/:filename', (req, res
     res.json({ success: true, message: '파일이 성공적으로 삭제되었습니다.' });
   } catch (error) {
     res.status(500).json({ error: '파일 삭제 중 오류가 발생했습니다.' });
+  }
+});
+
+//===================================================
+// admin 페이지용 API
+//===================================================
+
+// JSON 파일 직접 저장 API (admin 페이지용)
+app.post('/api/admin/save-json', (req, res) => {
+  try {
+    const { fileName, data } = req.body;
+    
+    if (!fileName || !data) {
+      return res.status(400).json({ error: 'fileName과 data가 필요합니다.' });
+    }
+    
+    let filePath;
+    
+    switch (fileName) {
+      case 'priceData.json':
+        filePath = DATA_FILE;
+        priceStore = data;
+        break;
+      case 'orderData.json':
+        filePath = ORDER_DATA_FILE;
+        orderStore = data;
+        orderStore = sortOrderStore(orderStore);
+        break;
+      case 'creditnote.json':
+        filePath = CREDIT_NOTE_FILE;
+        creditNoteStore = data;
+        break;
+      case 'transfer.json':
+        filePath = TRANSFER_DATA_FILE;
+        transferStore = data;
+        break;
+      case 'calendar.json':
+        filePath = CALENDAR_DATA_FILE;
+        calendarStore = data;
+        calendarStore = sortCalendarData(calendarStore);
+        break;
+      case 'accounting.json':
+        filePath = ACCOUNTING_DATA_FILE;
+        accountingStore = data;
+        accountingStore = sortAccountingData(accountingStore);
+        break;
+      default:
+        return res.status(400).json({ error: '지원하지 않는 파일입니다.' });
+    }
+    
+    // 파일 저장
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+    
+    res.json({ success: true, message: `${fileName}이(가) 저장되었습니다.` });
+  } catch (error) {
+    res.status(500).json({ error: 'JSON 저장 중 오류가 발생했습니다.', details: error.message });
+  }
+});
+
+// 서버 재시동 API (Railway에서는 자동 배포가 되므로 안내만)
+app.post('/api/admin/restart', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Railway에서는 GitHub push 후 자동 배포가 진행됩니다.',
+    note: '로컬 서버의 경우 수동으로 재시동해주세요.'
+  });
+});
+
+// uploads 폴더 탐색 API
+app.get('/api/admin/explore-uploads', (req, res) => {
+  try {
+    const { path: relativePath } = req.query;
+    const targetPath = relativePath 
+      ? path.join(UPLOAD_DIR, relativePath)
+      : UPLOAD_DIR;
+    
+    // 보안: UPLOAD_DIR 밖으로 나가는 경로 차단
+    const resolvedPath = path.resolve(targetPath);
+    const resolvedUploadDir = path.resolve(UPLOAD_DIR);
+    if (!resolvedPath.startsWith(resolvedUploadDir)) {
+      return res.status(403).json({ error: '접근이 거부되었습니다.' });
+    }
+    
+    if (!fs.existsSync(targetPath)) {
+      return res.json({ folders: [], files: [] });
+    }
+    
+    const stats = fs.statSync(targetPath);
+    if (!stats.isDirectory()) {
+      return res.status(400).json({ error: '폴더가 아닙니다.' });
+    }
+    
+    const items = fs.readdirSync(targetPath);
+    const folders = [];
+    const files = [];
+    
+    items.forEach(item => {
+      // .DS_Store 및 기타 숨김 파일 제외
+      if (item.startsWith('.')) {
+        return;
+      }
+      
+      const itemPath = path.join(targetPath, item);
+      const itemStats = fs.statSync(itemPath);
+      
+      if (itemStats.isDirectory()) {
+        folders.push({
+          name: item,
+          path: relativePath ? `${relativePath}/${item}` : item
+        });
+      } else {
+        files.push({
+          name: item,
+          path: relativePath ? `${relativePath}/${item}` : item,
+          size: itemStats.size,
+          modified: itemStats.mtime.toISOString()
+        });
+      }
+    });
+    
+    // 폴더와 파일을 이름순으로 정렬
+    folders.sort((a, b) => a.name.localeCompare(b.name));
+    files.sort((a, b) => a.name.localeCompare(b.name));
+    
+    res.json({ folders, files, currentPath: relativePath || '' });
+  } catch (error) {
+    res.status(500).json({ error: '폴더 탐색 중 오류가 발생했습니다.', details: error.message });
+  }
+});
+
+// uploads 파일 미리보기/다운로드 API
+// 파일 삭제: DELETE /api/admin/delete-upload-file
+app.delete('/api/admin/delete-upload-file', (req, res) => {
+  try {
+    const { filePath } = req.query;
+    if (!filePath) {
+      return res.status(400).json({ error: 'filePath가 필요합니다.' });
+    }
+    
+    const targetPath = path.join(UPLOAD_DIR, filePath);
+    
+    // 보안: UPLOAD_DIR 밖으로 나가는 경로 차단
+    const resolvedPath = path.resolve(targetPath);
+    const resolvedUploadDir = path.resolve(UPLOAD_DIR);
+    if (!resolvedPath.startsWith(resolvedUploadDir)) {
+      return res.status(403).json({ error: '접근이 거부되었습니다.' });
+    }
+    
+    if (!fs.existsSync(targetPath)) {
+      return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
+    }
+    
+    const stats = fs.statSync(targetPath);
+    if (stats.isDirectory()) {
+      return res.status(400).json({ error: '파일이 아닙니다.' });
+    }
+    
+    // 파일 삭제
+    fs.unlinkSync(targetPath);
+    
+    // 파일이 있던 폴더 경로
+    const fileDir = path.dirname(targetPath);
+    
+    // 폴더가 비어있는지 확인하고, 비어있으면 삭제
+    try {
+      const dirContents = fs.readdirSync(fileDir);
+      if (dirContents.length === 0) {
+        fs.rmdirSync(fileDir);
+        
+        // 상위 폴더도 확인 (UPLOAD_DIR까지)
+        let currentDir = fileDir;
+        const resolvedUploadDir = path.resolve(UPLOAD_DIR);
+        
+        while (true) {
+          const parentDir = path.dirname(currentDir);
+          const resolvedParentDir = path.resolve(parentDir);
+          
+          // UPLOAD_DIR에 도달하거나 밖으로 나가면 중단
+          if (resolvedParentDir === resolvedUploadDir || !resolvedParentDir.startsWith(resolvedUploadDir)) {
+            break;
+          }
+          
+          // 현재 디렉토리가 부모와 같으면 루트에 도달한 것이므로 중단
+          if (resolvedParentDir === path.resolve(currentDir)) {
+            break;
+          }
+          
+          try {
+            const parentContents = fs.readdirSync(parentDir);
+            if (parentContents.length === 0) {
+              fs.rmdirSync(parentDir);
+              currentDir = parentDir;
+            } else {
+              break;
+            }
+          } catch (err) {
+            // 폴더가 없거나 삭제할 수 없으면 중단
+            break;
+          }
+        }
+      }
+    } catch (dirError) {
+      // 폴더 확인/삭제 실패는 무시 (파일 삭제는 성공했으므로)
+    }
+    
+    res.json({ success: true, message: '파일이 성공적으로 삭제되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: '파일 삭제 중 오류가 발생했습니다.', details: error.message });
+  }
+});
+
+app.get('/api/admin/preview-upload-file', (req, res) => {
+  try {
+    const { filePath } = req.query;
+    if (!filePath) {
+      return res.status(400).json({ error: 'filePath가 필요합니다.' });
+    }
+    
+    const targetPath = path.join(UPLOAD_DIR, filePath);
+    
+    // 보안: UPLOAD_DIR 밖으로 나가는 경로 차단
+    const resolvedPath = path.resolve(targetPath);
+    const resolvedUploadDir = path.resolve(UPLOAD_DIR);
+    if (!resolvedPath.startsWith(resolvedUploadDir)) {
+      return res.status(403).json({ error: '접근이 거부되었습니다.' });
+    }
+    
+    if (!fs.existsSync(targetPath)) {
+      return res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
+    }
+    
+    const stats = fs.statSync(targetPath);
+    if (stats.isDirectory()) {
+      return res.status(400).json({ error: '파일이 아닙니다.' });
+    }
+    
+    const ext = path.extname(targetPath).toLowerCase();
+    const contentType = {
+      '.pdf': 'application/pdf',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.png': 'image/png',
+      '.gif': 'image/gif',
+      '.txt': 'text/plain',
+      '.doc': 'application/msword',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    }[ext] || 'application/octet-stream';
+    
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(path.basename(targetPath))}"`);
+    res.sendFile(targetPath);
+  } catch (error) {
+    res.status(500).json({ error: '파일 미리보기 중 오류가 발생했습니다.', details: error.message });
   }
 });
 

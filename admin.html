@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      color: #000;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+    .page {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    h1 {
+      text-align: center;
+      margin: 0;
+      padding-bottom: 10px;
+    }
+    .top-menu {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .left-menu {
+      display: flex;
+      gap: 3px;
+    }
+    .right-menu {
+      display: flex;
+      gap: 3px;
+    }
+    .top-menu-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+    }
+    .top-menu-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* 주문 목록 테이블 스타일 */
+    .order-table-container {
+      margin-top: 20px;
+      overflow-x: auto;
+      width: 100%;
+    }
+    
+    #adminTable {
+      width: 100%;
+      min-width: 800px;
+      border-collapse: collapse;
+      border: 1px solid #ccc;
+      table-layout: fixed;
+    }
+    
+    #adminTable th,
+    #adminTable td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    
+    #adminTable th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+      width: calc(100% / 7);
+    }
+    
+    #adminTable td {
+      font-size: 0.9rem;
+    }
+
+    /* 테이블 하단 여백 */
+    .order-table-container {
+      margin-bottom: 120px;
+    }
+
+    /* 하단 버튼 영역 전체 - taxreport.html과 동일 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 확장 손잡이 (서랍 손잡이처럼 위쪽에 튀어나옴) */
+    .expand-handle {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    /* 확장/축소 버튼 */
+    .expand-btn {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #666;
+      border-radius: 8px 8px 0 0;
+      min-width: 40px;
+      height: 20px;
+      line-height: 1;
+      transition: all 0.2s ease;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    .expand-btn:hover {
+      background: #e8e8e8;
+      border-color: #999;
+      box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    }
+
+    .expand-btn.expanded {
+      transform: rotate(180deg);
+      background: #e0e0e0;
+    }
+
+    /* 기본 버튼 그룹 레이아웃 */
+    .main-button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+
+    /* 상세 버튼 영역 */
+    .detail-button-area {
+      margin-top: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      animation: slideDown 0.3s ease;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .detail-button-area button {
+      margin: 0;
+    }
+
+    /* 애니메이션 */
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 파일 미리보기 모달 스타일 */
+    .preview-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .preview-modal-content {
+      background: white;
+      border-radius: 10px;
+      width: 95%;
+      max-width: 1200px;
+      height: 90%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 1px solid #ddd;
+      background: #f8f9fa;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .preview-header h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .close-btn {
+      background: transparent;
+      color: #333;
+      border: none;
+      border-radius: 0;
+      width: 30px;
+      height: 30px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      background: #f8f9fa;
+      color: #000;
+    }
+
+    .preview-body {
+      flex: 1;
+      padding: 0;
+      overflow: hidden;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .json-content {
+      background: #f8f9fa;
+      border: none;
+      border-radius: 0;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow: auto;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      resize: none;
+      flex: 1;
+    }
+
+    .save-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+
+    .save-btn:hover {
+      background: #0056b3;
+    }
+
+    .save-btn:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+
+    .restart-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+    }
+
+    .restart-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    .preview-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-top: 1px solid #ddd;
+      background: #f8f9fa;
+      border-radius: 0 0 10px 10px;
+    }
+
+    .download-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .download-btn:hover {
+      background: #218838;
+    }
+
+    /* uploads 탐색 모달 스타일 */
+    .uploads-modal-content {
+      background: white;
+      border-radius: 10px;
+      width: 95%;
+      max-width: 1400px;
+      height: 90%;
+      display: flex;
+      flex-direction: row;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* 사이드바 스타일 */
+    .preview-sidebar {
+      width: 300px;
+      background: #f8f9fa;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px 0 0 10px;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 1px solid #ddd;
+      background: #e9ecef;
+      border-radius: 10px 0 0 0;
+    }
+
+    .sidebar-title {
+      margin: 0;
+      font-size: 16px;
+      color: #495057;
+      font-weight: bold;
+    }
+
+    .folder-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 0;
+    }
+
+    .delete-file-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 4px;
+      margin-left: auto;
+      opacity: 0.6;
+      transition: all 0.2s;
+    }
+    
+    .delete-file-btn:hover {
+      background-color: #dc3545;
+      color: white;
+      opacity: 1;
+    }
+    
+    .folder-item, .file-item {
+      padding: 8px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid #e9ecef;
+      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .folder-item:hover, .file-item:hover {
+      background-color: #e9ecef;
+    }
+
+    .folder-item.active, .file-item.active {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .folder-icon {
+      font-size: 16px;
+    }
+
+    .file-icon {
+      font-size: 14px;
+    }
+
+    .item-name {
+      flex: 1;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .breadcrumb {
+      padding: 10px 15px;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      font-size: 12px;
+      color: #666;
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .breadcrumb-item {
+      cursor: pointer;
+      color: #007bff;
+    }
+
+    .breadcrumb-item:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumb-separator {
+      color: #999;
+    }
+
+    .preview-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-iframe-container {
+      flex: 1;
+      padding: 20px;
+      overflow: auto;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .preview-iframe {
+      width: 100%;
+      max-width: 1000px;
+      height: 100%;
+      min-height: 600px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1>관리자 페이지</h1>
+
+  <div class="top-menu">
+    <!-- 왼쪽: Home -->
+    <div class="left-menu">
+      <button type="button" onclick="location.href='eltrokorea9.html'" class="top-menu-btn">Home</button>
+    </div>
+    <!-- 오른쪽: 빈 공간 -->
+    <div class="right-menu">
+    </div>
+  </div>
+
+  <div class="order-table-container">
+    <table id="adminTable">
+      <thead>
+        <tr>
+          <th>priceData.json</th>
+          <th>orderData.json</th>
+          <th>creditnote.json</th>
+          <th>transfer.json</th>
+          <th>calendar.json</th>
+          <th>accounting.json</th>
+          <th>uploads</th>
+        </tr>
+      </thead>
+      <tbody id="adminTableBody">
+        <tr>
+          <td>
+            <button class="top-menu-btn preview-btn" style="padding: 2px 4px; margin: 0 1px; border: 1px solid #ccc; border-radius: 2px; background: #fff; cursor: pointer; font-size: 10px; min-width: 20px; height: 20px; line-height: 1;" title="미리보기" onclick="previewJson('priceData.json', '/api/price')">👁️</button>
+          </td>
+          <td>
+            <button class="top-menu-btn preview-btn" style="padding: 2px 4px; margin: 0 1px; border: 1px solid #ccc; border-radius: 2px; background: #fff; cursor: pointer; font-size: 10px; min-width: 20px; height: 20px; line-height: 1;" title="미리보기" onclick="previewJson('orderData.json', '/api/orders')">👁️</button>
+          </td>
+          <td>
+            <button class="top-menu-btn preview-btn" style="padding: 2px 4px; margin: 0 1px; border: 1px solid #ccc; border-radius: 2px; background: #fff; cursor: pointer; font-size: 10px; min-width: 20px; height: 20px; line-height: 1;" title="미리보기" onclick="previewJson('creditnote.json', '/api/creditnote')">👁️</button>
+          </td>
+          <td>
+            <button class="top-menu-btn preview-btn" style="padding: 2px 4px; margin: 0 1px; border: 1px solid #ccc; border-radius: 2px; background: #fff; cursor: pointer; font-size: 10px; min-width: 20px; height: 20px; line-height: 1;" title="미리보기" onclick="previewJson('transfer.json', '/api/transfers')">👁️</button>
+          </td>
+          <td>
+            <button class="top-menu-btn preview-btn" style="padding: 2px 4px; margin: 0 1px; border: 1px solid #ccc; border-radius: 2px; background: #fff; cursor: pointer; font-size: 10px; min-width: 20px; height: 20px; line-height: 1;" title="미리보기" onclick="previewJson('calendar.json', '/api/loadCalendar')">👁️</button>
+          </td>
+          <td>
+            <button class="top-menu-btn preview-btn" style="padding: 2px 4px; margin: 0 1px; border: 1px solid #ccc; border-radius: 2px; background: #fff; cursor: pointer; font-size: 10px; min-width: 20px; height: 20px; line-height: 1;" title="미리보기" onclick="previewJson('accounting.json', '/api/accounting')">👁️</button>
+          </td>
+          <td>
+            <button class="top-menu-btn" style="padding: 2px 4px; margin: 0 1px; border: 1px solid #ccc; border-radius: 2px; background: #fff; cursor: pointer; font-size: 10px; min-width: 20px; height: 20px; line-height: 1;" title="업로드" onclick="uploadUploadsFile()">📤</button>
+            <button class="top-menu-btn preview-btn" style="padding: 2px 4px; margin: 0 1px; border: 1px solid #ccc; border-radius: 2px; background: #fff; cursor: pointer; font-size: 10px; min-width: 20px; height: 20px; line-height: 1;" title="미리보기" onclick="previewUploads()">👁️</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 하단 버튼 영역 - taxreport.html과 동일한 구조 -->
+<div class="bottom-buttons">
+  <!-- 확장/축소 버튼 (서랍 손잡이처럼 위쪽에 튀어나옴) -->
+  <div class="expand-handle">
+    <button id="expandButton" type="button" class="expand-btn">▼</button>
+  </div>
+  
+  <!-- 기본 버튼 영역 (항상 보임) -->
+  <div class="main-button-group">
+    <div></div>
+    <button id="restartServerBtn" class="restart-btn">서버 재시동</button>
+  </div>
+
+  <!-- 확장 가능한 상세 버튼 영역 (기본적으로 숨김) -->
+  <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+    <!-- 필요시 추가 버튼들 -->
+  </div>
+</div>
+
+<!-- 파일 미리보기 모달 -->
+<div id="previewModal" class="preview-modal" style="display: none;">
+  <div class="preview-modal-content">
+    <div class="preview-header">
+      <h3 id="previewTitle">JSON 파일 미리보기</h3>
+      <button id="closePreviewBtn" class="close-btn">&times;</button>
+    </div>
+    <div class="preview-body">
+      <textarea id="jsonContent" class="json-content" spellcheck="false">로딩 중...</textarea>
+    </div>
+    <div class="preview-footer">
+      <div>
+        <button id="saveCurrentBtn" class="save-btn">💾 저장</button>
+      </div>
+      <button id="downloadCurrentBtn" class="download-btn">📥 다운로드</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentJsonData = null;
+  let currentFileName = '';
+  let currentApiUrl = '';
+  let currentSaveApi = '';
+
+  // 파일명과 API 매핑
+  const fileApiMap = {
+    'priceData.json': { saveApi: '/api/admin/save-json', fileName: 'priceData.json' },
+    'orderData.json': { saveApi: '/api/admin/save-json', fileName: 'orderData.json' },
+    'creditnote.json': { saveApi: '/api/admin/save-json', fileName: 'creditnote.json' },
+    'transfer.json': { saveApi: '/api/admin/save-json', fileName: 'transfer.json' },
+    'calendar.json': { saveApi: '/api/admin/save-json', fileName: 'calendar.json' },
+    'accounting.json': { saveApi: '/api/admin/save-json', fileName: 'accounting.json' }
+  };
+
+  // JSON 미리보기 함수 (전역 스코프에 명시적으로 할당)
+  window.previewJson = async function(fileName, apiUrl) {
+    currentFileName = fileName;
+    currentApiUrl = apiUrl;
+    
+    const modal = document.getElementById('previewModal');
+    
+    // 모달 내부의 모든 content 제거
+    const existingContent = modal.querySelector('.preview-modal-content') || modal.querySelector('.uploads-modal-content');
+    if (existingContent) {
+      existingContent.remove();
+    }
+    
+    // JSON 미리보기용 구조로 새로 생성
+    const newContent = document.createElement('div');
+    newContent.className = 'preview-modal-content';
+    newContent.innerHTML = `
+      <div class="preview-header">
+        <h3 id="previewTitle">JSON 파일 미리보기</h3>
+        <button id="closePreviewBtn" class="close-btn">&times;</button>
+      </div>
+      <div class="preview-body">
+        <textarea id="jsonContent" class="json-content" spellcheck="false">로딩 중...</textarea>
+      </div>
+      <div class="preview-footer">
+        <div>
+          <button id="saveCurrentBtn" class="save-btn">💾 저장</button>
+        </div>
+        <button id="downloadCurrentBtn" class="download-btn">📥 다운로드</button>
+      </div>
+    `;
+    
+    modal.appendChild(newContent);
+    
+    // 이벤트 리스너 등록
+    document.getElementById('closePreviewBtn').addEventListener('click', () => {
+      modal.style.display = 'none';
+      currentJsonData = null;
+    });
+    document.getElementById('saveCurrentBtn').addEventListener('click', saveJsonHandler);
+    document.getElementById('downloadCurrentBtn').addEventListener('click', downloadJsonHandler);
+    
+    const title = document.getElementById('previewTitle');
+    const content = document.getElementById('jsonContent');
+    
+    modal.style.display = 'flex';
+    title.textContent = fileName;
+    content.value = '로딩 중...';
+    content.disabled = true;
+    
+    try {
+      const response = await fetch(apiUrl);
+      if (response.ok) {
+        currentJsonData = await response.json();
+        // JSON을 보기 좋게 포맷팅
+        content.value = JSON.stringify(currentJsonData, null, 2);
+        content.disabled = false;
+        
+        // 저장 API 설정
+        const fileInfo = fileApiMap[fileName];
+        if (fileInfo) {
+          currentSaveApi = fileInfo.saveApi;
+        } else {
+          currentSaveApi = '/api/admin/save-json';
+        }
+      } else {
+        content.value = `오류: 파일을 불러올 수 없습니다. (${response.status})`;
+        content.disabled = true;
+      }
+    } catch (error) {
+      content.value = `오류: ${error.message}`;
+      content.disabled = true;
+    }
+  }
+
+  // uploads 폴더 탐색
+  let currentUploadPath = '';
+  let currentUploadFile = null;
+
+  window.previewUploads = async function() {
+    currentUploadPath = '';
+    currentUploadFile = null;
+    
+    const modal = document.getElementById('previewModal');
+    
+    // 모달 구조를 uploads 탐색용으로 변경
+    modal.style.display = 'flex';
+    
+    // 기존 content를 새로운 구조로 변경
+    const modalContent = modal.querySelector('.preview-modal-content');
+    // uploads 탐색용 구조로 변경
+    modalContent.className = 'uploads-modal-content';
+    modalContent.innerHTML = `
+        <div class="preview-sidebar">
+          <div class="sidebar-header">
+            <h3 class="sidebar-title">📁 폴더 구조</h3>
+          </div>
+          <div class="breadcrumb" id="uploadBreadcrumb">
+            <span class="breadcrumb-item" onclick="navigateToUploadPath('')">uploads</span>
+          </div>
+          <div class="folder-list" id="uploadFolderList">로딩 중...</div>
+        </div>
+        <div class="preview-main">
+          <div class="preview-header">
+            <h3 id="uploadPreviewTitle">파일을 선택하세요</h3>
+            <button class="close-btn" onclick="closeUploadsModal()">&times;</button>
+          </div>
+          <div class="preview-iframe-container">
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">
+              파일을 선택하면 여기에 표시됩니다
+            </div>
+          </div>
+          <div class="preview-footer">
+            <div></div>
+            <button class="download-btn" onclick="downloadUploadFile()">📥 다운로드</button>
+          </div>
+        </div>
+      `;
+    
+    await window.loadUploadFolder('');
+  }
+
+  window.loadUploadFolder = async function(relativePath) {
+    currentUploadPath = relativePath;
+    const folderList = document.getElementById('uploadFolderList');
+    const breadcrumb = document.getElementById('uploadBreadcrumb');
+    
+    folderList.textContent = '로딩 중...';
+    
+    try {
+      const response = await fetch(`/api/admin/explore-uploads?path=${encodeURIComponent(relativePath)}`);
+      if (response.ok) {
+        const data = await response.json();
+        
+        // 브레드크럼 업데이트
+        const pathParts = relativePath ? relativePath.split('/') : [];
+        breadcrumb.innerHTML = '<span class="breadcrumb-item" onclick="navigateToUploadPath(\'\')">uploads</span>';
+        pathParts.forEach((part, index) => {
+          const path = pathParts.slice(0, index + 1).join('/');
+          breadcrumb.innerHTML += `<span class="breadcrumb-separator">/</span><span class="breadcrumb-item" onclick="navigateToUploadPath('${path}')">${part}</span>`;
+        });
+        
+        // 폴더 및 파일 목록 표시
+        folderList.innerHTML = '';
+        
+        // 폴더 표시
+        data.folders.forEach(folder => {
+          const folderItem = document.createElement('div');
+          folderItem.className = 'folder-item';
+          folderItem.innerHTML = `
+            <span class="folder-icon">📁</span>
+            <span class="item-name">${folder.name}</span>
+          `;
+          folderItem.onclick = () => navigateToUploadPath(folder.path);
+          folderList.appendChild(folderItem);
+        });
+        
+        // 파일 표시
+        data.files.forEach(file => {
+          const fileItem = document.createElement('div');
+          fileItem.className = 'file-item';
+          const fileIcon = getFileIcon(file.name);
+          
+          // HTML 이스케이프 처리
+          const escapedPath = file.path.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          const escapedName = file.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+          
+          fileItem.innerHTML = `
+            <span class="file-icon">${fileIcon}</span>
+            <span class="item-name">${file.name}</span>
+            <button class="delete-file-btn" onclick="deleteUploadFile(event, '${escapedPath}', '${escapedName}')" title="파일 삭제">🗑️</button>
+          `;
+          fileItem.onclick = (e) => {
+            if (e.target.tagName !== 'BUTTON') {
+              previewUploadFile(file.path, file.name, e.target);
+            }
+          };
+          folderList.appendChild(fileItem);
+        });
+        
+        if (data.folders.length === 0 && data.files.length === 0) {
+          folderList.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">폴더가 비어있습니다</div>';
+        }
+      } else {
+        folderList.innerHTML = '<div style="padding: 20px; text-align: center; color: #dc3545;">폴더를 불러올 수 없습니다</div>';
+      }
+    } catch (error) {
+      folderList.innerHTML = `<div style="padding: 20px; text-align: center; color: #dc3545;">오류: ${error.message}</div>`;
+    }
+  }
+
+  window.navigateToUploadPath = function(path) {
+    window.loadUploadFolder(path);
+  }
+
+  window.getFileIcon = function(fileName) {
+    const ext = fileName.split('.').pop().toLowerCase();
+    const icons = {
+      'pdf': '📄',
+      'jpg': '🖼️',
+      'jpeg': '🖼️',
+      'png': '🖼️',
+      'gif': '🖼️',
+      'txt': '📝',
+      'doc': '📄',
+      'docx': '📄'
+    };
+    return icons[ext] || '📄';
+  }
+
+  window.previewUploadFile = function(filePath, fileName, eventElement) {
+    currentUploadFile = { path: filePath, name: fileName };
+    const previewTitle = document.getElementById('uploadPreviewTitle');
+    const previewContainer = document.querySelector('.preview-iframe-container');
+    
+    previewTitle.textContent = fileName;
+    
+    // 기존 iframe 제거
+    const existingIframe = previewContainer.querySelector('iframe');
+    if (existingIframe) {
+      existingIframe.remove();
+    }
+    
+    // 새 iframe 생성
+    const iframe = document.createElement('iframe');
+    iframe.className = 'preview-iframe';
+    iframe.src = `/api/admin/preview-upload-file?filePath=${encodeURIComponent(filePath)}`;
+    previewContainer.innerHTML = '';
+    previewContainer.appendChild(iframe);
+    
+    // 선택된 파일 하이라이트
+    document.querySelectorAll('.file-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    if (eventElement) {
+      eventElement.closest('.file-item')?.classList.add('active');
+    }
+  }
+
+  window.downloadUploadFile = function() {
+    if (!currentUploadFile) {
+      alert('다운로드할 파일이 없습니다.');
+      return;
+    }
+    
+    window.open(`/api/admin/preview-upload-file?filePath=${encodeURIComponent(currentUploadFile.path)}`, '_blank');
+  }
+
+  // 파일 업로드 함수 (admin.html용)
+  window.uploadUploadsFile = function() {
+    // 파일 입력 요소 생성
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.txt';
+    fileInput.style.display = 'none';
+    
+    // 파일 선택 이벤트 리스너
+    fileInput.addEventListener('change', async function(event) {
+      const file = event.target.files[0];
+      if (!file) {
+        return;
+      }
+      
+      try {
+        // FormData 생성
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('mode', 'admin');
+        formData.append('originalFileName', file.name);
+        
+        // 서버로 업로드
+        const response = await fetch('/api/uploadFile', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          alert(`파일이 성공적으로 업로드되었습니다.\n경로: 엘트로코리아`);
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+      } catch (error) {
+        alert(`파일 업로드에 실패했습니다.\n에러: ${error.message}`);
+      }
+      
+      // 파일 입력 요소 제거
+      document.body.removeChild(fileInput);
+    });
+    
+    // 파일 입력 요소를 DOM에 추가하고 클릭 이벤트 발생
+    document.body.appendChild(fileInput);
+    fileInput.click();
+  }
+
+  // 파일 삭제 함수 (admin.html uploads용)
+  window.deleteUploadFile = async function(event, filePath, fileName) {
+    event.stopPropagation(); // 파일 선택 이벤트 방지
+    
+    const confirmDelete = confirm(`파일 "${fileName}"을(를) 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`);
+    
+    if (!confirmDelete) {
+      return;
+    }
+    
+    try {
+      // 서버에 파일 삭제 요청
+      const response = await fetch(`/api/admin/delete-upload-file?filePath=${encodeURIComponent(filePath)}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        alert('파일이 성공적으로 삭제되었습니다.');
+        
+        // 현재 파일이 삭제된 파일이면 미리보기 초기화
+        if (currentUploadFile && currentUploadFile.path === filePath) {
+          currentUploadFile = null;
+          const previewTitle = document.getElementById('uploadPreviewTitle');
+          const previewContainer = document.querySelector('.preview-iframe-container');
+          previewTitle.textContent = '파일을 선택하세요';
+          previewContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">파일을 선택하면 여기에 표시됩니다</div>';
+        }
+        
+        // 폴더 목록 새로고침
+        await window.loadUploadFolder(currentUploadPath);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      alert(`파일 삭제에 실패했습니다.\n에러: ${error.message}`);
+    }
+  }
+
+  window.closeUploadsModal = function() {
+    const modal = document.getElementById('previewModal');
+    modal.style.display = 'none';
+    
+    // 모달 구조를 원래대로 복원
+    const modalContent = modal.querySelector('.preview-modal-content');
+    if (modalContent) {
+      modalContent.className = 'preview-modal-content';
+      modalContent.innerHTML = `
+        <div class="preview-header">
+          <h3 id="previewTitle">JSON 파일 미리보기</h3>
+          <button id="closePreviewBtn" class="close-btn">&times;</button>
+        </div>
+        <div class="preview-body">
+          <textarea id="jsonContent" class="json-content" spellcheck="false">로딩 중...</textarea>
+        </div>
+        <div class="preview-footer">
+          <div>
+            <button id="saveCurrentBtn" class="save-btn">💾 저장</button>
+          </div>
+          <button id="downloadCurrentBtn" class="download-btn">📥 다운로드</button>
+        </div>
+      `;
+      
+      // 이벤트 리스너 재등록
+      document.getElementById('closePreviewBtn').addEventListener('click', () => {
+        document.getElementById('previewModal').style.display = 'none';
+        currentJsonData = null;
+      });
+      
+      document.getElementById('saveCurrentBtn').addEventListener('click', saveJsonHandler);
+      document.getElementById('downloadCurrentBtn').addEventListener('click', downloadJsonHandler);
+    }
+    
+    currentUploadPath = '';
+    currentUploadFile = null;
+  }
+
+  // JSON 저장 핸들러 (재사용을 위해 함수로 분리)
+  const saveJsonHandler = async () => {
+    const content = document.getElementById('jsonContent');
+    const saveBtn = document.getElementById('saveCurrentBtn');
+    
+    try {
+      const jsonText = content.value.trim();
+      const parsedData = JSON.parse(jsonText);
+      
+      saveBtn.disabled = true;
+      saveBtn.textContent = '저장 중...';
+      
+      const fileInfo = fileApiMap[currentFileName];
+      let response;
+      
+      if (fileInfo && fileInfo.fileName) {
+        response = await fetch('/api/admin/save-json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: fileInfo.fileName,
+            data: parsedData
+          })
+        });
+      } else {
+        response = await fetch(currentSaveApi, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(parsedData)
+        });
+      }
+      
+      if (response.ok) {
+        const result = await response.json();
+        alert('저장되었습니다!');
+        currentJsonData = parsedData;
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || error.message || '저장 실패');
+      }
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        alert('JSON 형식이 올바르지 않습니다.\n' + error.message);
+      } else {
+        alert('저장 중 오류가 발생했습니다.\n' + error.message);
+      }
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾 저장';
+    }
+  };
+
+  // JSON 다운로드 핸들러 (재사용을 위해 함수로 분리)
+  const downloadJsonHandler = () => {
+    const content = document.getElementById('jsonContent');
+    const jsonText = content.value.trim();
+    
+    if (!jsonText || jsonText === '로딩 중...') {
+      alert('다운로드할 데이터가 없습니다.');
+      return;
+    }
+    
+    try {
+      JSON.parse(jsonText);
+      
+      const blob = new Blob([jsonText], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = currentFileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('JSON 형식이 올바르지 않아 다운로드할 수 없습니다.');
+    }
+  };
+
+  // 모달 닫기
+  document.getElementById('closePreviewBtn').addEventListener('click', () => {
+    document.getElementById('previewModal').style.display = 'none';
+    currentJsonData = null;
+  });
+
+  // 저장 버튼 (이벤트 리스너는 closeUploadsModal에서 재등록)
+
+  // 확장/축소 기능
+  const expandBtn = document.getElementById("expandButton");
+  const detailArea = document.getElementById("detailButtonArea");
+  if (expandBtn && detailArea) {
+    expandBtn.addEventListener("click", () => {
+      if (detailArea.style.display === "none") {
+        detailArea.style.display = "flex";
+        expandBtn.classList.add("expanded");
+        expandBtn.textContent = "▲";
+      } else {
+        detailArea.style.display = "none";
+        expandBtn.classList.remove("expanded");
+        expandBtn.textContent = "▼";
+      }
+    });
+  }
+
+  // 서버 재시동 버튼 (하단 메뉴바)
+  const restartServerBtn = document.getElementById('restartServerBtn');
+  if (restartServerBtn) {
+    restartServerBtn.addEventListener('click', async () => {
+      if (!confirm('서버를 재시동하시겠습니까?\nRailway에서는 자동 배포가 진행됩니다.')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/admin/restart', {
+          method: 'POST'
+        });
+        
+        if (response.ok) {
+          alert('서버 재시동 요청이 전송되었습니다.\nRailway에서는 자동 배포가 진행됩니다.');
+        } else {
+          alert('서버 재시동에 실패했습니다.\nRailway에서는 GitHub push 후 자동 배포됩니다.');
+        }
+      } catch (error) {
+        alert('서버 재시동 요청 중 오류가 발생했습니다.\nRailway에서는 GitHub push 후 자동 배포됩니다.');
+      }
+    });
+  }
+
+  // 이벤트 리스너 등록 (초기 로드 시)
+  document.addEventListener('DOMContentLoaded', () => {
+    const saveBtn = document.getElementById('saveCurrentBtn');
+    const downloadBtn = document.getElementById('downloadCurrentBtn');
+    
+    if (saveBtn) {
+      saveBtn.addEventListener('click', saveJsonHandler);
+    }
+    
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', downloadJsonHandler);
+    }
+  });
+
+  // 모달 외부 클릭 시 닫기
+  document.getElementById('previewModal').addEventListener('click', (e) => {
+    if (e.target.id === 'previewModal') {
+      document.getElementById('previewModal').style.display = 'none';
+      currentJsonData = null;
+    }
+  });
+</script>
+</body>
+</html>
