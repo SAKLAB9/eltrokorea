@@ -155,6 +155,16 @@ app.use((req, res, next) => {
   }
 });
 
+// 루트 경로 처리 (index.html 제공)
+app.get('/', (req, res) => {
+  const indexPath = path.join(__dirname, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send('index.html not found');
+  }
+});
+
 // HTML 파일 제공 라우트 (인증 후) - 모든 HTML 파일 처리 (express.static보다 먼저 처리)
 app.get(/\.html$/, (req, res) => {
   const filePath = path.join(__dirname, req.path);
