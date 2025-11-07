@@ -3448,6 +3448,11 @@ app.get('/api/admin/explore-uploads', (req, res) => {
         return;
       }
       
+      // lost+found 시스템 폴더 제외
+      if (item === 'lost+found') {
+        return;
+      }
+      
       const itemPath = path.join(targetPath, item);
       const itemStats = fs.statSync(itemPath);
       
