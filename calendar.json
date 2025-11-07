@@ -1,0 +1,346 @@
+{
+  "events": {
+    "2025": {
+      "10": {
+        "10": [
+          {
+            "title": "4대보험료",
+            "recurring": true
+          },
+          {
+            "title": "사무실관리비",
+            "recurring": true
+          },
+          {
+            "title": "전월 근로소득세",
+            "recurring": true
+          },
+          {
+            "title": "전월 지방소득세",
+            "recurring": true
+          },
+          {
+            "title": "세무대행료",
+            "recurring": true
+          }
+        ],
+        "25": [
+          {
+            "title": "법인카드대금",
+            "recurring": true
+          },
+          {
+            "title": "사무실통신비",
+            "recurring": true
+          },
+          {
+            "title": "부가가치세",
+            "recurring": true
+          },
+          {
+            "title": "하남 부가가치세",
+            "recurring": true
+          },
+          {
+            "title": "대표이사",
+            "recurring": true
+          },
+          {
+            "title": "부사장",
+            "recurring": true
+          },
+          {
+            "title": "과장",
+            "recurring": true
+          },
+          {
+            "title": "생일"
+          }
+        ],
+        "31": [
+          {
+            "title": "하나은행대출이자",
+            "recurring": true
+          },
+          {
+            "title": "사무실임차료",
+            "recurring": true
+          }
+        ]
+      },
+      "11": {
+        "10": [
+          {
+            "title": "4대보험료",
+            "recurring": true
+          },
+          {
+            "title": "사무실관리비",
+            "recurring": true
+          },
+          {
+            "title": "전월 근로소득세",
+            "recurring": true
+          },
+          {
+            "title": "전월 지방소득세",
+            "recurring": true
+          },
+          {
+            "title": "세무대행료",
+            "recurring": true
+          }
+        ],
+        "25": [
+          {
+            "title": "법인카드대금",
+            "recurring": true
+          },
+          {
+            "title": "사무실통신비",
+            "recurring": true
+          },
+          {
+            "title": "대표이사",
+            "recurring": true
+          },
+          {
+            "title": "부사장",
+            "recurring": true
+          },
+          {
+            "title": "과장",
+            "recurring": true
+          }
+        ],
+        "28": [
+          {
+            "title": "하나은행대출이자",
+            "recurring": true
+          },
+          {
+            "title": "사무실임차료",
+            "recurring": true
+          }
+        ],
+        "01": [
+          {
+            "title": "법률자문료",
+            "recurring": true
+          }
+        ]
+      },
+      "12": {
+        "10": [
+          {
+            "title": "4대보험료",
+            "recurring": true
+          },
+          {
+            "title": "사무실관리비",
+            "recurring": true
+          },
+          {
+            "title": "전월 근로소득세",
+            "recurring": true
+          },
+          {
+            "title": "전월 지방소득세",
+            "recurring": true
+          },
+          {
+            "title": "세무대행료",
+            "recurring": true
+          }
+        ],
+        "25": [
+          {
+            "title": "법인카드대금",
+            "recurring": true
+          },
+          {
+            "title": "사무실통신비",
+            "recurring": true
+          },
+          {
+            "title": "대표이사",
+            "recurring": true
+          },
+          {
+            "title": "부사장",
+            "recurring": true
+          },
+          {
+            "title": "과장",
+            "recurring": true
+          }
+        ],
+        "31": [
+          {
+            "title": "하나은행대출이자",
+            "recurring": true
+          },
+          {
+            "title": "사무실임차료",
+            "recurring": true
+          }
+        ],
+        "01": [
+          {
+            "title": "법률자문료",
+            "recurring": true
+          }
+        ]
+      }
+    }
+  },
+  "recurringEvents": {
+    "2025_10_4대보험료": {
+      "type": "monthly",
+      "dateType": "specific",
+      "day": 10,
+      "title": "4대보험료",
+      "year": "2025"
+    },
+    "2025_10_사무실관리비": {
+      "type": "monthly",
+      "dateType": "specific",
+      "day": 10,
+      "title": "사무실관리비",
+      "year": "2025"
+    },
+    "2025_10_전월 근로소득세": {
+      "type": "monthly",
+      "dateType": "specific",
+      "day": 10,
+      "title": "전월 근로소득세",
+      "year": "2025"
+    },
+    "2025_10_전월 지방소득세": {
+      "type": "monthly",
+      "dateType": "specific",
+      "day": 10,
+      "title": "전월 지방소득세",
+      "year": "2025"
+    },
+    "2025_25_법인카드대금": {
+      "type": "monthly",
+      "dateType": "specific",
+      "day": 25,
+      "title": "법인카드대금",
+      "year": "2025"
+    },
+    "2025_25_사무실통신비": {
+      "type": "monthly",
+      "dateType": "specific",
+      "day": 25,
+      "title": "사무실통신비",
+      "year": "2025"
+    },
+    "2025_lastWeekday_하나은행대출이자": {
+      "type": "monthly",
+      "dateType": "lastWeekday",
+      "day": null,
+      "title": "하나은행대출이자",
+      "year": "2025"
+    },
+    "2025_25_부가가치세": {
+      "type": "specific",
+      "dateType": "specific",
+      "day": 25,
+      "title": "부가가치세",
+      "year": "2025",
+      "months": [
+        1,
+        4,
+        7,
+        10
+      ]
+    },
+    "2025_lastWeekday_법인세": {
+      "type": "specific",
+      "dateType": "lastWeekday",
+      "day": null,
+      "title": "법인세",
+      "year": "2025",
+      "months": [
+        3
+      ]
+    },
+    "2025_lastWeekday_하남재산세(토지분)": {
+      "type": "specific",
+      "dateType": "lastWeekday",
+      "day": null,
+      "title": "하남부동산재산세(토지분)",
+      "year": "2025",
+      "months": [
+        9
+      ]
+    },
+    "2025_lastWeekday_하남재산세(건물분)": {
+      "type": "specific",
+      "dateType": "lastWeekday",
+      "day": null,
+      "title": "하남부동산재산세(건물분)",
+      "year": "2025",
+      "months": [
+        7
+      ]
+    },
+    "2025_1_법률자문료": {
+      "type": "monthly",
+      "dateType": "specific",
+      "day": 1,
+      "title": "법률자문료",
+      "year": "2025"
+    },
+    "2025_lastWeekday_사무실임차료": {
+      "type": "monthly",
+      "dateType": "lastWeekday",
+      "day": null,
+      "title": "사무실임차료",
+      "year": "2025"
+    },
+    "2025_25_하남 부가가치세": {
+      "type": "specific",
+      "dateType": "specific",
+      "day": 25,
+      "title": "하남 부가가치세",
+      "year": "2025",
+      "months": [
+        1,
+        4,
+        7,
+        10
+      ]
+    },
+    "2025_10_세무대행료": {
+      "type": "monthly",
+      "dateType": "specific",
+      "day": 10,
+      "title": "세무대행료",
+      "year": "2025"
+    },
+    "2025_25_대표이사": {
+      "type": "monthly",
+      "dateType": "specific",
+      "day": 25,
+      "title": "대표이사",
+      "year": "2025"
+    },
+    "2025_25_부사장": {
+      "type": "monthly",
+      "dateType": "specific",
+      "day": 25,
+      "title": "부사장",
+      "year": "2025"
+    },
+    "2025_25_과장": {
+      "type": "monthly",
+      "dateType": "specific",
+      "day": 25,
+      "title": "과장",
+      "year": "2025"
+    }
+  }
+}

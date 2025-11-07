@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>NT거래명세표</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #000;
+      line-height: 1.5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+
+    /* 메인 페이지 컨테이너 */
+    .page-container {
+      max-width: 800px;
+      margin: 15px auto;
+      padding: 0;
+    }
+    
+    .page {
+      width: 210mm; /* A4 너비 */
+      height: 297mm; /* A4 높이 고정 */
+      margin: 0 auto 20px auto;
+      padding: 20mm 25mm 25mm 25mm;
+      box-sizing: border-box;
+      background: #fff;
+      position: relative;
+      overflow: visible;
+      border: 1px solid #ddd;
+    }
+
+    /* 상단 타이틀 */
+    .document-title {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    /* 회사 정보 스타일 */
+    .company-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding: 5px 0;
+    }
+
+    .company-left {
+      font-size: 1rem;
+      color: #333;
+    }
+
+    .company-right {
+      font-size: 1rem;
+      color: #333;
+    }
+
+    /* 구분선 */
+    .divider {
+      border-bottom: 2px solid #000;
+      margin-bottom: 20px;
+    }
+
+    /* Date와 Total Amount 필드 스타일 - swift.html과 동일 */
+    .order-details {
+      margin-top: 20px;
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    /* 왼쪽/오른쪽 영역에 input 사용 */
+    .order-header .left, .order-header .right {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .order-header .left input,
+    .order-header .right input {
+      font-size: 1rem;
+      width: 133px;
+      padding: 4px 4px;
+      height: 24px;
+    }
+
+    /* 테이블 스타일 */
+    .cost-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      table-layout: fixed;
+    }
+
+    .cost-table th,
+    .cost-table td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .cost-table th {
+      background-color: #f0f0f0;
+      font-weight: bold;
+      height: 20px;
+    }
+
+    /* 테이블 열 폭 설정 */
+    .cost-table th:nth-child(1),
+    .cost-table td:nth-child(1) {
+      width: 23mm;
+    }
+
+    .cost-table th:nth-child(2),
+    .cost-table td:nth-child(2) {
+      width: 20mm;
+    }
+
+    .cost-table th:nth-child(3),
+    .cost-table td:nth-child(3) {
+      width: 20mm;
+    }
+
+    .cost-table th:nth-child(4),
+    .cost-table td:nth-child(4) {
+      width: 20mm;
+    }
+
+    .cost-table th:nth-child(5),
+    .cost-table td:nth-child(5) {
+      width: 20mm;
+    }
+
+    .cost-table th:nth-child(6),
+    .cost-table td:nth-child(6) {
+      width: 24mm;
+    }
+
+    .cost-table td {
+      height: 17.5px;
+    }
+
+    .cost-table input {
+      width: 100%;
+      border: none;
+      background: #fff;
+      text-align: center;
+      font-size: 0.9rem;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+
+
+     /* 숫자 입력 필드의 스피너 제거 */
+     .cost-table input[type="text"]::-webkit-outer-spin-button,
+     .cost-table input[type="text"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .cost-table input[type="text"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    .cost-table select {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-size: 0.9rem;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+
+    /* 하단 버튼 영역 전체 - orderarchive.html과 동일 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 확장 손잡이 (서랍 손잡이처럼 위쪽에 튀어나옴) */
+    .expand-handle {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    /* 확장/축소 버튼 */
+    .expand-btn {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #666;
+      border-radius: 8px 8px 0 0;
+      min-width: 40px;
+      height: 20px;
+      line-height: 1;
+      transition: all 0.2s ease;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    .expand-btn:hover {
+      background: #e8e8e8;
+      border-color: #999;
+      box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    }
+
+    .expand-btn.expanded {
+      transform: rotate(180deg);
+      background: #e0e0e0;
+    }
+
+    /* 기본 버튼 그룹 레이아웃 */
+    .main-button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+
+    /* 공통 버튼 스타일 */
+    .common-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    .common-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    .refund-mode.selected {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+    }
+
+    .exchange-mode.selected {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+    }
+
+    /* 여백 조정 컨트롤 */
+    .margin-control {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.8rem;
+    }
+
+    .margin-control label {
+      font-size: 0.8rem;
+      color: #666;
+      white-space: nowrap;
+    }
+
+    .margin-control .margin-buttons {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .margin-control .margin-btn {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #333;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .margin-control .margin-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    .margin-control .margin-btn:active {
+      background: #e0e0e0;
+      transform: scale(0.95);
+    }
+
+    .margin-control .margin-value {
+      font-size: 0.8rem;
+      color: #333;
+      min-width: 35px;
+      text-align: center;
+      font-weight: bold;
+      padding: 2px 5px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      border-radius: 3px;
+    }
+
+    /* 폰트 크기 조정 컨트롤 */
+    .font-control {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.8rem;
+    }
+
+    .font-control label {
+      font-size: 0.8rem;
+      color: #666;
+      white-space: nowrap;
+    }
+
+    .font-control .font-buttons {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .font-control .font-btn {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #333;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .font-control .font-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    .font-control .font-btn:active {
+      background: #e0e0e0;
+      transform: scale(0.95);
+    }
+
+    .font-control .font-value {
+      font-size: 0.8rem;
+      color: #333;
+      min-width: 35px;
+      text-align: center;
+      font-weight: bold;
+      padding: 2px 5px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      border-radius: 3px;
+    }
+
+    /* Total 행 스타일 */
+    .cost-table tbody tr:last-child {
+      border-top: 2px solid #000;
+    }
+
+    .cost-table tbody tr:last-child td:first-child input,
+    .cost-table tbody tr:last-child td:last-child input {
+      font-weight: bold;
+    }
+
+    /* 입력 필드 공통 스타일 */
+    .input-field {
+      width: 100px;
+      margin: 0 3px;
+      padding: 5px 10px;
+      font-size: 0.9rem;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 3px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    .input-field:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* 작은 버튼 스타일 */
+    .small-btn {
+      padding: 2px 6px;
+      font-size: 0.8rem;
+      border: 1px solid #ccc;
+      background: #f5f5f5;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    .small-btn:hover {
+      background: #e0e0e0;
+    }
+
+    /* 테이블 공통 스타일 */
+    .col-25 {
+      width: 20mm;
+    }
+    
+    .col-25:first-child {
+      width: 20mm;
+    }
+    
+    .col-25:last-child {
+      width: 20mm;
+    }
+
+    .header-cell {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .sub-header-row {
+      background-color: #f0f0f0;
+      font-weight: bold;
+    }
+
+    .readonly-input {
+      background: #f5f5f5;
+    }
+
+
+
+    .transparent-select {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-size: inherit;
+      color: inherit;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      cursor: pointer;
+      text-align: center;
+      text-align-last: center;
+    }
+
+
+    /* 상세 버튼 영역 */
+    .detail-button-area {
+      margin-top: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      animation: slideDown 0.3s ease;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .detail-button-area button {
+      margin: 0;
+    }
+    
+    
+    .left-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .right-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* 애니메이션 */
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+
+    /* 반응형 디자인 */
+    @media print {
+      body {
+        background: white;
+      }
+      
+      .page {
+        margin: 0;
+        box-shadow: none;
+        border: none;
+      }
+      
+      .bottom-buttons {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page {
+        width: 100%;
+        height: auto;
+        min-height: 297mm;
+        padding: 15mm 10mm;
+      }
+      
+      .document-title {
+        font-size: 1.5rem;
+      }
+      
+      .cost-table th,
+      .cost-table td {
+        font-size: 0.8rem;
+        padding: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="page">
+      <h1 class="document-title">거 래 명 세 표</h1>
+      
+      <div class="company-info">
+        <div class="company-left">
+          <strong>공 급 자 :</strong> 엘트로코리아(주)
+        </div>
+        <div class="company-right">
+          <strong>판 매 처:</strong> 
+          <select id="buyerSelect" style="width: 100px; border: none; background: transparent; font-family: inherit; font-size: inherit; color: inherit; outline: none; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; margin-left: 5px;">
+            <option value="(주)뉴인텍" selected>(주)뉴인텍</option>
+            <option value="성문전자(주)">성문전자(주)</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <!-- 신고일자와 신고번호 필드 -->
+      <div class="order-details">
+        <div class="order-header">
+          <div class="left">
+            발생 날짜 :
+            <input type="text" id="orderDateInput" autocomplete="off" />
+          </div>
+          <div class="right">
+            납부 기한 :
+            <input type="text" id="totalAmountInput" autocomplete="off" />
+          </div>
+        </div>
+      </div>
+        
+      <table class="cost-table">
+        <thead>
+          <tr>
+            <th class="col-25">NO</th>
+              <th class="col-25">P/IDate</th>
+              <th class="col-25">SwiftDate</th>
+            <th class="col-25">환율</th>
+              <th class="col-25">부대비용/kg</th>
+              <th class="col-25">AIR</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <select class="transparent-select">
+                <option value="">Choose</option>
+              </select>
+            </td>
+            <td><input type="text" readonly></td>
+            <td><input type="text" readonly></td>
+            <td><input type="text" step="0.0001" id="exchangeRate"></td>
+            <td><input type="text" readonly class="readonly-input" id="costPerKg"></td>
+            <td><input type="text"></td>
+          </tr>
+          
+          <!-- 두 번째 표 헤더 -->
+          <tr class="sub-header-row">
+            <th class="col-25 header-cell">품명</th>
+            <th class="col-25 header-cell">수량</th>
+            <th class="col-25 header-cell">단가</th>
+            <th class="col-25 header-cell">금액</th>
+            <th class="col-25 header-cell">세금</th>
+            <th class="col-25 header-cell">총금액</th>
+          </tr>
+          
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+
+  <!-- 하단 버튼 영역 - orderarchive.html과 동일한 구조 -->
+  <div class="bottom-buttons">
+    <!-- 확장/축소 버튼 (서랍 손잡이처럼 위쪽에 튀어나옴) -->
+    <div class="expand-handle">
+      <button id="expandButton" type="button" class="expand-btn">▼</button>
+    </div>
+    
+    <!-- 기본 버튼 영역 (항상 보임) -->
+    <div class="main-button-group">
+      <div class="left-buttons">
+        <button type="button" onclick="location.href='eltrokorea9.html'" class="common-btn">Home</button>
+        <button id="price1Btn" class="common-btn">Price1</button>
+        <button id="price2Btn" class="common-btn">Price2</button>
+      </div>
+      <div class="right-buttons">
+        <button id="pdfBtn" class="common-btn">PDF</button>
+        <button id="saveBtn" class="common-btn">Save</button>
+        <button id="refundBtn" class="common-btn refund-mode">Refund</button>
+        <button id="minusSaveBtn" class="common-btn">(-)Save</button>
+        <button id="exchangeBtn" class="common-btn exchange-mode">Exchange</button>
+        <button id="bidirectionalSaveBtn" class="common-btn"><->Save</button>
+      </div>
+    </div>
+
+    <!-- 확장 가능한 상세 버튼 영역 (기본적으로 숨김) -->
+    <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+      <div class="margin-control">
+        <label>상단 여백:</label>
+        <div class="margin-buttons">
+          <button id="decreaseMargin" class="margin-btn" type="button">−</button>
+          <span class="margin-value">20mm</span>
+          <button id="increaseMargin" class="margin-btn" type="button">+</button>
+        </div>
+      </div>
+      <div class="font-control">
+        <label>폰트 크기:</label>
+        <div class="font-buttons">
+          <button id="decreaseFontSize" class="font-btn" type="button">−</button>
+          <span class="font-value">9px</span>
+          <button id="increaseFontSize" class="font-btn" type="button">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    // 통합된 날짜 처리 함수들
+    const DATE_REGEX = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+    
+    function parseDateString(dateStr) {
+      if (!dateStr) return null;
+      const match = dateStr.match(DATE_REGEX);
+      if (!match) return null;
+      
+      const [, day, month, year] = match;
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      return !isNaN(date.getTime()) ? date : null;
+    }
+
+    function convertDateToYYYYMM(dateStr) {
+      if (!dateStr) return null;
+      const match = dateStr.match(DATE_REGEX);
+      return match ? `${match[3]}-${match[2]}` : null;
+    }
+
+    function getOldestDate(...dates) {
+      return dates
+        .filter(Boolean)
+        .map(parseDateString)
+        .filter(Boolean)
+        .reduce((oldest, current) => !oldest || current < oldest ? current : oldest, null);
+    }
+
+    // 데이터 캐싱 통합 함수 (중복 fetch 방지)
+    const dataCache = {
+      orderData: { cached: null, promise: null },
+      priceData: { cached: null, promise: null }
+    };
+    
+    async function fetchCachedData(type) {
+      const cache = dataCache[type];
+      if (cache.cached) return cache.cached;
+      if (cache.promise) return cache.promise;
+      
+      const fileName = type === 'orderData' ? 'orderData.json' : 'priceData.json';
+      cache.promise = fetch(fileName).then(res => res.json()).then(data => {
+        cache.cached = data;
+        cache.promise = null;
+        return data;
+      });
+      
+      return cache.promise;
+    }
+    
+    async function getOrderData() {
+      return fetchCachedData('orderData');
+    }
+
+    async function getPriceData() {
+      return fetchCachedData('priceData');
+    }
+
+    // 아이템 행 가져오기 헬퍼 함수 (중복 제거)
+    function getItemRows() {
+      const tbody = getTbody();
+      return Array.from(tbody.querySelectorAll('tr')).slice(2, -1);
+    }
+
+    // 최적화된 deliveryNo 로드 함수
+    async function loadDeliveryNumbers() {
+      try {
+        const orderData = await getOrderData();
+        
+        // 모든 deliveryNo 수집 및 정렬 (최적화)
+        const deliveryNos = orderData
+          .flatMap(order => order.items?.filter(item => item.deliveryNo) || [])
+          .reduce((groups, item) => {
+            if (!groups[item.deliveryNo]) {
+              groups[item.deliveryNo] = getOldestDate(item['d/ndate'], item['p/idate'], item['invoicedate']);
+            }
+            return groups;
+          }, {});
+        
+        // 날짜 기준 정렬 (최신순)
+        const sortedDeliveryNos = Object.keys(deliveryNos).sort((a, b) => {
+          const [aDate, bDate] = [deliveryNos[a], deliveryNos[b]];
+          
+          if (aDate && bDate) return bDate.getTime() - aDate.getTime();
+          if (aDate) return -1;
+          if (bDate) return 1;
+          
+          // 날짜가 없으면 EK 번호로 정렬
+          return (parseInt(b.replace('EK-', '')) || 0) - (parseInt(a.replace('EK-', '')) || 0);
+        });
+        
+        // 드롭다운 업데이트
+        const selectElement = document.querySelector('.cost-table tbody tr:first-child td:first-child select');
+        if (!selectElement) return;
+        
+        selectElement.innerHTML = '<option value="">Choose</option>' + 
+          sortedDeliveryNos.map(no => `<option value="${no}">${no}</option>`).join('');
+        
+        // 이벤트 리스너 (최적화)
+        const dateInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input');
+        selectElement.onchange = async function() {
+          const selectedDeliveryNo = this.value;
+          if (selectedDeliveryNo) {
+            await loadInvoicePrice(selectedDeliveryNo);
+            await loadDeliveryItems(selectedDeliveryNo);
+          } else {
+            if (dateInput) dateInput.value = '';
+            clearDeliveryItems();
+          }
+        };
+      } catch (error) {
+        alert('deliveryNo 로드 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 최적화된 invoiceprice 로드 함수
+    async function loadInvoicePrice(selectedDeliveryNo) {
+      try {
+        const orderData = await getOrderData();
+        const firstItem = orderData.flatMap(order => order.items || [])
+          .find(item => item.deliveryNo === selectedDeliveryNo);
+        
+        if (!firstItem) return;
+        
+        // DOM 요소들 한 번에 쿼리
+        const [dateInput, swiftDateInput, airInput, orderDateInput, dueDateInput] = [
+          '.cost-table tbody tr:first-child td:nth-child(2) input',
+          '.cost-table tbody tr:first-child td:nth-child(3) input',
+          '.cost-table tbody tr:first-child td:nth-child(6) input',
+          '#orderDateInput',
+          '#totalAmountInput'
+        ].map(selector => document.querySelector(selector));
+        
+        // 값 설정
+        if (dateInput) dateInput.value = firstItem['p/idate'] || '';
+        if (swiftDateInput) swiftDateInput.value = firstItem.swiftdate || '';
+        if (airInput) airInput.value = selectedDeliveryNo.includes('AIR') ? '4000' : '';
+        
+        // addprice 저장
+        const addprice = parseFloat(firstItem.addprice) || 0;
+        const tbody = getTbody();
+        tbody.querySelector('tr:first-child').setAttribute('data-addprice', addprice);
+        
+        // 상단 필드 설정 (ntinvoicedate가 있으면 사용, 없으면 오늘 날짜)
+        if (orderDateInput) {
+          if (firstItem.ntinvoicedate) {
+            orderDateInput.value = firstItem.ntinvoicedate;
+          } else {
+            // 오늘 날짜를 YYYY-MM-DD 형식으로 설정
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            orderDateInput.value = `${year}-${month}-${day}`;
+          }
+        }
+        
+        // 납부 기한 설정
+        if (dueDateInput) {
+          if (firstItem.ntinvoicedue) {
+            // ntinvoicedue 값이 있으면 그대로 사용
+            dueDateInput.value = firstItem.ntinvoicedue;
+          } else if (!isRefundMode && !isExchangeMode) {
+            // 값이 없고 Refund/Exchange 모드가 아니면 계산
+            calculateDueDate();
+          }
+        }
+        
+      } catch (error) {
+        alert('데이터 로드 중 오류가 발생했습니다.');
+      }
+    }
+
+      // deliveryNo에 해당하는 아이템들을 로드하는 함수
+    async function loadDeliveryItems(selectedDeliveryNo) {
+      try {
+        const orderData = await getOrderData();
+        let items = orderData.flatMap(order => order.items || [])
+          .filter(item => item.deliveryNo === selectedDeliveryNo);
+        
+        // Refund 또는 Exchange 모드일 때는 defective: true인 아이템만 필터링
+        const isEditMode = isExchangeMode || isRefundMode;
+        if (isEditMode) {
+          items = items.filter(item => item.defective === true);
+        }
+        
+        clearDeliveryItems();
+        
+        const tbody = getTbody();
+        let totalQuantity = 0;
+        
+        // 아이템 행들 생성 (최적화)
+        items.forEach(item => {
+          const baseQuantity = parseFloat(item.deliveredkg) || 0;
+          // Refund 모드일 때만 수량에 *-1, Exchange 모드일 때는 그대로
+          const quantity = isRefundMode ? baseQuantity * -1 : baseQuantity;
+          totalQuantity += quantity;
+          
+          const row = document.createElement('tr');
+          // Refund/Exchange 모드일 때는 수량과 단가를 편집 가능하게
+          const quantityReadonly = isEditMode ? '' : 'readonly';
+          const quantityClass = isEditMode ? '' : 'readonly-input';
+          const unitPriceReadonly = isEditMode ? '' : 'readonly';
+          const unitPriceClass = isEditMode ? 'unit-price-input' : 'unit-price-input readonly-input';
+          
+          row.innerHTML = `
+            <td><input type="text" value="PHD${item.phd}(${item.width})" readonly class="readonly-input"></td>
+            <td><input type="text" value="${quantity}" ${quantityReadonly} class="${quantityClass} quantity-input"></td>
+            <td><input type="text" class="${unitPriceClass}" ${unitPriceReadonly}></td>
+            <td><input type="text" readonly class="readonly-input amount-input"></td>
+            <td><input type="text" readonly class="readonly-input tax-input"></td>
+            <td><input type="text" readonly class="readonly-input total-input"></td>
+          `;
+          
+          tbody.appendChild(row);
+          
+          // Refund/Exchange 모드일 때 수량과 단가 필드에 이벤트 리스너 추가
+          if (isEditMode) {
+            const quantityInput = row.querySelector('.quantity-input');
+            const unitPriceInput = row.querySelector('.unit-price-input');
+            
+            if (quantityInput && unitPriceInput) {
+              const updateRow = () => {
+                calculateRowAmount(row);
+                updateTotalRow();
+              };
+              
+              quantityInput.addEventListener('input', updateRow);
+              quantityInput.addEventListener('change', updateRow);
+              unitPriceInput.addEventListener('input', updateRow);
+              unitPriceInput.addEventListener('change', updateRow);
+            }
+          }
+        });
+        
+        // Total 행 추가
+        const totalRow = document.createElement('tr');
+        totalRow.innerHTML = `
+          <td><input type="text" value="Total" readonly class="readonly-input total-row"></td>
+          <td><input type="text" value="${totalQuantity.toLocaleString()}" readonly class="readonly-input total-row"></td>
+          <td><input type="text" readonly class="readonly-input total-row"></td>
+          <td><input type="text" value="0" readonly class="readonly-input total-row"></td>
+          <td><input type="text" value="0" readonly class="readonly-input total-row"></td>
+          <td><input type="text" value="0" readonly class="readonly-input total-row" id="totalAmountField"></td>
+        `;
+        tbody.appendChild(totalRow);
+        
+        // Total 행 생성 후 부대비용/kg 계산 실행
+        calculateCostPerKg();
+        
+      } catch (error) {
+        alert('아이템 로드 중 오류가 발생했습니다.');
+      }
+    }
+
+    // DOM 쿼리 최적화 (공통 tbody 참조)
+    const getTbody = () => document.querySelector('.cost-table tbody');
+    
+    // deliveryNo 아이템들 제거 함수 (최적화)
+    function clearDeliveryItems() {
+      const tbody = getTbody();
+      const rows = tbody.querySelectorAll('tr');
+      // 역순으로 제거하여 인덱스 문제 방지
+      for (let i = rows.length - 1; i >= 2; i--) {
+        tbody.removeChild(rows[i]);
+      }
+    }
+    
+    // 초기 Total 행 생성 함수 (최적화)
+    function createInitialTotalRow() {
+      const tbody = getTbody();
+      const totalRow = document.createElement('tr');
+      totalRow.innerHTML = `
+        <td><input type="text" value="Total" readonly class="readonly-input total-row"></td>
+        <td><input type="text" value="0" readonly class="readonly-input total-row"></td>
+        <td><input type="text" readonly class="readonly-input total-row"></td>
+        <td><input type="text" value="0" readonly class="readonly-input total-row"></td>
+        <td><input type="text" value="0" readonly class="readonly-input total-row"></td>
+        <td><input type="text" value="0" readonly class="readonly-input total-row" id="totalAmountField"></td>
+      `;
+      tbody.appendChild(totalRow);
+    }
+
+    // 숫자 파싱 헬퍼 함수 (쉼표 제거)
+    function parseNumber(value) {
+      return parseFloat((value || '').replace(/,/g, '')) || 0;
+    }
+
+    // 행별 금액 계산 함수 (최적화)
+    function calculateRowAmount(row) {
+      const [quantityInput, unitPriceInput, amountInput, taxInput, totalInput] = [
+        'td:nth-child(2) input',
+        '.unit-price-input',
+        '.amount-input',
+        '.tax-input',
+        '.total-input'
+      ].map(selector => row.querySelector(selector));
+      
+      if (!quantityInput || !unitPriceInput || !amountInput || !taxInput || !totalInput) return;
+      
+      const quantity = parseNumber(quantityInput.value);
+      const unitPriceNumeric = parseNumber(unitPriceInput.value);
+      
+      // 금액: 수량 * 단가 를 반올림하여 정수
+      const roundedAmount = Math.round(quantity * unitPriceNumeric);
+      amountInput.value = roundedAmount.toLocaleString();
+      
+      // 세금: 현재 화면 금액의 10% 소수점 버림
+      const tax = Math.trunc(roundedAmount * 0.1);
+      taxInput.value = tax.toLocaleString();
+      
+      // 총금액: 금액 + 세금
+      const total = roundedAmount + tax;
+      totalInput.value = total.toLocaleString();
+    }
+
+    // Total 행 실시간 업데이트 함수 (최적화)
+    function updateTotalRow() {
+      const tbody = getTbody();
+      const totalRow = tbody.querySelector('tr:last-child');
+      if (!totalRow) return;
+      
+      // 아이템 행들만 필터링하여 합산
+      const itemRows = getItemRows();
+      const totals = itemRows.reduce((acc, row) => {
+        const quantityInput = row.querySelector('td:nth-child(2) input');
+        const amountInput = row.querySelector('.amount-input');
+        const taxInput = row.querySelector('.tax-input');
+        const totalInput = row.querySelector('.total-input');
+        
+        if (quantityInput) acc.quantity += parseNumber(quantityInput.value);
+        if (amountInput) acc.amount += parseNumber(amountInput.value);
+        if (taxInput) acc.tax += parseNumber(taxInput.value);
+        if (totalInput) acc.total += parseNumber(totalInput.value);
+        
+        return acc;
+      }, { quantity: 0, amount: 0, tax: 0, total: 0 });
+      
+      // Total 행 업데이트
+      const qtyInput = totalRow.querySelector('td:nth-child(2) input');
+      const amtInput = totalRow.querySelector('td:nth-child(4) input');
+      const taxInput = totalRow.querySelector('td:nth-child(5) input');
+      const totInput = totalRow.querySelector('#totalAmountField');
+      
+      if (qtyInput) qtyInput.value = totals.quantity.toLocaleString();
+      if (amtInput) amtInput.value = totals.amount.toLocaleString();
+      if (taxInput) taxInput.value = totals.tax.toLocaleString();
+      if (totInput) totInput.value = totals.total.toLocaleString();
+      
+      calculateCostPerKg();
+    }
+
+    // 원화 계산 함수 (최적화)
+    function calculateWonAmount() {
+      const dollarInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input');
+      const exchangeRateInput = document.querySelector('#exchangeRate');
+      const wonInput = document.querySelector('#wonAmount');
+      
+      if (dollarInput && exchangeRateInput && wonInput) {
+        const dollarValue = parseNumber(dollarInput.value);
+        const exchangeRate = parseNumber(exchangeRateInput.value);
+        wonInput.value = Math.round(Math.ceil(dollarValue * exchangeRate * 10) / 10).toLocaleString();
+      }
+    }
+
+
+    // Price1 버튼 클릭 이벤트 (원본 가격만 로드)
+    document.getElementById("price1Btn").addEventListener("click", async function() {
+      try {
+        const priceData = await getPriceData();
+        const tbody = getTbody();
+        const dateInput = tbody.querySelector('tr:first-child td:nth-child(2) input');
+        const dateStr = dateInput?.value?.trim();
+        
+        if (!dateStr) {
+          alert('날짜를 입력해주세요.');
+          return;
+        }
+        
+        const orderMonth = convertDateToYYYYMM(dateStr);
+        if (!orderMonth) {
+          alert('날짜 형식이 올바르지 않습니다. DD.MM.YYYY 형식을 사용해주세요.');
+          return;
+        }
+        
+        const [year, month] = orderMonth.split('-');
+        const monthKey = parseInt(month).toString();
+        const priceArray = priceData?.NT?.[year]?.[monthKey];
+        
+        if (!priceArray) {
+          alert(`${year}년 ${monthKey}월 NT 가격 데이터가 없습니다.`);
+          return;
+        }
+        
+        const itemRows = getItemRows();
+        
+        itemRows.forEach(row => {
+          const productCell = row.querySelector('td:first-child input');
+          const unitPriceCell = row.querySelector('.unit-price-input');
+          
+          if (!productCell || !unitPriceCell) return;
+          
+          const match = productCell.value.trim().match(/^PHD([\d.]+)/i);
+          if (!match) return;
+          
+          const priceItem = priceArray.find(item => item.phd === parseFloat(match[1]));
+          if (priceItem) {
+            unitPriceCell.value = priceItem.price;
+            calculateRowAmount(row);
+          }
+        });
+        
+        updateTotalRow();
+        
+      } catch (error) {
+        alert('가격 데이터를 로드하는 중 오류가 발생했습니다.');
+      }
+    });
+
+    // Price2 버튼 클릭 이벤트 (현재 단가에 계산 적용)
+    document.getElementById("price2Btn").addEventListener("click", async function() {
+      try {
+        const exchangeRateInput = document.querySelector('#exchangeRate');
+        const costPerKgInput = document.querySelector('#costPerKg');
+        const airInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(6) input');
+        
+        const exchangeRate = parseNumber(exchangeRateInput?.value);
+        const costPerKg = parseNumber(costPerKgInput?.value);
+        const airValue = parseNumber(airInput?.value);
+        
+        const itemRows = getItemRows();
+        
+        itemRows.forEach(row => {
+          const unitPriceCell = row.querySelector('.unit-price-input');
+          
+          if (!unitPriceCell) return;
+          
+          const currentPrice = parseNumber(unitPriceCell.value);
+          if (currentPrice > 0) {
+            const calculatedPrice = (currentPrice * exchangeRate) + costPerKg + airValue;
+            const roundedPrice = Math.round(calculatedPrice);
+            unitPriceCell.value = roundedPrice.toLocaleString();
+            calculateRowAmount(row);
+          }
+        });
+        
+        updateTotalRow();
+        
+      } catch (error) {
+        alert('Price 데이터 로드에 실패했습니다.');
+      }
+    });
+
+    // PDF 버튼 클릭 이벤트
+    document.getElementById("pdfBtn").addEventListener("click", generatePDF);
+
+    // (-)Save 버튼 클릭 이벤트
+    document.getElementById("minusSaveBtn").addEventListener("click", async () => {
+      await saveMinusAccountingData();
+    });
+
+    // 토탈 금액 가져오기 함수
+    function getTotalAmount() {
+      const totalAmountField = document.getElementById('totalAmountField');
+      return totalAmountField ? parseNumber(totalAmountField.value).toString() : '0';
+    }
+
+    // 테이블 총금액 마지막행 마지막열에서 금액 가져오기 함수
+    function getTableTotalAmount() {
+      const tbody = getTbody();
+      const totalRow = tbody.querySelector('tr:last-child');
+      const totalInput = totalRow?.querySelector('td:nth-child(6) input');
+      return totalInput ? parseNumber(totalInput.value).toString() : '0';
+    }
+
+    // (-)Save 버튼 전용 저장 함수
+    async function saveMinusAccountingData() {
+      try {
+        const tableTotalAmount = getTableTotalAmount();
+        const orderDateInput = document.getElementById('orderDateInput');
+        
+        if (parseNumber(tableTotalAmount) === 0) {
+          alert('테이블에 총금액이 없습니다.');
+          return;
+        }
+        
+        if (!orderDateInput || !orderDateInput.value.trim()) {
+          alert('입고 날짜에 deliveryNo를 입력해주세요.');
+          return;
+        }
+        
+        const deliveryNo = orderDateInput.value.trim();
+        
+        // 모든 주문 데이터 한 번에 로드
+        const allOrders = await (await fetch('/api/orders')).json();
+        const results = { totalUpdated: 0, totalSkipped: 0, hasError: false };
+        
+        // 해당 deliveryNo와 일치하는 주문들 찾기
+        const matchingOrders = allOrders.filter(order => 
+          order.items?.some(item => item.deliveryNo === deliveryNo)
+        );
+        
+        if (matchingOrders.length === 0) {
+          alert(`입력하신 deliveryNo "${deliveryNo}"와 일치하는 주문을 찾을 수 없습니다.`);
+          return;
+        }
+        
+        // 각 주문별로 업데이트
+        for (const order of matchingOrders) {
+          try {
+            const response = await fetch('/api/updateOrder', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                searchOrderBy: 'orderNo',
+                orderNo: order.orderNo,
+                searchMethod: 'deliveryNo',
+                items: [{
+                  deliveryNo,
+                  ntminusprice: tableTotalAmount // 테이블 총금액을 ntminusprice로 저장
+                }],
+                itemUpdateFields: ['ntminusprice']
+              })
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              results.totalUpdated += result.updatedItems || 0;
+              results.totalSkipped += result.skippedItems || 0;
+            } else {
+              results.hasError = true;
+            }
+          } catch (error) {
+            results.hasError = true;
+          }
+        }
+        
+        // 결과 표시
+        const { totalUpdated, totalSkipped, hasError } = results;
+        if (totalUpdated > 0) {
+          alert(`NT거래명세표(-) 데이터가 성공적으로 저장되었습니다.\n업데이트된 아이템: ${totalUpdated}개${totalSkipped > 0 ? `, 건너뛴 아이템: ${totalSkipped}개` : ''}`);
+        } else if (hasError) {
+          alert(`일부 NT거래명세표(-) 데이터 저장에 실패했습니다.\n업데이트된 아이템: ${totalUpdated}개, 건너뛴 아이템: ${totalSkipped}개`);
+        } else {
+          alert(`NT거래명세표(-) 업데이트할 데이터가 없습니다.`);
+        }
+        
+      } catch (error) {
+        alert(`NT거래명세표(-) 데이터 저장에 실패했습니다: ${error.message}`);
+      }
+    }
+
+
+    // <->Save 버튼 전용 저장 함수
+    async function saveBidirectionalAccountingData() {
+      try {
+        const tableTotalAmount = getTableTotalAmount();
+        const orderDateInput = document.getElementById('orderDateInput');
+        const buyerSelect = document.getElementById('buyerSelect');
+        
+        if (parseNumber(tableTotalAmount) === 0) {
+          alert('테이블에 총금액이 없습니다.');
+          return;
+        }
+        
+        if (!orderDateInput || !orderDateInput.value) {
+          alert('입고 날짜에 deliveryNo를 입력해주세요.');
+          return;
+        }
+        
+        // 판매처 드롭다운에서 선택된 값 가져오기
+        const selectedBuyer = buyerSelect?.value || '(주)뉴인텍';
+        let company = 'nuintek';
+        if (selectedBuyer === '성문전자(주)') {
+          company = 'sungmoon';
+        }
+        
+        // 1행 1열 드롭다운에서 선택된 deliveryNo 가져오기 (Save 버튼과 동일)
+        const tbody = getTbody();
+        const deliveryNoSelect = tbody.querySelector('tr:first-child td:first-child select');
+        const deliveryNo = deliveryNoSelect?.value;
+        
+        if (!deliveryNo) {
+          alert('deliveryNo를 선택해주세요.');
+          return;
+        }
+        
+        // 입고 날짜 필드의 값 그대로 사용 (이미 yyyy-mm-dd 형식)
+        const date = orderDateInput.value.trim();
+        
+        // 납부기한 값 가져오기
+        const dueDateInput = document.getElementById('totalAmountInput');
+        const dueDate = dueDateInput?.value || '';
+        
+        // notes 데이터 구성
+        const notesData = {
+          company,
+          date,
+          data: [{
+            deliveryNo,
+            dueDate,
+            depositAmount: '', // 공란으로 설정
+            todaySalesAmount: tableTotalAmount
+          }]
+        };
+        
+        // accounting.json에 저장
+        const response = await fetch('/api/accounting', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category: 'notes', data: notesData })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          alert(`NT거래명세표(<->) 데이터가 성공적으로 저장되었습니다.\n회사: ${selectedBuyer}\nDeliveryNo: ${deliveryNo}\n총금액: ${tableTotalAmount}\n${result.message || ''}`);
+        } else {
+          alert(`데이터 저장에 실패했습니다: ${result.error || '알 수 없는 오류'}`);
+        }
+        
+      } catch (error) {
+        alert(`NT거래명세표(<->) 데이터 저장에 실패했습니다: ${error.message}`);
+      }
+    }
+
+    // Save 버튼 클릭 이벤트
+    document.getElementById("saveBtn").addEventListener("click", async () => {
+      await saveAccountingDataCommon({
+        name: 'NT거래명세표',
+        reportno: 'ntinvoicedate',
+        reportdate: 'ntinvoicedue', 
+        addprice: 'ntinvoiceprice',
+        addpriceValue: getTotalAmount()
+      });
+    });
+
+    // 공통 Accounting 데이터 저장 함수 (최적화)
+    async function saveAccountingDataCommon(fields) {
+      try {
+        const [reportno, reportdate] = [
+          document.getElementById('orderDateInput')?.value,
+          document.getElementById('totalAmountInput')?.value
+        ];
+        
+        if (!reportno || !reportdate) {
+          alert('신고번호와 신고일자를 입력해주세요.');
+          return;
+        }
+        
+        const tbody = getTbody();
+        const deliveryNos = Array.from(tbody.querySelectorAll('tr'))
+          .map(row => {
+            const select = row.querySelector('td:first-child select');
+            return select?.value;
+          })
+          .filter(Boolean);
+        
+        if (deliveryNos.length === 0) {
+          alert('deliveryNo를 선택해주세요.');
+          return;
+        }
+        
+        // 모든 주문 데이터 한 번에 로드
+        const allOrders = await (await fetch('/api/orders')).json();
+        const results = { totalUpdated: 0, totalSkipped: 0, hasError: false };
+        
+        // 각 deliveryNo별로 처리
+        for (const deliveryNo of deliveryNos) {
+          const matchingOrders = allOrders.filter(order => 
+            order.items?.some(item => item.deliveryNo === deliveryNo)
+          );
+          
+          // 각 주문별로 업데이트
+          for (const order of matchingOrders) {
+            try {
+              const response = await fetch('/api/updateOrder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  searchOrderBy: 'orderNo',
+                  orderNo: order.orderNo,
+                  searchMethod: 'deliveryNo',
+                  items: [{
+                    deliveryNo,
+                    [fields.reportno]: reportno,
+                    [fields.reportdate]: reportdate,
+                    [fields.addprice]: fields.addpriceValue.toString().replace(/,/g, '')
+                  }],
+                  itemUpdateFields: [fields.reportno, fields.reportdate, fields.addprice]
+                })
+              });
+              
+              if (response.ok) {
+                const result = await response.json();
+                results.totalUpdated += result.updatedItems || 0;
+                results.totalSkipped += result.skippedItems || 0;
+              } else {
+                results.hasError = true;
+              }
+            } catch (error) {
+              results.hasError = true;
+            }
+          }
+        }
+        
+        // 결과 표시
+        const { totalUpdated, totalSkipped, hasError } = results;
+        if (totalUpdated > 0) {
+          alert(`${fields.name} 데이터가 성공적으로 저장되었습니다.\n업데이트된 아이템: ${totalUpdated}개${totalSkipped > 0 ? `, 건너뛴 아이템: ${totalSkipped}개` : ''}`);
+        } else if (hasError) {
+          alert(`일부 ${fields.name} 데이터 저장에 실패했습니다.\n업데이트된 아이템: ${totalUpdated}개, 건너뛴 아이템: ${totalSkipped}개`);
+        } else {
+          alert(`${fields.name} 업데이트할 데이터가 없습니다.`);
+        }
+        
+      } catch (error) {
+        alert(`${fields.name} 데이터 저장에 실패했습니다: ${error.message}`);
+      }
+    }
+
+    // 확장/축소 기능 (최적화)
+    document.getElementById("expandButton").addEventListener("click", () => {
+      const detailArea = document.getElementById("detailButtonArea");
+      const expandBtn = document.getElementById("expandButton");
+      const isExpanded = detailArea.style.display !== "none";
+      
+      detailArea.style.display = isExpanded ? "none" : "flex";
+      expandBtn.classList.toggle("expanded", !isExpanded);
+      expandBtn.textContent = isExpanded ? "▼" : "▲";
+    });
+
+    // 상단여백 버튼 이벤트 리스너
+    document.getElementById("decreaseMargin").addEventListener("click", () => adjustMargin(-1));
+    document.getElementById("increaseMargin").addEventListener("click", () => adjustMargin(1));
+
+    // 폰트크기 버튼 이벤트 리스너
+    document.getElementById("decreaseFontSize").addEventListener("click", () => adjustFont(-1));
+    document.getElementById("increaseFontSize").addEventListener("click", () => adjustFont(1));
+    
+    // 현재 여백 값 읽기 함수 (최적화)
+    function getCurrentMargin() {
+      const page = document.querySelector('.page');
+      const computedStyle = window.getComputedStyle(page);
+      
+      // 인라인 스타일 우선 확인
+      if (page.style.padding) {
+        const marginValue = parseInt(page.style.padding.split(' ')[0].replace('mm', ''));
+        if (!isNaN(marginValue)) return marginValue;
+      }
+      
+      // computed style에서 px를 mm로 변환
+      const paddingTopPx = parseFloat(computedStyle.paddingTop.replace('px', ''));
+      const marginValue = Math.round(paddingTopPx / 3.779527559);
+      
+      return isNaN(marginValue) ? 20 : marginValue;
+    }
+
+    // 현재 폰트 크기 읽기 함수 (최적화)
+    function getCurrentFontSize() {
+      const firstElement = document.querySelector('.cost-table th, .cost-table td, .cost-table input, .cost-table select');
+      if (!firstElement) return 9;
+      
+      const fontSizePx = parseFloat(window.getComputedStyle(firstElement).fontSize.replace('px', ''));
+      return isNaN(fontSizePx) ? 9 : Math.round(fontSizePx);
+    }
+
+    // 여백 조정 함수 (최적화)
+    function adjustTopMargin(value) {
+      const page = document.querySelector('.page');
+      const marginValueElement = document.querySelector('.margin-value');
+      const clampedValue = Math.max(1, Math.min(50, parseInt(value)));
+      
+      page.style.setProperty('padding', `${clampedValue}mm 25mm 25mm 25mm`, 'important');
+      if (marginValueElement) marginValueElement.textContent = `${clampedValue}mm`;
+    }
+
+    // 여백 조정 헬퍼 함수
+    const adjustMargin = (delta) => {
+      const marginValueElement = document.querySelector('.margin-value');
+      if (!marginValueElement) return;
+      const currentValue = parseInt(marginValueElement.textContent) || 10;
+      adjustTopMargin(currentValue + delta);
+    };
+
+    // 폰트 크기 조정 함수 (최적화)
+    function adjustFontSize(value) {
+      const clampedValue = Math.max(8, Math.min(20, parseInt(value)));
+      const rowHeight = Math.max(15, Math.min(40, clampedValue * 1.5));
+      const fontValueElement = document.querySelector('.font-value');
+      
+      // 모든 테이블 요소에 일괄 적용
+      const allElements = document.querySelectorAll('.cost-table th, .cost-table td, .cost-table input, .cost-table select');
+      allElements.forEach(element => {
+        element.style.fontSize = `${clampedValue}px`;
+        element.style.height = `${rowHeight}px`;
+      });
+      
+      if (fontValueElement) fontValueElement.textContent = `${clampedValue}px`;
+    }
+
+    // 폰트 크기 조정 헬퍼 함수
+    const adjustFont = (delta) => {
+      const fontValueElement = document.querySelector('.font-value');
+      if (!fontValueElement) return;
+      const currentValue = parseInt(fontValueElement.textContent) || 12;
+      adjustFontSize(currentValue + delta);
+    };
+
+    // 부대비용/kg 계산 함수 (최적화)
+    function calculateCostPerKg() {
+      const costPerKgInput = document.getElementById('costPerKg');
+
+      if (!costPerKgInput) return;
+
+      // Refund 모드나 Exchange 모드일 때는 자동 계산하지 않음
+      if (isRefundMode || isExchangeMode) {
+        return;
+      }
+
+      const tbody = getTbody();
+      const totalRow = tbody.querySelector('tr:last-child');
+      const totalQuantityInput = totalRow?.querySelector('td:nth-child(2) input');
+
+      if (totalQuantityInput && totalRow) {
+        const totalQty = parseFloat(totalQuantityInput.value.replace(/,/g, '')) || 0;
+        // addprice를 데이터 속성에서 가져와서 계산
+        const addprice = parseFloat(tbody.querySelector('tr:first-child').getAttribute('data-addprice') || 0);
+        costPerKgInput.value = totalQty > 0 ? Math.round(addprice / totalQty).toLocaleString() : '0';
+      } else {
+        costPerKgInput.value = '0';
+      }
+    }
+
+    // Refund 모드 전역 변수
+    let isRefundMode = false;
+    
+    // Exchange 모드 전역 변수
+    let isExchangeMode = false;
+
+    // 납부 기한 계산 함수 (판매처에 따라 다른 계산 방식)
+    function calculateDueDate() {
+      const dueDateInput = document.getElementById('totalAmountInput');
+      const orderDateInput = document.getElementById('orderDateInput');
+      const buyerSelect = document.getElementById('buyerSelect');
+      
+      if (!dueDateInput) return;
+      
+      // orderDateInput에서 입고 날짜 읽기 (우선순위)
+      let orderDateStr = '';
+      if (orderDateInput && orderDateInput.value) {
+        orderDateStr = orderDateInput.value;
+      } else {
+        // 테이블의 첫 번째 행에서 입고 날짜 읽기 (대안)
+        const tbody = getTbody();
+        const dateInput = tbody.querySelector('tr:first-child td:nth-child(2) input');
+        orderDateStr = dateInput ? dateInput.value : '';
+      }
+      
+      if (!orderDateStr) return;
+      
+      try {
+        // YYYY-MM-DD 형식에서 년, 월, 일 추출
+        let year, month;
+        if (orderDateStr.includes('-')) {
+          // YYYY-MM-DD 형식
+          const parts = orderDateStr.split('-');
+          year = parseInt(parts[0], 10);
+          month = parseInt(parts[1], 10);
+        } else {
+          // DD.MM.YYYY 형식 (기존 지원)
+          const orderDate = new Date(orderDateStr);
+          if (isNaN(orderDate.getTime())) return;
+          year = orderDate.getFullYear();
+          month = orderDate.getMonth() + 1;
+        }
+        
+        if (isNaN(year) || isNaN(month) || month < 1 || month > 12) return;
+        
+        // 판매처에 따른 납부기한 계산 - 완전히 새로운 하드코딩 로직
+        const selectedBuyer = buyerSelect ? buyerSelect.value : '(주)뉴인텍';
+        
+        // 월별 마지막날 하드코딩
+        const lastDayOfMonth = {
+          1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30,
+          7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31
+        };
+        
+        let targetYear, targetMonth, lastDay;
+        
+        if (selectedBuyer === '성문전자(주)') {
+          // 성문전자: 다음달 마지막날
+          targetMonth = month + 1;
+          targetYear = year;
+          if (targetMonth > 12) {
+            targetMonth = 1;
+            targetYear = year + 1;
+          }
+          lastDay = lastDayOfMonth[targetMonth];
+        } else {
+          // 뉴인텍: 다음 다음달 마지막날
+          targetMonth = month + 2;
+          targetYear = year;
+          if (targetMonth > 12) {
+            targetMonth = targetMonth - 12;
+            targetYear = year + 1;
+          }
+          lastDay = lastDayOfMonth[targetMonth];
+        }
+        
+        // 최종 날짜 문자열 생성
+        const dueDateStr = `${targetYear}-${targetMonth.toString().padStart(2, '0')}-${lastDay}`;
+        
+        // 납부 기한 필드에 설정
+        dueDateInput.value = dueDateStr;
+        
+      } catch (error) {
+        // 에러 발생 시 조용히 처리
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // 오늘 날짜 자동 입력
+      const orderDateInput = document.getElementById('orderDateInput');
+      const dueDateInput = document.getElementById('totalAmountInput');
+      if (orderDateInput && !orderDateInput.value) {
+        orderDateInput.value = new Date().toISOString().split('T')[0];
+      }
+      
+      // 입고 날짜 변경 시 납부 기한 자동 계산 (Refund 모드나 Exchange 모드가 아닐 때만)
+      if (orderDateInput) {
+        orderDateInput.addEventListener('change', () => {
+          if (!isRefundMode && !isExchangeMode) {
+            calculateDueDate();
+          }
+        });
+        orderDateInput.addEventListener('input', () => {
+          if (!isRefundMode && !isExchangeMode) {
+            calculateDueDate();
+          }
+        });
+        // 초기 계산 (Refund 모드나 Exchange 모드가 아닐 때만)
+        setTimeout(() => {
+          if (!isRefundMode && !isExchangeMode) {
+            calculateDueDate();
+          }
+        }, 100);
+      }
+      
+      // 판매처 드롭다운 변경 시 납부 기한 자동 계산
+      const buyerSelect = document.getElementById('buyerSelect');
+      if (buyerSelect) {
+        buyerSelect.addEventListener('change', () => {
+          calculateDueDate();
+        });
+      }
+      
+      
+        // 초기화 작업들
+      loadDeliveryNumbers();
+      createInitialTotalRow();
+      
+      // UI 초기화 (지연 실행)
+      setTimeout(() => {
+        const [currentMargin, currentFontSize] = [getCurrentMargin(), getCurrentFontSize()];
+        const marginValueElement = document.querySelector('.margin-value');
+        const fontValueElement = document.querySelector('.font-value');
+        
+        marginValueElement.textContent = `${currentMargin}mm`;
+        fontValueElement.textContent = `${currentFontSize}px`;
+      }, 100);
+      
+      // 버튼 상태 동기화 함수 (둘 중 하나만 켜져있도록 보장)
+      function syncButtonStates() {
+        const refundBtn = document.getElementById("refundBtn");
+        const exchangeBtn = document.getElementById("exchangeBtn");
+        
+        // 둘 다 켜져있으면 나중에 켜진 것을 끔 (Refund 우선)
+        if (isRefundMode && isExchangeMode) {
+          isExchangeMode = false;
+        }
+        
+        // UI와 상태 변수 동기화
+        if (refundBtn) {
+          if (isRefundMode) {
+            refundBtn.classList.add('selected');
+          } else {
+            refundBtn.classList.remove('selected');
+          }
+        }
+        
+        if (exchangeBtn) {
+          if (isExchangeMode) {
+            exchangeBtn.classList.add('selected');
+          } else {
+            exchangeBtn.classList.remove('selected');
+          }
+        }
+      }
+      
+      // 페이지 로드 시 초기 상태 확인
+      syncButtonStates();
+              
+      // 오늘 날짜 설정 헬퍼 함수
+      function setTodayDate() {
+        const orderDateInput = document.getElementById('orderDateInput');
+        if (orderDateInput) {
+          const today = new Date();
+          const year = today.getFullYear();
+          const month = String(today.getMonth() + 1).padStart(2, '0');
+          const day = String(today.getDate()).padStart(2, '0');
+          orderDateInput.value = `${year}-${month}-${day}`;
+        }
+      }
+      
+      // deliveryNo 다시 로드 헬퍼 함수
+      async function reloadDeliveryItemsIfExists() {
+        const tbody = getTbody();
+        const selectedDeliveryNo = tbody.querySelector('tr:first-child td:first-child select')?.value;
+        if (selectedDeliveryNo) {
+          await loadDeliveryItems(selectedDeliveryNo);
+        }
+      }
+      
+      // Refund 버튼 이벤트 리스너
+      const refundBtn = document.getElementById("refundBtn");
+      const exchangeBtn = document.getElementById("exchangeBtn");
+      const costPerKgInput = document.getElementById('costPerKg');
+      
+      refundBtn.addEventListener("click", async () => {
+        // Exchange 모드를 무조건 완전히 끄기 (상태 변수와 UI 모두)
+        if (isExchangeMode || exchangeBtn.classList.contains('selected')) {
+          isExchangeMode = false;
+          exchangeBtn.classList.remove('selected');
+        }
+        
+        // Refund 모드 토글
+        isRefundMode = !isRefundMode;
+        
+        if (isRefundMode) {
+          // Refund 모드를 켤 때는 반드시 Exchange 모드가 완전히 꺼져있어야 함
+          isExchangeMode = false;
+          exchangeBtn.classList.remove('selected');
+          refundBtn.classList.add('selected');
+          // Refund 모드일 때 부대비용/kg 입력 가능하게
+          if (costPerKgInput) {
+            costPerKgInput.removeAttribute('readonly');
+            costPerKgInput.classList.remove('readonly-input');
+          }
+          
+          // 발생날짜에 오늘 날짜 설정 및 납부기한 계산
+          setTodayDate();
+          calculateDueDate();
+        } else {
+          refundBtn.classList.remove('selected');
+          // 일반 모드일 때 부대비용/kg 읽기 전용으로
+          if (costPerKgInput) {
+            costPerKgInput.setAttribute('readonly', 'readonly');
+            costPerKgInput.classList.add('readonly-input');
+          }
+          
+          // 일반 모드일 때 납부기한을 원래대로 복원
+          calculateDueDate();
+        }
+        
+        // 상태 동기화 및 deliveryNo 다시 로드
+        syncButtonStates();
+        await reloadDeliveryItemsIfExists();
+      });
+
+      // Exchange 버튼 이벤트 리스너
+      exchangeBtn.addEventListener("click", async () => {
+        // Refund 모드를 무조건 완전히 끄기 (상태 변수와 UI 모두)
+        if (isRefundMode || refundBtn.classList.contains('selected')) {
+          isRefundMode = false;
+          refundBtn.classList.remove('selected');
+          // Refund 모드 해제 시 부대비용/kg 읽기 전용으로 복원
+          if (costPerKgInput) {
+            costPerKgInput.setAttribute('readonly', 'readonly');
+            costPerKgInput.classList.add('readonly-input');
+          }
+          // 일반 모드일 때 납부기한을 원래대로 복원
+          calculateDueDate();
+        }
+        
+        // Exchange 모드 토글
+        isExchangeMode = !isExchangeMode;
+        
+        if (isExchangeMode) {
+          // Exchange 모드를 켤 때는 반드시 Refund 모드가 완전히 꺼져있어야 함
+          isRefundMode = false;
+          refundBtn.classList.remove('selected');
+          exchangeBtn.classList.add('selected');
+          
+          // 발생날짜에 오늘 날짜 설정 및 납부기한 계산
+          setTodayDate();
+          calculateDueDate();
+        } else {
+          exchangeBtn.classList.remove('selected');
+        }
+        
+        // 상태 동기화 및 deliveryNo 다시 로드
+        syncButtonStates();
+        await reloadDeliveryItemsIfExists();
+      });
+
+      // <->Save 버튼 이벤트 리스너
+      document.getElementById("bidirectionalSaveBtn").addEventListener("click", async () => {
+        await saveBidirectionalAccountingData();
+      });
+
+      // 모든 이벤트 리스너 통합
+      const exchangeRateInput = document.getElementById('exchangeRate');
+      const firstRowQtyInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input');
+      const addpriceInput = document.getElementById('addprice');
+      
+      if (exchangeRateInput) {
+        exchangeRateInput.addEventListener('input', calculateWonAmount);
+        exchangeRateInput.addEventListener('change', calculateWonAmount);
+      }
+      if (firstRowQtyInput) {
+        firstRowQtyInput.addEventListener('input', calculateWonAmount);
+        firstRowQtyInput.addEventListener('change', calculateWonAmount);
+      }
+      if (addpriceInput) {
+        addpriceInput.addEventListener('input', updateTotalRow);
+      }
+      
+      const decreaseMarginBtn = document.getElementById('decreaseMargin');
+      const increaseMarginBtn = document.getElementById('increaseMargin');
+      const decreaseFontSizeBtn = document.getElementById('decreaseFontSize');
+      const increaseFontSizeBtn = document.getElementById('increaseFontSize');
+      
+      if (decreaseMarginBtn) decreaseMarginBtn.addEventListener('click', () => adjustMargin(-1));
+      if (increaseMarginBtn) increaseMarginBtn.addEventListener('click', () => adjustMargin(1));
+      if (decreaseFontSizeBtn) decreaseFontSizeBtn.addEventListener('click', () => adjustFont(-1));
+      if (increaseFontSizeBtn) increaseFontSizeBtn.addEventListener('click', () => adjustFont(1));
+    });
+
+    // PDF 생성 함수 (최적화)
+    async function generatePDF() {
+      const buttonBox = document.querySelector('.main-button-group');
+      const headerRow = document.querySelector('.cost-table thead tr');
+      const firstDataRow = document.querySelector('.cost-table tbody tr:first-child');
+      const pageElement = document.querySelector('.page');
+
+      if (!pageElement) {
+        alert('A4 용지 요소를 찾을 수 없습니다.');
+        return;
+      }
+
+      // deliveryNo 미리 계산
+      const tbody = getTbody();
+      const deliveryNo = tbody.querySelector('tr:first-child td:first-child select')?.value || 'NT거래명세서';
+
+      // UI 숨기기
+      const originalDisplay = buttonBox?.style.display;
+      if (buttonBox) buttonBox.style.display = 'none';
+
+      // 스타일 저장 및 적용 헬퍼 함수
+      const applyTransparentStyles = () => {
+        const styles = { header: [], firstRow: [] };
+        for (let i = 2; i <= 6; i++) {
+          const headerCell = headerRow?.querySelector(`th:nth-child(${i})`);
+          const firstRowCell = firstDataRow?.querySelector(`td:nth-child(${i})`);
+
+          if (headerCell) {
+            styles.header[i-2] = headerCell.style.color;
+            headerCell.style.color = 'transparent';
+          }
+
+          if (firstRowCell) {
+            styles.firstRow[i-2] = firstRowCell.style.color;
+            firstRowCell.style.color = 'transparent';
+            const inputField = firstRowCell.querySelector('input');
+            if (inputField) inputField.style.color = 'transparent';
+          }
+        }
+        return styles;
+      };
+
+      const restoreStyles = (styles) => {
+        for (let i = 2; i <= 6; i++) {
+          const headerCell = headerRow?.querySelector(`th:nth-child(${i})`);
+          const firstRowCell = firstDataRow?.querySelector(`td:nth-child(${i})`);
+
+          if (headerCell) headerCell.style.color = styles.header[i-2] || '';
+          if (firstRowCell) {
+            firstRowCell.style.color = styles.firstRow[i-2] || '';
+            const inputField = firstRowCell.querySelector('input');
+            if (inputField) inputField.style.color = '';
+          }
+        }
+      };
+
+      // html2canvas 옵션 상수
+      const canvasOptions = {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      };
+
+      // jsPDF 옵션 상수
+      const pdfOptions = { unit: 'mm', format: 'a4', orientation: 'portrait' };
+      const imageSize = { width: 210, height: 297 };
+
+      try {
+        const { jsPDF } = window.jspdf;
+        
+        // 스타일 투명 처리
+        const originalStyles = applyTransparentStyles();
+
+        // 1. 숨김 처리된 버전 저장
+        const canvas = await html2canvas(pageElement, canvasOptions);
+        const imgData = canvas.toDataURL('image/png', 0.95);
+        const doc = new jsPDF(pdfOptions);
+        doc.addImage(imgData, 'PNG', 0, 0, imageSize.width, imageSize.height);
+        doc.save(`${deliveryNo}_NT거래명세서.pdf`);
+        
+        // 2. 원본 버전 저장 (스타일 복원 후)
+        restoreStyles(originalStyles);
+        
+        const originalCanvas = await html2canvas(pageElement, canvasOptions);
+        const originalImgData = originalCanvas.toDataURL('image/png', 0.95);
+        const originalDoc = new jsPDF(pdfOptions);
+        originalDoc.addImage(originalImgData, 'PNG', 0, 0, imageSize.width, imageSize.height);
+        originalDoc.save(`${deliveryNo}_NT거래명세서_원본.pdf`);
+        
+      } catch (error) {
+        alert('PDF 생성에 실패했습니다: ' + error.message);
+      } finally {
+        // UI 복원
+        if (buttonBox) buttonBox.style.display = originalDisplay || '';
+      }
+    }
+  </script>
+
+  <!-- PDF 생성을 위한 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</body>
+</html>
+

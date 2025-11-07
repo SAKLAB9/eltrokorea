@@ -1,0 +1,3217 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Shipment Update</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      color: #000;
+      line-height: 1.5;
+      position: relative;
+      height: 100vh;
+      overflow: hidden; /* 바깥쪽 스크롤 제거 */
+      box-sizing: border-box;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 5px;
+      box-sizing: border-box;
+      height: calc(100vh - 40px); /* 전체 높이에서 패딩 제외 */
+      display: flex;
+      flex-direction: column;
+    }
+    h1 {
+      text-align: center;
+      margin: 0;
+      padding-bottom: 10px;
+    }
+    .top-menu {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .left-menu {
+      display: flex;
+      gap: 3px;
+    }
+    .right-menu {
+      display: flex;
+      gap: 3px;
+    }
+    .top-menu-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+    }
+    .top-menu-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    .top-menu-btn.doc-btn.selected {
+      background: black !important;
+      color: white !important;
+      border-color: black !important;
+    }
+    .top-menu-btn.doc-btn {
+      background: #fff;
+      color: #000;
+      border-color: #ccc;
+    }
+    .top-menu-btn.doc-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    /* 모든 버튼 기본 스타일 - Export와 동일 */
+    button:not(.add-single-btn):not(.refresh-btn):not(.deleteButton) {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    #priceBtn {
+      background: #e8f4fd;
+      border-color: #4a90e2;
+      color: #2c5aa0;
+      height: 30px;
+      width: 80px;
+      box-sizing: border-box;
+    }
+
+    #priceBtn:hover {
+      background: #d1e7f7;
+    }
+
+
+    /* Order Header 스타일 */
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 10px;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    /* 왼쪽/중앙/오른쪽/Due 영역에 input 사용 */
+    .order-header .left, .order-header .center, .order-header .right, .order-header .due {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex: 1;
+      justify-content: center;
+    }
+    .order-header .left input,
+    .order-header .center input,
+    .order-header .right input,
+    .order-header .due input {
+      font-size: 1rem;
+      width: 120px;
+      padding: 4px 4px;
+      height: 24px;
+    }
+
+    /* 행 추가 컨트롤 스타일 */
+    .row-control {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 3px;
+      margin: 10px 0 20px 0;
+    }
+
+
+    .row-control button:not(.add-single-btn):not(.refresh-btn) {
+      height: 30px;
+      width: 80px;
+      box-sizing: border-box;
+    }
+
+    /* 숫자 입력 버튼 스타일 - ADD 버튼과 동일 */
+    .number-input-btn {
+      width: 80px;
+      height: 30px;
+      padding: 5px 10px;
+      margin: 0 3px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      text-align: center;
+      font-size: 0.9rem;
+      line-height: 1.2;
+      box-sizing: border-box;
+      appearance: textfield; /* 표준 속성 */
+      -moz-appearance: textfield; /* Firefox에서 스피너 제거 */
+    }
+
+    .number-input-btn::-webkit-outer-spin-button,
+    .number-input-btn::-webkit-inner-spin-button {
+      -webkit-appearance: none; /* Chrome, Safari에서 스피너 제거 */
+      margin: 0;
+    }
+
+    .number-input-btn:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+
+    .add-single-btn {
+      font-size: 0.9rem;
+      padding: 5px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      width: 30px;
+      height: 30px;
+      min-width: 30px;
+      max-width: 30px;
+      line-height: 1.2;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .add-single-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    .refresh-btn {
+      font-size: 0.9rem;
+      padding: 5px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      width: 30px;
+      height: 30px;
+      min-width: 30px;
+      max-width: 30px;
+      line-height: 1.2;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .refresh-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+
+    /* 테이블 컨테이너 스타일 */
+    .table-container {
+      margin: 20px 0;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 5px;
+      flex: 1; /* 남은 공간 모두 사용 */
+      display: flex;
+      flex-direction: column;
+      min-height: 0; /* flex 아이템이 축소될 수 있도록 */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0;
+      table-layout: fixed;
+    }
+    
+    /* 테이블 바디 스크롤 영역 */
+    .table-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: auto;
+      min-height: 0; /* flex 아이템이 축소될 수 있도록 */
+    }
+    
+    /* 테이블 바디 테이블 스타일 */
+    #shipmentTableBodyTable {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0;
+      table-layout: fixed;
+    }
+    
+    /* 테이블 바디의 열 폭을 헤더와 동일하게 설정 */
+    #shipmentTableBodyTable td:nth-child(1) { width: 60px; }
+    #shipmentTableBodyTable td:nth-child(2) { width: 60px; }
+    #shipmentTableBodyTable td:nth-child(3) { width: 110px; }
+    #shipmentTableBodyTable td:nth-child(4) { width: 60px; }
+    #shipmentTableBodyTable td:nth-child(5) { width: 110px; }
+    #shipmentTableBodyTable td:nth-child(6) { width: 60px; }
+    #shipmentTableBodyTable td:nth-child(7) { width: 60px; }
+    #shipmentTableBodyTable td:nth-child(8) { width: 100px; }
+    #shipmentTableBodyTable td:nth-child(9) { width: 100px; }
+    #shipmentTableBodyTable td:nth-child(10) { width: 60px; }
+    
+    .table-container {
+      overflow: hidden; /* 컨테이너 자체는 스크롤 없음 */
+      max-width: 100%;
+    }
+
+    thead th {
+      border: 1px solid #e0e0e0;
+      background-color: #f0f0f0;
+      padding: 5px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    /* 테이블 바디의 행은 테두리 없음 */
+    #shipmentTableBody {
+      background: #fff;
+    }
+    
+    #shipmentTableBody tr {
+      height: 40px;
+      display: table-row;
+    }
+    
+    #shipmentTableBody tr td {
+      border: none;
+      text-align: center;
+      vertical-align: middle;
+      padding: 5px;
+      background: #fff;
+      height: 40px;
+    }
+
+    /* 각 열을 개별적으로 설정 */
+    /* 열 폭 설정 - 테이블 헤더와 바디 모두 적용 */
+    th:nth-child(1), #shipmentTableBody tr td:nth-child(1) {
+      width: 60px; /* Drag + Select */
+    }
+
+    /* 1열 헤더 테두리 연하게 */
+    .drag-select-header {
+      border: 1px solid #e0e0e0;
+    }
+    
+    th:nth-child(2), #shipmentTableBody tr td:nth-child(2) {
+      width: 70px; /* Mode - 한 번 더 증가 */
+    }
+    
+    th:nth-child(3), #shipmentTableBody tr td:nth-child(3) {
+      width: 120px; /* Order No - 한 번 더 증가 */
+    }
+    
+    th:nth-child(4), #shipmentTableBody tr td:nth-child(4) {
+      width: 70px; /* Item No - 한 번 더 증가 */
+    }
+    
+    th:nth-child(5), #shipmentTableBody tr td:nth-child(5) {
+      width: 120px; /* Item - 한 번 더 증가 */
+    }
+    
+    th:nth-child(6), #shipmentTableBody tr td:nth-child(6) {
+      width: 60px; /* 주문R */
+    }
+    
+    th:nth-child(7), #shipmentTableBody tr td:nth-child(7) {
+      width: 60px; /* 선적R */
+    }
+    
+    th:nth-child(8), #shipmentTableBody tr td:nth-child(8) {
+      width: 100px; /* ProducedKG */
+    }
+    
+    th:nth-child(9), #shipmentTableBody tr td:nth-child(9) {
+      width: 100px; /* DeliveredKG */
+    }
+    
+    th:nth-child(10), #shipmentTableBody tr td:nth-child(10) {
+      width: 60px; /* U/P */
+    }
+
+    /* 드롭다운 스타일 */
+    .modeDropdown, .orderDropdown, .itemDropdown {
+      width: 100%;
+      max-width: 100%;
+      padding: 4px 6px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      background: #fff;
+      color: #000;
+      font-size: 1rem;
+      height: 28px;
+      box-sizing: border-box;
+    }
+
+    .modeDropdown:focus, .orderDropdown:focus, .itemDropdown:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+
+    /* Item 정보 셀 스타일 */
+    .itemInfoCell {
+      text-align: left;
+      font-size: 1rem;
+      color: #333;
+      padding: 5px 8px;
+    }
+
+    /* 입력 필드 폰트 크기 통일 및 스피너 제거 */
+    .remainingRInput {
+      font-size: 1rem;
+      appearance: textfield; /* 표준 속성 */
+      -moz-appearance: textfield; /* Firefox에서 스피너 제거 */
+    }
+    
+    .remainingRInput::-webkit-outer-spin-button,
+    .remainingRInput::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* Partial Box 스타일 (ADD 버튼과 동일한 크기) */
+    .partialInput {
+      width: 80px;
+      height: 30px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      text-align: center;
+      appearance: textfield; /* 표준 속성 */
+      -moz-appearance: textfield; /* Firefox에서 스피너 제거 */
+    }
+
+    .partialInput::-webkit-outer-spin-button,
+    .partialInput::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* 주문R Box 스타일 (읽기 전용) */
+    .orderRInput {
+      width: 100%;
+      height: 30px;
+      border: 1px solid #ccc;
+      background: #f5f5f5;
+      color: #000;
+      border-radius: 3px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      text-align: center;
+      appearance: textfield; /* 표준 속성 */
+      -moz-appearance: textfield; /* Firefox에서 스피너 제거 */
+    }
+
+    .orderRInput::-webkit-outer-spin-button,
+    .orderRInput::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* 선적R Box 스타일 */
+    .partialRInput {
+      width: 100%;
+      height: 30px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      text-align: center;
+      appearance: textfield; /* 표준 속성 */
+      -moz-appearance: textfield; /* Firefox에서 스피너 제거 */
+    }
+
+    .partialRInput::-webkit-outer-spin-button,
+    .partialRInput::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* ProducedKG Box 스타일 (읽기 전용) */
+    .producedKGInput {
+      width: 100%;
+      height: 30px;
+      border: 1px solid #ccc;
+      background: #f5f5f5;
+      color: #000;
+      border-radius: 3px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      text-align: center;
+      appearance: textfield; /* 표준 속성 */
+      -moz-appearance: textfield; /* Firefox에서 스피너 제거 */
+    }
+
+    .producedKGInput::-webkit-outer-spin-button,
+    .producedKGInput::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* DeliveredKG Box 스타일 */
+    .deliveredKGInput {
+      width: 100%;
+      height: 30px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      text-align: center;
+      appearance: textfield; /* 표준 속성 */
+      -moz-appearance: textfield; /* Firefox에서 스피너 제거 */
+    }
+
+    .deliveredKGInput::-webkit-outer-spin-button,
+    .deliveredKGInput::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* 선적R과 주문R이 다를 때 빨간색 테두리 */
+    .partialRInput.mismatch {
+      border: 2px solid #dc3545;
+      background-color: #fff5f5;
+      box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+    }
+
+    .deliveredKGInput.mismatch {
+      border: 2px solid #dc3545;
+      background-color: #fff5f5;
+      box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+    }
+
+    /* U/P Box 스타일 */
+    .upInput {
+      width: 100%;
+      height: 30px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      text-align: center;
+      appearance: textfield; /* 표준 속성 */
+      -moz-appearance: textfield; /* Firefox에서 스피너 제거 */
+    }
+
+    .upInput::-webkit-outer-spin-button,
+    .upInput::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+
+    /* Drag + Select 헤더 */
+    .drag-select-header {
+      background-color: #f0f0f0;
+      padding: 5px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    /* Organize 버튼 스타일 */
+    #organizeButton {
+      font-size: 0.7rem;
+      padding: 2px 4px;
+      margin: 0;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 2px;
+      min-width: 50px;
+      height: 18px;
+      line-height: 1;
+      display: block;
+      margin: 0 auto;
+    }
+
+    #organizeButton:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* Drag + Select 셀 */
+    .drag-select-cell {
+      padding: 2px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .select-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      justify-content: center;
+    }
+
+    .select-row {
+      display: flex;
+      gap: 2px;
+      justify-content: center;
+    }
+
+    .deleteButton {
+      font-size: 0.75rem;
+      padding: 1px 3px;
+      cursor: pointer;
+      margin: 0;
+      display: inline-block;
+      width: 22px;
+      height: 18px;
+      min-width: 22px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 2px;
+    }
+
+    .drag-handle {
+      width: 22px;
+      cursor: move;
+      font-size: 1rem;
+      text-align: center;
+      user-select: none;
+    }
+
+    .drag-handle:hover {
+      background-color: #e0e0e0;
+    }
+
+    .dragging {
+      opacity: 0.5;
+      background-color: #f0f0f0;
+    }
+
+    .drag-over {
+      border-top: 2px solid #007bff;
+    }
+
+
+    /* 1열 헤더의 organize 버튼 스타일 */
+    #sortPHDButton {
+      font-size: 0.7rem;
+      padding: 2px 4px;
+      margin: 0;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 2px;
+      min-width: 50px;
+      height: 18px;
+      line-height: 1;
+      display: block;
+      margin: 0 auto;
+    }
+
+    #sortPHDButton:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* 테이블 내부 입력 필드만 border none 적용 */
+    #shipmentTableBody input[type="number"], 
+    #shipmentTableBody input[type="text"], 
+    #shipmentTableBody select {
+      width: 100%;
+      max-width: 100%;
+      padding: 4px;
+      border: none;
+      text-align: center;
+      background: transparent;
+    }
+
+    #shipmentTableBody input[type="number"]:focus, 
+    #shipmentTableBody input[type="text"]:focus, 
+    #shipmentTableBody select:focus {
+      outline: 1px solid #007bff;
+      background: #fff;
+    }
+
+    tbody tr td input {
+      width: 100%;
+      border: none;
+      text-align: center;
+      padding: 2px;
+    }
+
+    tbody tr td input:focus {
+      outline: 1px solid #007bff;
+    }
+
+    /* 모달 창 스타일 */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 2% auto;
+      padding: 0;
+      border: 1px solid #888;
+      width: 500px; /* 모달 가로 길이 절대값으로 고정 */
+      max-width: 500px; /* 모달 가로 길이 절대값으로 고정 */
+      max-height: 90vh;
+      border-radius: 5px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 15px 20px;
+      background-color: #f8f8f8;
+      border-bottom: 1px solid #ddd;
+      border-radius: 5px 5px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: #333;
+    }
+
+    .close-server {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .close-server:hover {
+      color: #000;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      background-color: #f8f8f8;
+      border-top: 1px solid #ddd;
+      border-radius: 0 0 5px 5px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    
+    /* 모달 내부 버튼 호버 효과 */
+    .modal button:hover {
+      background: #f0f0f0;
+    }
+
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .action-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* 테이블 하단 컨트롤 영역 */
+    .table-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 15px 20px;
+      background: #f9f9f9;
+      border-top: 1px solid #e0e0e0;
+      border-radius: 0 0 5px 5px;
+      margin-top: auto;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .control-row.first-row {
+      justify-content: center;
+    }
+
+    .control-row.second-row {
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .total-info {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .button-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .right-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .total-display {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .total-display span {
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    .total-input {
+      width: 80px;
+      height: 30px;
+      border: 1px solid #ccc;
+      background: #f5f5f5; /* 연한 회색 배경 */
+      color: #000;
+      border-radius: 3px;
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 2px 5px;
+    }
+
+    /* Invoice Price Input만 흰색 배경 */
+    #invoicePriceInput {
+      background: #ffffff !important;
+    }
+
+    .center-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .right-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .second-row {
+      justify-content: center;
+    }
+
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1>Shipment Update</h1>
+
+  <div class="top-menu">
+    <!-- 왼쪽: Shipment -->
+    <div class="left-menu">
+      <button type="button" onclick="location.href='shipment.html'" class="top-menu-btn">Shipment</button>
+      <button id="openServerBtn" class="top-menu-btn">Open</button>
+    </div>
+    <!-- 오른쪽: D/N, P/I, P/I2, Invoice -->
+    <div class="right-menu">
+      <button id="dnBtn" class="top-menu-btn doc-btn selected">D/N</button>
+      <button id="piBtn" class="top-menu-btn doc-btn">P/I</button>
+      <button id="pi2Btn" class="top-menu-btn doc-btn">P/I2</button>
+      <button id="invoiceBtn" class="top-menu-btn doc-btn">Invoice</button>
+    </div>
+  </div>
+
+  <!-- Delivery No, TF NO, Date, Due 입력 영역 -->
+  <div class="order-header">
+    <div class="left">
+      <span style="font-size: 15px !important;">DELIVERY NO :</span>
+      <input type="text" id="deliveryNoInput" autocomplete="off" />
+    </div>
+    <div class="center">
+      <span style="font-size: 15px !important;">TF NO :</span>
+      <input type="text" id="tfNoInput" autocomplete="off" />
+    </div>
+    <div class="right">
+      <span style="font-size: 15px !important;">DATE :</span>
+      <input type="text" id="orderDateInput" autocomplete="off" />
+    </div>
+    <div class="due">
+      <span style="font-size: 15px !important;">Due :</span>
+      <input type="text" id="dueInput" autocomplete="off" />
+    </div>
+  </div>
+
+  <!-- 테이블 영역 -->
+  <div class="table-container">
+    <!-- 테이블 헤더 (고정) -->
+    <table id="shipmentTable">
+      <thead>
+        <tr>
+          <!-- Drag + Select (합쳐진 열) -->
+          <th class="drag-select-header">
+            <button id="organizeButton" type="button">organize</button>
+          </th>
+          <!-- Mode -->
+          <th>Mode</th>
+          <!-- Order No -->
+          <th>Order No</th>
+          <!-- Item No -->
+          <th>Item No</th>
+          <!-- Item -->
+          <th>Item</th>
+          <!-- 주문R -->
+          <th>주문R</th>
+          <!-- 선적R -->
+          <th>선적R</th>
+          <!-- ProducedKG -->
+          <th>ProducedKG</th>
+          <!-- DeliveredKG -->
+          <th>DeliveredKG</th>
+          <!-- U/P -->
+          <th>U/P</th>
+        </tr>
+      </thead>
+    </table>
+    
+    <!-- 테이블 바디 스크롤 영역 -->
+    <div class="table-scroll-area">
+      <table id="shipmentTableBodyTable">
+        <tbody id="shipmentTableBody">
+          <!-- 행들이 여기에 추가됩니다 -->
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- 테이블 하단 컨트롤 영역 -->
+    <div class="table-controls">
+      <!-- 첫 번째 줄: Total 정보들 -->
+      <div class="control-row first-row">
+        <div class="total-info">
+          <div class="total-display">
+            <span>Total Reel :</span>
+            <input type="text" id="totalReelInput" class="total-input" readonly />
+          </div>
+          <div class="total-display">
+            <span>Total KG :</span>
+            <input type="text" id="totalKGInput" class="total-input" readonly />
+          </div>
+          <div class="total-display">
+            <span>Total Price :</span>
+            <input type="text" id="totalPriceInput" class="total-input" readonly />
+          </div>
+          <div class="total-display">
+            <span>P/I Price :</span>
+            <input type="text" id="piPriceInput" class="total-input" readonly />
+          </div>
+          <div class="total-display">
+            <span>Invoice Price :</span>
+            <input type="text" id="invoicePriceInput" class="total-input" placeholder="Empty" />
+          </div>
+        </div>
+      </div>
+      
+      <!-- 두 번째 줄: 버튼들 -->
+      <div class="control-row second-row">
+        <div class="button-group">
+          <button id="addSingleBtn" class="add-single-btn">+</button>
+          <button id="refreshBtn" class="refresh-btn">↻</button>
+          <input type="number" id="rowCountInput" class="number-input-btn" placeholder="1" min="1" max="100" value="1" />
+          <button id="addRowsBtn">ADD</button>
+        </div>
+        <div class="center-actions">
+          <button id="exportBtn">Export</button>
+          <button id="convertBtn">Simple</button>
+        </div>
+        <div class="right-actions">
+          <button id="priceBtn">Price</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 서버 파일 모달 -->
+<div id="serverFileModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>파일 불러오기</h3>
+      <span class="close-server">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom: 15px;">
+        <select id="modeFilter" style="width: 67px; padding: 6px 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
+          <option value="all">전체</option>
+          <option value="NT">NT</option>
+          <option value="SM">SM</option>
+        </select>
+      </div>
+      <div id="serverFileList">
+      </div>
+    </div>
+    <div class="modal-footer">
+    </div>
+  </div>
+</div>
+
+<!-- SortableJS (드래그 정렬) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+<script>
+  let globalParsedData = [];
+  let selectedDoc = "D/N";
+
+  // DELIVERY NO 변경 핸들러 (별도 함수로 분리)
+  function handleDeliveryNoChange() {
+    calculatePiPrice();
+  }
+
+  // Delivery No, TF NO, Date 초기화 함수
+  function initializeOrderFields() {
+    const deliveryNoInput = document.getElementById("deliveryNoInput");
+    const tfNoInput = document.getElementById("tfNoInput");
+    const orderDateInput = document.getElementById("orderDateInput");
+    
+    if (deliveryNoInput) {
+      deliveryNoInput.value = '';
+      
+      // 기존 이벤트 리스너 제거 후 새로 등록 (중복 방지)
+      deliveryNoInput.removeEventListener('input', handleDeliveryNoChange);
+      deliveryNoInput.addEventListener('input', handleDeliveryNoChange);
+    }
+    
+    if (tfNoInput) {
+      tfNoInput.value = '';
+    }
+    
+    if (orderDateInput) {
+      orderDateInput.value = '';
+    }
+  }
+
+  // deliveryNo에서 D/N과 P/I 정보를 가져오는 함수
+  async function loadDeliveryInfo(deliveryNo) {
+    try {
+      const response = await fetch('/api/orders');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const allOrders = await response.json();
+      
+      // 해당 deliveryNo를 가진 아이템들에서 D/N, P/I, P/I2, Invoice 정보 찾기
+      let d_nno = '', d_ndate = '', p_ino = '', p_idate = '', p_ino2 = '', p_idate2 = '', p_iprice2 = '', invoiceno = '', invoicedate = '', p_iprice = '', invoiceprice = '', invoicedue = '';
+      
+      for (const order of allOrders) {
+        if (order.items && order.items.length > 0) {
+          for (const item of order.items) {
+            if ((item.deliveryno || item.deliveryNo) === deliveryNo) {
+              // D/N 정보 수집 (첫 번째 발견된 것만)
+              if (item['d/nno'] && item['d/ndate'] && !d_nno) {
+                d_nno = item['d/nno'];
+                d_ndate = item['d/ndate'];
+              }
+              // P/I 정보 수집 (첫 번째 발견된 것만)
+              if (!p_ino) {
+                p_ino = item['p/ino'] || '';
+                p_idate = item['p/idate'] || '';
+                p_iprice = item['p/iprice'] || '';
+              }
+              // P/I2 정보 수집 (첫 번째 발견된 것만)
+              if (!p_ino2) {
+                p_ino2 = item['p/ino2'] || '';
+                p_idate2 = item['p/idate2'] || '';
+                p_iprice2 = item['p/iprice2'] || '';
+              }
+              // Invoice 정보 수집 (첫 번째 발견된 것만)
+              if (item.invoiceno && item.invoicedate && !invoiceno) {
+                invoiceno = item.invoiceno;
+                invoicedate = item.invoicedate;
+              }
+              if (!invoiceprice) {
+                invoiceprice = item.invoiceprice || '';
+              }
+              if (!invoicedue) {
+                invoicedue = item.invoicedue || '';
+              }
+              
+              // 첫 번째 아이템의 정보를 모두 수집했으면 루프 종료
+              if (d_nno && p_ino && p_ino2 && invoiceno) {
+                break;
+              }
+            }
+          }
+        }
+      }
+      
+      return { d_nno, d_ndate, p_ino, p_idate, p_ino2, p_idate2, p_iprice2, invoiceno, invoicedate, p_iprice, invoiceprice, invoicedue };
+    } catch (error) {
+      return { d_nno: '', d_ndate: '', p_ino: '', p_idate: '', p_ino2: '', p_idate2: '', p_iprice2: '', invoiceno: '', invoicedate: '', p_iprice: '', invoiceprice: '', invoicedue: '' };
+    }
+  }
+
+
+  // doc 버튼 이벤트 리스너 등록 함수
+  function setupDocButtons() {
+    const buttons = [
+      { id: 'dnBtn', mode: 'D/N', dataKey: 'd_nno', dateKey: 'd_ndate', priceKey: '' },
+      { id: 'piBtn', mode: 'P/I', dataKey: 'p_ino', dateKey: 'p_idate', priceKey: 'p_iprice' },
+      { id: 'pi2Btn', mode: 'P/I2', dataKey: 'p_ino2', dateKey: 'p_idate2', priceKey: 'p_iprice2' },
+      { id: 'invoiceBtn', mode: 'Invoice', dataKey: 'invoiceno', dateKey: 'invoicedate', priceKey: 'invoicedue' }
+    ];
+
+    buttons.forEach(button => {
+      const btn = document.getElementById(button.id);
+      if (btn) {
+        btn.addEventListener("click", () => {
+          selectedDoc = button.mode;
+          updateButtonSelection(buttons, button.id);
+          
+          // 모드별 placeholder 설정
+          const dueInput = document.getElementById('dueInput');
+          const invoicePriceInput = document.getElementById('invoicePriceInput');
+          
+          if (button.mode === 'P/I' || button.mode === 'P/I2') {
+            dueInput.placeholder = 'P/I Price';
+            invoicePriceInput.placeholder = 'Empty';
+          } else if (button.mode === 'D/N') {
+            dueInput.placeholder = 'Empty';
+            invoicePriceInput.placeholder = 'Empty';
+          } else if (button.mode === 'Invoice') {
+            dueInput.placeholder = 'Invoice Due Date';
+            invoicePriceInput.placeholder = 'Input';
+          } else {
+            dueInput.placeholder = '';
+            invoicePriceInput.placeholder = 'Empty';
+          }
+          
+          loadDeliveryData(button);
+        });
+      }
+    });
+  }
+
+  // 버튼 선택 상태 업데이트 함수
+  function updateButtonSelection(buttons, activeId) {
+    buttons.forEach(btn => {
+      const element = document.getElementById(btn.id);
+      if (element) {
+        element.classList.toggle("selected", btn.id === activeId);
+      }
+    });
+  }
+
+  // 배송 정보 로드 함수
+  function loadDeliveryData(button) {
+    const deliveryNo = document.getElementById('deliveryNoInput').value.trim();
+    if (deliveryNo) {
+      loadDeliveryInfo(deliveryNo).then(info => {
+        document.getElementById('tfNoInput').value = info[button.dataKey] || '';
+        document.getElementById('orderDateInput').value = info[button.dateKey] || '';
+        document.getElementById('dueInput').value = button.priceKey ? (info[button.priceKey] || '') : '';
+        calculatePiPrice();
+        document.getElementById('invoicePriceInput').value = info.invoiceprice || '';
+      });
+    }
+  }
+
+  // Price 데이터 로드 함수
+  async function loadPriceData() {
+    try {
+      const response = await fetch("/api/price");
+      const data = await response.json();
+      return data; // 전체 priceData 반환
+    } catch (error) {
+      // console.error("[ERROR] loadPriceData fail:", error);
+      return {};
+    }
+  }
+
+
+  // Price 버튼 이벤트 리스너 등록 함수
+  function setupPriceButton() {
+    const priceBtn = document.getElementById("priceBtn");
+    if (!priceBtn) return;
+    
+    priceBtn.addEventListener("click", async () => {
+      try {
+        // P/I 모드에서만 작동
+        if (selectedDoc !== "P/I") {
+          alert("Price 버튼은 P/I 모드에서만 사용할 수 있습니다.");
+          return;
+        }
+        
+        // Price 데이터 로드
+        const priceData = await loadPriceData();
+        
+        // Date에서 년월 추출 (DD.MM.YYYY 형식)
+        const dateInput = document.getElementById('orderDateInput').value.trim();
+        const [day, month, year] = dateInput.split('.');
+        
+        if (!day || !month || !year) {
+          alert("Date 형식이 올바르지 않습니다. DD.MM.YYYY 형식으로 입력해주세요.");
+          return;
+        }
+        
+        // 월 형식 정규화 (02 → 2)
+        const normalizedMonth = parseInt(month).toString();
+        
+        // 테이블의 각 행에서 모드와 PHD 추출하여 가격 적용
+        const rows = document.querySelectorAll("#shipmentTableBody tr");
+        console.log(`[Price] 처리할 행 수: ${rows.length}, 년도: ${year}, 월: ${normalizedMonth}`);
+        
+        rows.forEach((row, index) => {
+          const tds = row.querySelectorAll("td");
+          if (tds.length < 10) return;
+          
+          // 모드 추출 (Mode 열에서)
+          const modeSelect = tds[1].querySelector('.modeDropdown');
+          const mode = modeSelect ? modeSelect.value : '';
+          
+          // 모드 매핑: NT → EK, SM-B/SM-C → SM
+          const priceMode = mode === 'NT' ? 'EK' : (mode.startsWith('SM') ? 'SM' : mode);
+          console.log(`[Price] 행 ${index}: 원본 모드=${mode}, 가격 모드=${priceMode}`);
+          
+          // PHD 추출 (Item 열에서) - PHD-6.0(620)6x 형식
+          const itemText = tds[4].textContent.trim();
+          const phdMatch = itemText.match(/PHD-([\d.]+)\(/);
+          if (!phdMatch) {
+            console.log(`[Price] 행 ${index}: PHD 추출 실패 - ${itemText}`);
+            return;
+          }
+          
+          const phd = parseFloat(phdMatch[1]);
+          console.log(`[Price] 행 ${index}: PHD=${phd}, 모드=${mode}`);
+          
+          // 가격 데이터에서 찾기 (정규화된 월 사용)
+          console.log(`[Price] 행 ${index}: priceData 구조 확인`, {
+            priceMode,
+            year,
+            normalizedMonth,
+            hasPriceMode: !!priceData[priceMode],
+            hasYear: !!priceData[priceMode]?.[year],
+            hasMonth: !!priceData[priceMode]?.[year]?.[normalizedMonth]
+          });
+          
+          let yearData = priceData[priceMode]?.[year]?.[normalizedMonth];
+          if (!yearData) {
+            console.log(`[Price] 행 ${index}: ${priceMode} ${year}년 ${normalizedMonth}월 데이터 없음`);
+            return;
+          }
+          
+          const priceInfo = yearData.find(item => parseFloat(item.phd) === phd);
+          if (!priceInfo) {
+            console.log(`[Price] 행 ${index}: PHD ${phd}에 해당하는 가격 정보 없음`);
+            return;
+          }
+          
+          // U/P 열에 가격 설정
+          const upInput = tds[9].querySelector('.upInput');
+          if (upInput) {
+            upInput.value = parseFloat(priceInfo.price).toFixed(2);
+            console.log(`[Price] 행 ${index}: U/P에 ${priceInfo.price} 적용 완료`);
+            
+            // U/P 값 변경 후 total price 재계산을 위해 input 이벤트 발생
+            upInput.dispatchEvent(new Event('input', { bubbles: true }));
+          } else {
+            console.log(`[Price] 행 ${index}: U/P 입력 필드를 찾을 수 없음`);
+          }
+        });
+        
+        // 가격 적용 완료
+      } catch (error) {
+        alert("가격 적용에 실패했습니다: " + error.message);
+      }
+    });
+  }
+
+  // ========================================
+  // EXPORT
+  // ========================================
+  // Export 버튼 이벤트 리스너 등록 함수
+  function setupExportButton() {
+    const exportBtn = document.getElementById("exportBtn");
+    if (!exportBtn) {
+      return;
+    }
+    
+    exportBtn.addEventListener("click", async () => {
+      try {
+       
+        // D/N 또는 P/I 모드에서만 Export 가능
+        if (selectedDoc !== "D/N" && selectedDoc !== "P/I") {
+          const modeMessages = {
+            "Invoice": "Invoice 모드에서는 Export 기능을 사용할 수 없습니다. Simple 기능을 사용해주세요.",
+            "P/I2": "P/I2 모드에서는 Export 기능을 사용할 수 없습니다. Simple 기능을 사용해주세요."
+          };
+          
+          alert(modeMessages[selectedDoc] || 'Export는 D/N 또는 P/I 모드에서만 사용할 수 있습니다.');
+          return;
+        }
+        
+        // 헤더 입력값 가져오기
+        const deliveryNo = document.getElementById('deliveryNoInput').value;
+        const tfNo = document.getElementById('tfNoInput').value;
+        const orderDate = document.getElementById('orderDateInput').value;
+        const dueValue = document.getElementById('dueInput').value;
+        
+        if (!deliveryNo) {
+          alert('DELIVERY NO를 입력해주세요.');
+          return;
+        }
+        
+        // 테이블 데이터 수집
+        const tableRows = document.querySelectorAll('#shipmentTableBody tr');
+        const exportData = [];
+        
+        tableRows.forEach(row => {
+          const modeDropdown = row.querySelector('.modeDropdown');
+          const orderDropdown = row.querySelector('.orderDropdown');
+          const itemDropdown = row.querySelector('.itemDropdown');
+          const partialRInput = row.querySelector('.partialRInput');
+          const deliveredKGInput = row.querySelector('.deliveredKGInput');
+          const upInput = row.querySelector('.upInput');
+          
+          const mode = modeDropdown?.value || '';
+          const orderNo = orderDropdown?.value || '';
+          const itemNo = itemDropdown?.value || '';
+          const partialR = partialRInput?.value || '';
+          const deliveredKG = deliveredKGInput?.value || '';
+          const up = upInput?.value || '';
+          
+          const exportItem = {
+            mode,
+            orderNo,
+            itemNo,
+            deliveredR: partialR,
+            deliveredkg: deliveredKG,
+            "U/P": up
+          };
+          
+          exportData.push(exportItem);
+        });
+        
+        if (exportData.length === 0) {
+          alert('내보낼 데이터가 없습니다. 테이블에 데이터를 입력해주세요.');
+          return;
+        }
+        
+        // ========================================
+        // Export 처리: orderNo별 카테고라이즈
+        // ========================================
+        const isDnMode = selectedDoc === "D/N";
+        
+        // 1. exportData를 orderNo별로 카테고라이즈
+        const orderGroups = {};
+        exportData.forEach((item) => {
+          const orderNo = item.orderNo;
+          if (orderNo && orderNo.trim() !== '') {  // 빈 값 제외
+            if (!orderGroups[orderNo]) {
+              orderGroups[orderNo] = [];
+            }
+            orderGroups[orderNo].push(item);
+          }
+        });
+        
+        console.log(`📋 주문별 그룹화 완료: ${Object.keys(orderGroups).length}개 주문`);
+        
+        // 2. 각 주문별로 API 호출
+        let totalUpdated = 0;
+        let totalErrors = 0;
+        
+        for (const [orderNo, items] of Object.entries(orderGroups)) {
+          console.log(`📝 주문 처리 중: ${orderNo} (${items.length}개 아이템)`);
+          
+          try {
+            if (isDnMode) {
+              // D/N 모드: /api/updateOrder로 기존 주문의 아이템들 업데이트
+              const response = await fetch('/api/updateOrder', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  searchOrderBy: 'orderNo',           // orderNo로 주문 검색
+                  orderNo: orderNo,                   // 주문 검색용 orderNo
+                  searchMethod: 'itemNo',             // itemNo로 아이템 검색
+                  items: items.map(item => ({
+                    itemNo: item.itemNo,              // 아이템 번호
+                    deliveryNo: deliveryNo,           // deliveryNo 추가
+                    'd/nno': tfNo,                    // D/N 번호 추가
+                    'd/ndate': orderDate,             // D/N 날짜 추가
+                    deliveredR: item.deliveredR,      // 선적R
+                    deliveredkg: item.deliveredkg     // 선적KG
+                  })),
+                  itemUpdateFields: ['deliveryNo', 'd/nno', 'd/ndate', 'deliveredR', 'deliveredkg']  // 업데이트할 필드들
+                })
+              });
+              
+              const result = await response.json();
+              if (result.error) {
+                console.error(`D/N Export 실패 (${orderNo}): ${result.error}`);
+                totalErrors++;
+              } else {
+                totalUpdated += items.length;
+              }
+            } else {
+              // P/I 모드: /api/updateOrder로 기존 주문의 아이템들 업데이트
+              const response = await fetch('/api/updateOrder', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  searchOrderBy: 'orderNo',           // orderNo로 주문 검색
+                  orderNo: orderNo,                   // 주문 검색용 orderNo
+                  searchMethod: 'itemNo',             // itemNo로 아이템 검색
+                  items: items.map(item => ({
+                    itemNo: item.itemNo,              // 아이템 번호
+                    deliveryNo: deliveryNo,           // deliveryNo 추가
+                    'p/ino': tfNo,                    // P/I 번호 추가
+                    'p/idate': orderDate,             // P/I 날짜 추가
+                    'p/iprice': dueValue,             // P/I 가격 추가
+                    deliveredR: item.deliveredR,      // 선적R
+                    deliveredkg: item.deliveredkg,    // 선적KG
+                    'U/P': item['U/P']                // U/P
+                  })),
+                  itemUpdateFields: ['deliveryNo', 'p/ino', 'p/idate', 'p/iprice', 'deliveredR', 'deliveredkg', 'U/P']  // 업데이트할 필드들
+                })
+              });
+              
+              const result = await response.json();
+              if (result.error) {
+                console.error(`P/I Export 실패 (${orderNo}): ${result.error}`);
+                totalErrors++;
+              } else {
+                totalUpdated += items.length;
+              }
+            }
+          } catch (error) {
+            console.error(`주문 ${orderNo} 처리 중 오류:`, error);
+            totalErrors++;
+          }
+        }
+        
+        // 3. 결과 확인
+        if (totalErrors > 0) {
+          alert(`${isDnMode ? "D/N" : "P/I"} Export 중 ${totalErrors}개 주문에서 오류가 발생했습니다.`);
+          return;
+        }
+        
+        // Export 성공 메시지 표시
+        let message = `${isDnMode ? "D/N" : "P/I"} Export가 성공적으로 완료되었습니다.\n업데이트된 아이템: ${totalUpdated}개`;
+        
+        if (isDnMode) {
+          message += `\n업데이트 항목: deliveryNo, d/nno, d/ndate, deliveredR, deliveredkg`;
+        } else {
+          message += `\n업데이트 항목: deliveryNo, p/ino, p/idate, p/iprice, deliveredR, deliveredkg, U/P`;
+        }
+        
+        alert(message);
+        
+    
+        // Export 성공 - shipment.html로 이동
+        window.location.href = 'shipment.html';
+        
+      } catch (error) {
+   
+        alert(`Export 중 오류가 발생했습니다.`);
+      }
+    });
+  }
+
+  // ========================================
+  // SIMPLE 기능 - deliveryNo의 모든 아이템 일괄 업데이트
+  // ========================================
+  // Simple 버튼 이벤트 리스너 등록 함수
+  function setupSimpleButton() {
+    const simpleBtn = document.getElementById("convertBtn");
+    if (!simpleBtn) {
+      return;
+    }
+    
+    simpleBtn.addEventListener("click", async () => {
+      // 공통 변수 선언
+      const deliveryNo = document.getElementById('deliveryNoInput').value.trim();
+      const tfNo = document.getElementById('tfNoInput').value.trim();
+      const orderDate = document.getElementById('orderDateInput').value.trim();
+      const dueValue = document.getElementById('dueInput').value;
+      
+      // 입력값 검증 - 모든 모드에서 deliveryNo만 필수
+      if (!deliveryNo) {
+        alert("DELIVERY NO를 입력해주세요.");
+        return;
+      }
+
+      // 모드 검증
+      if (!["D/N", "P/I", "P/I2", "Invoice"].includes(selectedDoc)) {
+        alert("D/N, P/I, P/I2 또는 Invoice 모드에서만 사용할 수 있습니다.");
+        return;
+      }
+      
+      try {
+        let response;
+        
+        // ========================================
+        // D/N 모드 Simple 처리 (모든 주문 업데이트)
+        // ========================================
+        if (selectedDoc === "D/N") {
+          // 입력값 처리: 공란이면 공란으로, 값이 있으면 그 값으로 업데이트
+          const dnno = tfNo.trim() || '';
+          const dndate = orderDate.trim() || '';
+          
+          // 1. deliveryNo로 모든 주문 찾기
+          const allOrdersResponse = await fetch('/api/orders');
+          const allOrders = await allOrdersResponse.json();
+          
+          // 2. deliveryNo가 포함된 모든 주문 찾기
+          const matchingOrders = allOrders.filter(order => 
+            order.items && order.items.some(item => item.deliveryNo === deliveryNo)
+          );
+          
+          console.log(`[D/N Simple] ${deliveryNo} 매칭 주문: ${matchingOrders.length}개`);
+          
+          // 3. 각 주문별로 개별 업데이트
+          let totalUpdated = 0;
+          let totalSkipped = 0;
+          
+          for (const order of matchingOrders) {
+            try {
+              const response = await fetch('/api/updateOrder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  searchOrderBy: 'orderNo',
+                  orderNo: order.orderNo,
+                  searchMethod: 'deliveryNo',
+                  items: [{
+                    deliveryNo: deliveryNo,
+                    'd/nno': dnno,
+                    'd/ndate': dndate
+                  }],
+                  itemUpdateFields: ['d/nno', 'd/ndate']
+                })
+              });
+              
+              if (response.ok) {
+                const result = await response.json();
+                totalUpdated += result.updatedItems || 0;
+                totalSkipped += result.skippedItems || 0;
+              }
+            } catch (error) {
+              console.error(`[D/N Simple] 주문 ${order.orderNo} 업데이트 실패:`, error);
+            }
+          }
+          
+          // 4. 가상 응답 객체 생성
+          response = {
+            ok: true,
+            json: () => Promise.resolve({
+              message: 'D/N Simple completed',
+              updatedItems: totalUpdated,
+              skippedItems: totalSkipped
+            })
+          };
+        } 
+        
+        // ========================================
+        // P/I 모드 Simple 처리 (모든 주문 업데이트)
+        // ========================================
+        else if (selectedDoc === "P/I") {
+          // 입력값 처리: 공란이면 공란으로, 값이 있으면 그 값으로 업데이트
+          const pino = tfNo.trim() || '';
+          const pidate = orderDate.trim() || '';
+          const piprice = dueValue.trim() || '';
+          
+          // 1. deliveryNo로 모든 주문 찾기
+          const allOrdersResponse = await fetch('/api/orders');
+          const allOrders = await allOrdersResponse.json();
+          
+          // 2. deliveryNo가 포함된 모든 주문 찾기
+          const matchingOrders = allOrders.filter(order => 
+            order.items && order.items.some(item => item.deliveryNo === deliveryNo)
+          );
+          
+          console.log(`[P/I Simple] ${deliveryNo} 매칭 주문: ${matchingOrders.length}개`);
+          
+          // 3. 각 주문별로 개별 업데이트
+          let totalUpdated = 0;
+          let totalSkipped = 0;
+          
+          for (const order of matchingOrders) {
+            try {
+              const response = await fetch('/api/updateOrder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  searchOrderBy: 'orderNo',
+                  orderNo: order.orderNo,
+                  searchMethod: 'deliveryNo',
+                  items: [{
+                    deliveryNo: deliveryNo,
+                    'p/ino': pino,
+                    'p/idate': pidate,
+                    'p/iprice': piprice
+                  }],
+                  itemUpdateFields: ['p/ino', 'p/idate', 'p/iprice']
+                })
+              });
+              
+              if (response.ok) {
+                const result = await response.json();
+                totalUpdated += result.updatedItems || 0;
+                totalSkipped += result.skippedItems || 0;
+              }
+            } catch (error) {
+              console.error(`[P/I Simple] 주문 ${order.orderNo} 업데이트 실패:`, error);
+            }
+          }
+          
+          // 4. 가상 응답 객체 생성
+          response = {
+            ok: true,
+            json: () => Promise.resolve({
+              message: 'P/I Simple completed',
+              updatedItems: totalUpdated,
+              skippedItems: totalSkipped
+            })
+          };
+        } 
+        
+        // ========================================
+        // P/I2 모드 Simple 처리 (카테고리별로 나누어서 API 호출)
+        // ========================================
+        else if (selectedDoc === "P/I2") {
+          // 입력값 처리: 공란이면 공란으로, 값이 있으면 그 값으로 업데이트
+          const pino2 = tfNo.trim() || '';
+          const pidate2 = orderDate.trim() || '';
+          const piprice2 = dueValue.trim() || '';
+          
+          // 1. deliveryNo로 모든 주문 찾기
+          const allOrdersResponse = await fetch('/api/orders');
+          const allOrders = await allOrdersResponse.json();
+          
+          // 2. deliveryNo가 포함된 모든 주문 찾기
+          const matchingOrders = allOrders.filter(order => 
+            order.items && order.items.some(item => item.deliveryNo === deliveryNo)
+          );
+          
+          console.log(`[P/I2 Simple] ${deliveryNo} 매칭 주문: ${matchingOrders.length}개`);
+          
+          // 3. 각 주문별로 개별 업데이트
+          let totalUpdated = 0;
+          let totalSkipped = 0;
+          
+          for (const order of matchingOrders) {
+            try {
+              const response = await fetch('/api/updateOrder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  searchOrderBy: 'orderNo',
+                  orderNo: order.orderNo,
+                  searchMethod: 'deliveryNo',
+                  items: [{
+                    deliveryNo: deliveryNo,
+                    'p/ino2': pino2,
+                    'p/idate2': pidate2,
+                    'p/iprice2': piprice2
+                  }],
+                  itemUpdateFields: ['p/ino2', 'p/idate2', 'p/iprice2']
+                })
+              });
+              
+              if (response.ok) {
+                const result = await response.json();
+                totalUpdated += result.updatedItems || 0;
+                totalSkipped += result.skippedItems || 0;
+              }
+            } catch (error) {
+              console.error(`[P/I2 Simple] 주문 ${order.orderNo} 업데이트 실패:`, error);
+            }
+          }
+          
+          // 4. 가상 응답 객체 생성
+          response = {
+            ok: true,
+            json: () => Promise.resolve({
+              message: 'P/I2 Simple completed',
+              updatedItems: totalUpdated,
+              skippedItems: totalSkipped
+            })
+          };
+        } 
+        
+        // ========================================
+        // Invoice 모드 Simple 처리 (모든 주문 업데이트)
+        // ========================================
+        else if (selectedDoc === "Invoice") {
+          // 입력값 처리: 공란이면 공란으로, 값이 있으면 그 값으로 업데이트
+          const invoicePriceInput = document.getElementById('invoicePriceInput');
+          const invoicePrice = invoicePriceInput ? invoicePriceInput.value : '';
+          
+          const invoiceno = tfNo.trim() || '';
+          const invoicedate = orderDate.trim() || '';
+          const invoicedue = dueValue.trim() || '';
+          const invoiceprice = invoicePrice.trim() || '';
+          
+          // 1. deliveryNo로 모든 주문 찾기
+          const allOrdersResponse = await fetch('/api/orders');
+          const allOrders = await allOrdersResponse.json();
+          
+          // 2. deliveryNo가 포함된 모든 주문 찾기
+          const matchingOrders = allOrders.filter(order => 
+            order.items && order.items.some(item => item.deliveryNo === deliveryNo)
+          );
+          
+          console.log(`[Invoice Simple] ${deliveryNo} 매칭 주문: ${matchingOrders.length}개`);
+          
+          // 3. 각 주문별로 개별 업데이트
+          let totalUpdated = 0;
+          let totalSkipped = 0;
+          
+          for (const order of matchingOrders) {
+            try {
+              const response = await fetch('/api/updateOrder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  searchOrderBy: 'orderNo',
+                  orderNo: order.orderNo,
+                  searchMethod: 'deliveryNo',
+                  items: [{
+                    deliveryNo: deliveryNo,
+                    'invoiceno': invoiceno,
+                    'invoicedate': invoicedate,
+                    'invoicedue': invoicedue,
+                    'invoiceprice': invoiceprice
+                  }],
+                  itemUpdateFields: ['invoiceno', 'invoicedate', 'invoicedue', 'invoiceprice']
+                })
+              });
+              
+              if (response.ok) {
+                const result = await response.json();
+                totalUpdated += result.updatedItems || 0;
+                totalSkipped += result.skippedItems || 0;
+              }
+            } catch (error) {
+              console.error(`[Invoice Simple] 주문 ${order.orderNo} 업데이트 실패:`, error);
+            }
+          }
+          
+          // 4. 가상 응답 객체 생성
+          response = {
+            ok: true,
+            json: () => Promise.resolve({
+              message: 'Invoice Simple completed',
+              updatedItems: totalUpdated,
+              skippedItems: totalSkipped
+            })
+          };
+        }
+        
+        if (response.ok) {
+          const result = await response.json();
+          
+          // Simple 성공 메시지 표시
+          let message = `${selectedDoc} Simple이 성공적으로 완료되었습니다.\n업데이트된 아이템: ${result.updatedItems}개`;
+          
+          if (result.skippedItems > 0) {
+            message += `\n매칭되지 않은 아이템: ${result.skippedItems}개`;
+          }
+          
+          // 모드별 업데이트 항목 표시
+          if (selectedDoc === "D/N") {
+            message += `\n업데이트 항목: d/nno, d/ndate`;
+          } else if (selectedDoc === "P/I") {
+            message += `\n업데이트 항목: p/ino, p/idate, p/iprice`;
+          } else if (selectedDoc === "P/I2") {
+            message += `\n업데이트 항목: p/ino2, p/idate2, p/iprice2`;
+          } else if (selectedDoc === "Invoice") {
+            message += `\n업데이트 항목: invoiceno, invoicedate, invoicedue, invoiceprice`;
+          }
+          
+          alert(message);
+          
+          // 데이터 저장 (입력 필드는 유지)
+          
+          // shipment.html로 이동
+          window.location.href = 'shipment.html';
+        } else {
+          const errorText = await response.text();
+          let errorMessage = '알 수 없는 오류가 발생했습니다.';
+          
+          try {
+            const error = JSON.parse(errorText);
+            errorMessage = error.message || errorMessage;
+          } catch (e) {
+            errorMessage = errorText || errorMessage;
+          }
+          
+          alert(`${selectedDoc} Simple 실패: ${errorMessage}`);
+        }
+      } catch (error) {
+        alert('서버와 통신 중 오류가 발생했습니다.');
+      }
+    });
+  }
+
+  // 행 추가 기능
+  function addRows(count = null) {
+    const rowCountInput = document.getElementById("rowCountInput");
+    const tableBody = document.getElementById("shipmentTableBody");
+    
+    if (!tableBody) {
+      return;
+    }
+    
+    let rowCount;
+    if (count !== null) {
+      rowCount = count;
+    } else {
+      rowCount = parseInt(rowCountInput.value) || 1;
+      
+      if (rowCount < 1 || rowCount > 100) {
+        alert("1부터 100까지의 숫자를 입력해주세요.");
+        return;
+      }
+    }
+    
+    // 새로 입력한 숫자만큼 행 추가
+    for (let i = 0; i < rowCount; i++) {
+      const newRow = createTableRow();
+      tableBody.appendChild(newRow);
+    }
+    
+    // 새로 추가된 행들에 드래그 앤 드롭 기능 설정
+    setupDragHandles();
+  }
+
+  // 테이블 행 생성 함수
+  function createTableRow() {
+    const row = document.createElement("tr");
+    
+    // 현재 행 번호 계산
+    const currentRowCount = document.getElementById("shipmentTableBody").children.length;
+    const rowNumber = currentRowCount + 1;
+    
+    row.innerHTML = `
+      <!-- 1: Drag + Select (합쳐진 열) -->
+      <td class="drag-select-cell">
+        <div class="select-buttons">
+          <div class="select-row">
+            <div class="drag-handle">☰</div>
+            <button class="deleteButton" type="button">X</button>
+          </div>
+        </div>
+      </td>
+      <!-- 2: Mode -->
+      <td>
+        <select class="modeDropdown">
+          <option value=""></option>
+          <option value="NT">NT</option>
+          <option value="SM">SM</option>
+        </select>
+      </td>
+      <!-- 3: Order No -->
+      <td>
+        <select class="orderDropdown">
+          <option value=""></option>
+        </select>
+      </td>
+      <!-- 4: Item No -->
+      <td>
+        <select class="itemDropdown">
+          <option value=""></option>
+        </select>
+      </td>
+      <!-- 5: Item -->
+      <td class="itemInfoCell"></td>
+      <!-- 6: 주문R -->
+      <td><input type="number" class="orderRInput" placeholder="" step="0.01" readonly /></td>
+      <!-- 7: 선적R -->
+      <td>
+        <input type="number" class="partialRInput" placeholder="" step="0.01" />
+      </td>
+      <!-- 8: ProducedKG -->
+      <td><input type="number" class="producedKGInput" placeholder="" step="0.01" readonly /></td>
+      <!-- 9: DeliveredKG -->
+      <td>
+        <input type="number" class="deliveredKGInput" placeholder="" step="0.01" />
+      </td>
+      <!-- 10: U/P -->
+        <td>
+          <input type="number" class="upInput" placeholder="" step="0.01" />
+      </td>
+    `;
+    
+    // 엑스 버튼 클릭 이벤트 추가
+    const deleteButton = row.querySelector('.deleteButton');
+    deleteButton.addEventListener('click', function() {
+      deleteItemRecord(row);
+    });
+
+
+    
+    // 드롭다운 이벤트 리스너 통합 설정
+    setupDropdownEventListeners(row);
+    
+    // 입력 필드 이벤트 리스너 설정
+    setupRowInputEventListeners(row);
+    
+    return row;
+  }
+
+  // 드롭다운 이벤트 리스너 통합 함수
+  function setupDropdownEventListeners(row) {
+    // Mode 드롭다운 변경 이벤트
+    const modeDropdown = row.querySelector('.modeDropdown');
+    modeDropdown.addEventListener('change', function() {
+      const selectedMode = this.value;
+      const currentRow = this.closest('tr');
+      
+      // 현재 행부터 아래 행들의 모드를 동일하게 설정
+      updateRowsBelow(currentRow, 'mode', selectedMode);
+      
+      // Order No 목록 업데이트 (현재 행부터 아래 행들만)
+      if (selectedMode) {
+        updateOrderDropdown(selectedMode, currentRow);
+      }
+    });
+    
+    // Order No 드롭다운 변경 이벤트
+    const orderDropdown = row.querySelector('.orderDropdown');
+    orderDropdown.addEventListener('change', async function() {
+      const selectedOrderNo = this.value;
+      if (selectedOrderNo) {
+        const currentRow = this.closest('tr');
+        
+        // 현재 행부터 아래 행들의 Order No를 동일하게 설정
+        updateRowsBelow(currentRow, 'orderNo', selectedOrderNo);
+        
+        // 현재 행부터 아래 행들의 Item No 업데이트
+        const rowsBelow = getRowsBelow(currentRow);
+        for (const targetRow of rowsBelow) {
+          const targetOrderDropdown = targetRow.querySelector('.orderDropdown');
+          if (targetOrderDropdown && targetOrderDropdown.value === selectedOrderNo) {
+            await updateItemDropdownForRow(targetRow, selectedOrderNo);
+          }
+        }
+      }
+    });
+    
+    // Item No 드롭다운 변경 이벤트
+    const itemDropdown = row.querySelector('.itemDropdown');
+    itemDropdown.addEventListener('change', async function() {
+      const selectedItemNo = this.value;
+      if (selectedItemNo) {
+        const orderNo = row.querySelector('.orderDropdown').value;
+        if (orderNo) {
+          try {
+            const response = await fetch(`/api/orders`);
+            const orders = await response.json();
+            const orderData = orders.find(order => order.orderNo === orderNo);
+            
+            if (orderData && orderData.items) {
+              const selectedItem = orderData.items.find(item => item.itemNo === selectedItemNo);
+              if (selectedItem) {
+                updateItemInfo(row, selectedItem);
+              }
+            }
+          } catch (error) {
+            // 에러 처리
+          }
+        }
+      }
+    });
+  }
+  
+  // 아래 행들 업데이트 공통 함수
+  function updateRowsBelow(currentRow, type, value) {
+        const allRows = Array.from(document.querySelectorAll('#shipmentTableBody tr'));
+        const currentRowIndex = allRows.indexOf(currentRow);
+        
+    for (let i = currentRowIndex; i < allRows.length; i++) {
+      const targetRow = allRows[i];
+      const dropdown = targetRow.querySelector(`.${type === 'mode' ? 'modeDropdown' : 'orderDropdown'}`);
+      if (dropdown) {
+        dropdown.value = value;
+      }
+    }
+  }
+
+  // 현재 행부터 아래 행들 반환 함수
+  function getRowsBelow(currentRow) {
+    const allRows = Array.from(document.querySelectorAll('#shipmentTableBody tr'));
+    const currentRowIndex = allRows.indexOf(currentRow);
+    return allRows.slice(currentRowIndex);
+  }
+
+  // 행 번호 재정렬 함수
+  function updateRowNumbers() {
+    const rows = document.querySelectorAll('#shipmentTableBody tr');
+    rows.forEach((row, index) => {
+      const noCell = row.querySelector('td:nth-child(2)');
+      if (noCell) {
+        noCell.textContent = index + 1;
+      }
+    });
+  }
+
+  // Order No 드롭다운 업데이트 함수
+  async function updateOrderDropdown(selectedMode, startRow = null) {
+    try {
+      const response = await fetch(`/api/orders`);
+      const orders = await response.json();
+      
+      // isProductionComplete: true이고 complete가 true가 아닌 아이템이 있는 주문들 필터링
+      const availableOrders = orders.filter(order => {
+        // 모드 매칭: 주문 레벨에서 order.mode로 직접 비교
+        // SM 선택 시 SM-B, SM-C 모두 포함
+        let modeMatches = false;
+        if (selectedMode === 'SM') {
+          modeMatches = order.mode === 'SM-B' || order.mode === 'SM-C';
+        } else {
+          modeMatches = order.mode === selectedMode;
+        }
+        
+        return modeMatches && order.items?.some(item => 
+          item.isProductionComplete === true && item.complete !== true
+        );
+      });
+      
+      // Order No 정렬 (년도 → 번호 순)
+      availableOrders.sort((a, b) => {
+        const aParts = a.orderNo.split('-');
+        const bParts = b.orderNo.split('-');
+        
+        if (aParts.length >= 3 && bParts.length >= 3) {
+          const aYear = parseInt(aParts[1]) || 0;
+          const bYear = parseInt(bParts[1]) || 0;
+          if (aYear !== bYear) return aYear - bYear;
+          
+          const aNum = parseInt(aParts[2]) || 0;
+          const bNum = parseInt(bParts[2]) || 0;
+          return aNum - bNum;
+        }
+        
+        return a.orderNo.localeCompare(b.orderNo);
+      });
+      
+      // Order No 드롭다운 업데이트 (startRow가 있으면 해당 행부터 아래만, 없으면 모든 행)
+      let targetDropdowns;
+      if (startRow) {
+        // startRow부터 아래 행들만
+        const allRows = Array.from(document.querySelectorAll('#shipmentTableBody tr'));
+        const startRowIndex = allRows.indexOf(startRow);
+        const rowsBelow = allRows.slice(startRowIndex);
+        targetDropdowns = rowsBelow.map(row => row.querySelector('.orderDropdown')).filter(dropdown => dropdown);
+      } else {
+        // 모든 행
+        targetDropdowns = document.querySelectorAll('.orderDropdown');
+      }
+      
+      targetDropdowns.forEach(dropdown => {
+        // 기존 옵션 제거 (첫 번째 빈 옵션 제외)
+        while (dropdown.children.length > 1) {
+          dropdown.removeChild(dropdown.lastChild);
+        }
+        
+        // 새 옵션 추가
+        availableOrders.forEach(order => {
+          const option = document.createElement('option');
+          option.value = order.orderNo;
+          option.textContent = order.orderNo;
+          dropdown.appendChild(option);
+        });
+      });
+      
+      
+    } catch (error) {
+      // 에러 처리
+    }
+  }
+
+  // 특정 행의 Item No 드롭다운 업데이트 함수
+  async function updateItemDropdownForRow(row, selectedOrderNo, isLoadMode = false, targetDeliveryNo = null, targetItemNo = null) {
+    try {
+      const response = await fetch(`/api/orders`);
+      const orders = await response.json();
+      
+      const orderData = orders.find(order => order.orderNo === selectedOrderNo);
+      if (!orderData) return;
+      
+      // isProductionComplete: true 또는 production에서 생산에 체크된 아이템이고 complete가 true가 아닌 아이템들만 필터링
+      const availableItems = orderData.items
+        .filter(item => {
+          // complete가 true인 아이템은 제외
+          if (item.complete === true) return false;
+          
+          // isProductionComplete가 true인 아이템
+          if (item.isProductionComplete === true) return true;
+          
+          // production에서 생산에 체크된 아이템 (90% 이상 생산 완료)
+          const orderWeight = parseFloat(item.tfkg) || 0;
+          const producedkgStr = item.producedkg || '';
+          const producedWeight = (producedkgStr === '000.' || producedkgStr === '0.0' || producedkgStr === '0') ? 0 : parseFloat(producedkgStr) || 0;
+          
+          if (orderWeight > 0 && producedWeight > 0 && producedWeight >= orderWeight * 0.9) return true;
+          
+          return false;
+        })
+        .sort((a, b) => (parseInt(a.itemNo) || 0) - (parseInt(b.itemNo) || 0));
+      
+      const itemDropdown = row.querySelector('.itemDropdown');
+      if (!itemDropdown) return;
+      
+      // 기존 옵션 제거 (첫 번째 빈 옵션 제외)
+      while (itemDropdown.children.length > 1) {
+        itemDropdown.removeChild(itemDropdown.lastChild);
+      }
+      
+      // 새 옵션 추가
+      availableItems.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.itemNo;
+        option.textContent = item.itemNo;
+        itemDropdown.appendChild(option);
+      });
+      
+      // 아이템 선택 및 정보 업데이트 (targetItemNo가 있을 때만)
+      if (availableItems.length > 0 && targetItemNo) {
+        const selectedItem = availableItems.find(item => item.itemNo === targetItemNo);
+          if (selectedItem) {
+          itemDropdown.value = selectedItem.itemNo;
+          updateItemInfo(row, selectedItem);
+        }
+      }
+      
+    } catch (error) {
+      // 에러 처리
+    }
+  }
+
+  // 아이템 정보 업데이트 함수 (5열에 표시)
+  function updateItemInfo(row, item) {
+    if (!item) return;
+    
+    const itemCell = row.querySelector('td:nth-child(5)'); // 5번째 열 (Item)
+    if (itemCell) {
+      // production.html과 동일한 형식: PHD-6.0(620)6x
+      const itemInfo = `PHD-${item.phd}(${item.width})${item.x}`;
+      itemCell.textContent = itemInfo;
+    }
+      
+      // 주문R 계산 및 업데이트
+      updateOrderR(row, item);
+      
+    // 선적R 값 설정 (deliveredR이 있으면 사용, 없으면 주문R 값 사용)
+      const partialRInput = row.querySelector('.partialRInput');
+    if (partialRInput) {
+      if (item.deliveredR) {
+        partialRInput.value = item.deliveredR;
+      } else if (item.adjustment) {
+        // deliveredR이 없으면 주문R(adjustment) 값을 선적R로 설정
+        partialRInput.value = item.adjustment;
+      } else {
+        partialRInput.value = '';
+      }
+      }
+      
+      // ProducedKG 값 설정
+      const producedKGInput = row.querySelector('.producedKGInput');
+      if (producedKGInput && item.producedkg) {
+        producedKGInput.value = item.producedkg;
+      }
+      
+      // DeliveredKG 값 설정 (0.0이면 producedkg 값 사용)
+      const deliveredKGInput = row.querySelector('.deliveredKGInput');
+      if (deliveredKGInput) {
+        if (item.deliveredkg && parseFloat(item.deliveredkg) !== 0.0) {
+          deliveredKGInput.value = item.deliveredkg;
+        } else if (item.producedkg) {
+          deliveredKGInput.value = item.producedkg;
+      } else {
+        deliveredKGInput.value = '';
+        }
+      }
+      
+      // U/P 값 설정
+      const upInput = row.querySelector('.upInput');
+      if (upInput) {
+        if (item['U/P']) {
+        upInput.value = item['U/P'];
+        } else {
+          upInput.value = ''; // U/P 값이 없으면 공란으로 설정
+      }
+    }
+    
+    // 선적R과 주문R 비교하여 빨간색 테두리 표시
+    checkPartialRMatch();
+    
+    // Total 업데이트
+    updateTotal();
+  }
+
+  // 주문R 계산 및 업데이트 함수
+  function updateOrderR(row, item) {
+    if (!item) return;
+    
+    const orderRInput = row.querySelector('.orderRInput');
+    
+    if (orderRInput) {
+      // adjustment 값이 있으면 사용, 없으면 공란
+      if (item.adjustment) {
+        const orderR = parseFloat(item.adjustment);
+        orderRInput.value = isNaN(orderR) ? '' : orderR.toString();
+        } else {
+        orderRInput.value = '';
+      }
+      
+    }
+  }
+
+  // ========================================
+  // 빨간색 테두리 표시 기능 (선적R ≠ 주문R 검증)
+  // ========================================
+  // 선적R과 주문R 비교 함수 (최적화됨)
+  function checkPartialRMatch() {
+    // totalCache를 활용하여 이미 쿼리된 요소들 사용
+    if (!totalCache.partialRInputs || !totalCache.deliveredKGInputs) {
+      return; // 캐시가 없으면 스킵
+    }
+    
+    // partialRInput과 deliveredKGInput을 순회하면서 해당 행의 다른 요소들 찾기
+    totalCache.partialRInputs.forEach((partialRInput, index) => {
+      const row = partialRInput.closest('tr');
+      if (!row) return;
+      
+      const orderRInput = row.querySelector('.orderRInput');
+      const producedKGInput = row.querySelector('.producedKGInput');
+      const deliveredKGInput = totalCache.deliveredKGInputs[index];
+      
+      if (orderRInput && producedKGInput && deliveredKGInput) {
+        const orderR = parseFloat(orderRInput.value) || 0;
+        const partialR = parseFloat(partialRInput.value) || 0;
+        const producedKG = parseFloat(producedKGInput.value) || 0;
+        const deliveredKG = parseFloat(deliveredKGInput.value) || 0;
+        
+        // 조건: 선적R ≠ 주문R AND DeliveredKG ≈ ProducedKG (±10% 범위)
+        const isDeliveredKGCloseToProducedKG = deliveredKG >= (producedKG * 0.9) && deliveredKG <= (producedKG * 1.1);
+        const shouldHighlight = (orderR !== partialR) && isDeliveredKGCloseToProducedKG;
+        
+        if (shouldHighlight) {
+          // 빨간색 테두리 표시 (mismatch 클래스 추가)
+          partialRInput.classList.add('mismatch');
+          deliveredKGInput.classList.add('mismatch');
+        } else {
+          // 빨간색 테두리 제거 (mismatch 클래스 제거)
+          partialRInput.classList.remove('mismatch');
+          deliveredKGInput.classList.remove('mismatch');
+        }
+      }
+    });
+  }
+
+  // debounce 함수 (성능 최적화)
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  // debounced 함수들 생성
+  const debouncedUpdateTotal = debounce(updateTotal, 100);
+  const debouncedCheckPartialRMatch = debounce(checkPartialRMatch, 50);
+
+  // 개별 행의 입력 필드 이벤트 리스너 설정 함수 (최적화됨)
+  function setupRowInputEventListeners(row) {
+    // DeliveredKG 입력 필드 이벤트 리스너
+    const deliveredKGInput = row.querySelector('.deliveredKGInput');
+    if (deliveredKGInput) {
+      deliveredKGInput.addEventListener('input', function() {
+        debouncedCheckPartialRMatch(); // 선적R ≠ 주문R 검증 및 빨간색 테두리 표시
+        debouncedUpdateTotal(); // 하단 Total 값 자동 재계산
+      });
+    }
+
+    // 선적R 입력 필드 이벤트 리스너
+    const partialRInput = row.querySelector('.partialRInput');
+    if (partialRInput) {
+      partialRInput.addEventListener('input', function() {
+        debouncedCheckPartialRMatch(); // 빨간색 테두리 체크
+        debouncedUpdateTotal(); // 하단 Total 값 자동 재계산
+      });
+    }
+
+    // U/P 입력 필드 이벤트 리스너
+    const upInput = row.querySelector('.upInput');
+    if (upInput) {
+      upInput.addEventListener('input', function() {
+        debouncedUpdateTotal(); // 하단 Total Price 자동 재계산
+      });
+    }
+  }
+
+  // 빨간색 테두리 표시 이벤트 리스너 등록 함수 (최적화됨)
+  function setupMismatchEventListeners() {
+    // 이 함수는 더 이상 사용되지 않음. setupRowInputEventListeners로 대체됨.
+    // 중복 이벤트 리스너 추가를 방지하기 위해 제거됨.
+  }
+
+  // Total 계산 함수 (최적화됨)
+  let totalCache = {
+    partialRInputs: null,
+    deliveredKGInputs: null,
+    upInputs: null,
+    totalReelInput: null,
+    totalKGInput: null,
+    totalPriceInput: null,
+    lastRowCount: 0
+  };
+
+  function updateTotal() {
+    const currentRowCount = document.querySelectorAll('#shipmentTableBody tr').length;
+    
+    // 행 수가 변경되었거나 캐시가 없으면 DOM 요소 다시 쿼리
+    if (currentRowCount !== totalCache.lastRowCount || !totalCache.partialRInputs) {
+      totalCache.partialRInputs = document.querySelectorAll('.partialRInput');
+      totalCache.deliveredKGInputs = document.querySelectorAll('.deliveredKGInput');
+      totalCache.upInputs = document.querySelectorAll('.upInput');
+      totalCache.totalReelInput = document.getElementById('totalReelInput');
+      totalCache.totalKGInput = document.getElementById('totalKGInput');
+      totalCache.totalPriceInput = document.getElementById('totalPriceInput');
+      totalCache.lastRowCount = currentRowCount;
+    }
+    
+    let totalReel = 0;
+    let totalKG = 0;
+    let totalPrice = 0;
+    
+    // 선적R 합계 계산
+    totalCache.partialRInputs.forEach((input) => {
+      const value = parseFloat(input.value) || 0;
+      totalReel += value;
+    });
+    
+    // DeliveredKG 합계 계산
+    totalCache.deliveredKGInputs.forEach((input) => {
+      const value = parseFloat(input.value) || 0;
+      totalKG += value;
+    });
+    
+    // Total Price 계산: deliveredKG * U/P의 총합
+    for (let i = 0; i < Math.min(totalCache.deliveredKGInputs.length, totalCache.upInputs.length); i++) {
+      const deliveredKG = parseFloat(totalCache.deliveredKGInputs[i].value) || 0;
+      const up = parseFloat(totalCache.upInputs[i].value) || 0;
+      totalPrice += deliveredKG * up;
+    }
+    
+    // 하단 Total 필드에 값 설정
+    if (totalCache.totalReelInput) {
+      totalCache.totalReelInput.value = Math.round(totalReel).toString();
+    }
+    if (totalCache.totalKGInput) {
+      totalCache.totalKGInput.value = totalKG.toFixed(3);
+    }
+    if (totalCache.totalPriceInput) {
+      totalCache.totalPriceInput.value = totalPrice.toFixed(2);
+    }
+  }
+
+
+  // 테이블 정렬 함수 (Order No → Item No 순)
+  function organizeTable() {
+    const tableBody = document.getElementById('shipmentTableBody');
+    if (!tableBody) return;
+    
+    const rows = Array.from(tableBody.querySelectorAll('tr'));
+    
+    // 각 행의 데이터를 추출하여 정렬
+    const rowData = rows.map(row => {
+      const orderDropdown = row.querySelector('.orderDropdown');
+      const itemDropdown = row.querySelector('.itemDropdown');
+      
+      const orderNo = orderDropdown ? orderDropdown.value : '';
+      const itemNo = itemDropdown ? itemDropdown.value : '';
+      
+      // Order No에서 년도와 번호 추출 (예: EK-2025-01 → {year: 2025, num: 1})
+      let orderYear = 0;
+      let orderNum = 0;
+      if (orderNo) {
+        const parts = orderNo.split('-');
+        if (parts.length >= 3) {
+          orderYear = parseInt(parts[1]) || 0;  // 년도
+          orderNum = parseInt(parts[2]) || 0;   // 번호
+        }
+      }
+      
+      // Item No에서 숫자 부분 추출 (예: 0001 → 1, 0002 → 2)
+      const itemNum = parseInt(itemNo) || 0;
+      
+      return {
+        row: row,
+        orderNo: orderNo,
+        itemNo: itemNo,
+        orderYear: orderYear,
+        orderNum: orderNum,
+        itemNum: itemNum
+      };
+    });
+    
+    // 정렬: 년도 순 → Order No 번호 순 → Item No 순
+    rowData.sort((a, b) => {
+      if (a.orderYear !== b.orderYear) return a.orderYear - b.orderYear;
+      if (a.orderNum !== b.orderNum) return a.orderNum - b.orderNum;
+      return a.itemNum - b.itemNum;
+    });
+    
+    // 테이블 바디 초기화 후 정렬된 순서로 행들을 다시 추가
+    tableBody.innerHTML = '';
+    rowData.forEach(data => {
+      tableBody.appendChild(data.row);
+    });
+  }
+
+
+  // ADD 버튼 이벤트 리스너 등록 함수
+  function setupAddRowsButton() {
+    const addRowsBtn = document.getElementById("addRowsBtn");
+    if (!addRowsBtn) return;
+    
+    addRowsBtn.addEventListener("click", function() {
+      const rowCountInput = document.getElementById("rowCountInput");
+      const count = parseInt(rowCountInput.value) || 1;
+      addRows(count);
+    });
+  }
+
+  // + 버튼 이벤트 리스너 등록 함수
+  function setupAddSingleButton() {
+    const addSingleBtn = document.getElementById("addSingleBtn");
+    if (!addSingleBtn) return;
+    
+    addSingleBtn.addEventListener("click", () => {
+      addRows(1); // 1행 추가
+    });
+  }
+
+  function setupRefreshButton() {
+    const refreshBtn = document.getElementById("refreshBtn");
+    if (!refreshBtn) {
+      // console.error("[리프레시 버튼] refreshBtn 요소를 찾을 수 없습니다!");
+      return;
+    }
+    
+    refreshBtn.addEventListener("click", () => {
+      // 현재 화면의 모든 아이템 행들을 지움
+      const tableBody = document.getElementById("shipmentTableBody");
+      if (tableBody) {
+        tableBody.innerHTML = '';
+      }
+    });
+  }
+
+
+  // P/I PRICE 자동 계산 함수 (첫 번째 아이템의 p/iprice + p/iprice2)
+  function calculatePiPrice() {
+    const deliveryNo = document.getElementById('deliveryNoInput').value.trim();
+    if (!deliveryNo) {
+      document.getElementById('piPriceInput').value = '0';
+      return;
+    }
+    
+    fetch('/api/orders')
+      .then(response => response.json())
+      .then(data => {
+        // 모든 주문에서 해당 deliveryNo를 가진 첫 번째 아이템 찾기
+        for (const order of data) {
+          if (order.items && Array.isArray(order.items)) {
+            const firstItem = order.items.find(item => (item.deliveryno || item.deliveryNo) === deliveryNo);
+            if (firstItem) {
+              const piPrice = parseFloat(firstItem['p/iprice']) || 0;
+              const piPrice2 = parseFloat(firstItem['p/iprice2']) || 0;
+              const totalPiPrice = piPrice + piPrice2;
+              document.getElementById('piPriceInput').value = totalPiPrice.toFixed(2);
+              return;
+            }
+          }
+        }
+        document.getElementById('piPriceInput').value = '0';
+      })
+      .catch(error => {
+        document.getElementById('piPriceInput').value = '0';
+      });
+  }
+
+
+
+  // ========================================
+  // OPEN 버튼 기능 - deliveryNo 목록 불러오기
+  // ========================================
+
+  // 서버 파일 목록 불러오기 함수 (간소화)
+  async function loadServerFileList() {
+    const fileListDiv = document.getElementById("serverFileList");
+    const modeFilter = document.getElementById("modeFilter");
+    if (!fileListDiv) return;
+    
+    // 로딩 메시지 제거 - 바로 로드 시작
+    
+    try {
+      const response = await fetch('/api/orders');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const allFiles = await response.json();
+      
+      // 모드 필터 적용
+      const selectedMode = modeFilter && modeFilter.value ? modeFilter.value : 'all';
+      
+      // deliveryNo별로 그룹화 (최적화됨)
+      const deliveryGroups = {};
+      allFiles.forEach(order => {
+        if (order.items && order.items.length > 0) {
+          order.items.forEach(item => {
+            // deliveryNo 또는 deliveryNo 둘 다 확인
+            const deliveryValue = item.deliveryno || item.deliveryNo;
+            if (deliveryValue && deliveryValue.trim() !== '') {
+              const deliveryKey = deliveryValue;
+              
+              // 모드 필터링: 첫 번째 아이템의 주문 레벨 mode로 매치
+      if (selectedMode !== 'all') {
+                // 이미 처리된 deliveryNo면 모드 확인 후 스킵
+                if (deliveryGroups[deliveryKey]) {
+                  // 모드가 일치하면 카운트 증가, 아니면 스킵
+                  if (deliveryGroups[deliveryKey].orderMode === selectedMode) {
+                    deliveryGroups[deliveryKey].itemCount++;
+                  }
+                  return;
+                }
+                
+                // 첫 번째 아이템이므로 주문의 mode 확인
+                // SM 선택 시 SM-B, SM-C 모두 포함
+                let modeMatches = false;
+                if (selectedMode === 'SM') {
+                  modeMatches = order.mode === 'SM-B' || order.mode === 'SM-C';
+                } else {
+                  modeMatches = order.mode === selectedMode;
+                }
+                
+                if (!modeMatches) {
+                  return; // 모드가 일치하지 않으면 스킵
+                }
+              } else {
+                // 이미 처리된 deliveryNo면 스킵 (첫 번째 아이템만 처리)
+                if (deliveryGroups[deliveryKey]) {
+                  deliveryGroups[deliveryKey].itemCount++;
+                  return;
+                }
+              }
+              
+              // 첫 번째 아이템만 상세 정보 수집
+          deliveryGroups[deliveryKey] = {
+                deliveryNo: deliveryKey,
+                orderMode: order.mode, // 주문 레벨 mode 저장
+                itemCount: 1,
+                hasDN: false,
+                hasPI: false,
+                hasPI2: false,
+                hasInvoice: false,
+                // D/N 정보
+                dnno: '',
+                dndate: '',
+                // P/I 정보
+                pino: '',
+                pidate: '',
+                piprice: '',
+                // P/I2 정보
+                pino2: '',
+                pidate2: '',
+                piprice2: '',
+                // Invoice 정보
+                invoiceno: '',
+                invoicedate: '',
+                invoicedue: '',
+                invoiceprice: ''
+              };
+              
+              // D/N 정보 수집 (개별적으로 있는 것만)
+              if (item['d/nno']) {
+                deliveryGroups[deliveryKey].hasDN = true;
+                deliveryGroups[deliveryKey].dnno = item['d/nno'];
+              }
+              if (item['d/ndate']) {
+                deliveryGroups[deliveryKey].hasDN = true;
+                deliveryGroups[deliveryKey].dndate = item['d/ndate'];
+              }
+              
+              // P/I 정보 수집 (개별적으로 있는 것만)
+              if (item['p/ino']) {
+                deliveryGroups[deliveryKey].hasPI = true;
+                deliveryGroups[deliveryKey].pino = item['p/ino'];
+              }
+              if (item['p/idate']) {
+                deliveryGroups[deliveryKey].hasPI = true;
+                deliveryGroups[deliveryKey].pidate = item['p/idate'];
+              }
+              if (item['p/iprice']) {
+                deliveryGroups[deliveryKey].hasPI = true;
+                deliveryGroups[deliveryKey].piprice = item['p/iprice'];
+              }
+              
+              // P/I2 정보 수집 (개별적으로 있는 것만)
+              if (item['p/ino2']) {
+                deliveryGroups[deliveryKey].hasPI2 = true;
+                deliveryGroups[deliveryKey].pino2 = item['p/ino2'];
+              }
+              if (item['p/idate2']) {
+                deliveryGroups[deliveryKey].hasPI2 = true;
+                deliveryGroups[deliveryKey].pidate2 = item['p/idate2'];
+              }
+              if (item['p/iprice2']) {
+                deliveryGroups[deliveryKey].hasPI2 = true;
+                deliveryGroups[deliveryKey].piprice2 = item['p/iprice2'];
+              }
+              
+              // Invoice 정보 수집 (개별적으로 있는 것만)
+              if (item['invoiceno']) {
+                deliveryGroups[deliveryKey].hasInvoice = true;
+                deliveryGroups[deliveryKey].invoiceno = item['invoiceno'];
+              }
+              if (item['invoicedate']) {
+                deliveryGroups[deliveryKey].hasInvoice = true;
+                deliveryGroups[deliveryKey].invoicedate = item['invoicedate'];
+              }
+              if (item['invoicedue']) {
+                deliveryGroups[deliveryKey].hasInvoice = true;
+                deliveryGroups[deliveryKey].invoicedue = item['invoicedue'];
+              }
+              if (item['invoiceprice']) {
+                deliveryGroups[deliveryKey].hasInvoice = true;
+                deliveryGroups[deliveryKey].invoiceprice = item['invoiceprice'];
+              }
+            }
+          });
+        }
+      });
+      
+      if (Object.keys(deliveryGroups).length === 0) {
+        const modeText = selectedMode === 'all' ? '' : ` (${selectedMode} 모드)`;
+        fileListDiv.innerHTML = `<p>deliveryNo가 있는 아이템이 없습니다${modeText}.</p>`;
+        return;
+      }
+      
+      // deliveryNo 정렬 (날짜 기준으로 정렬)
+      const sortedDeliveryNos = sortDeliveryNosByDate(deliveryGroups);
+      
+      // 상세한 테이블 생성 (타이트한 폭)
+      let html = '<table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px;">';
+      html += '<thead><tr>';
+      html += '<th style="background-color: #f5f5f5; padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; width: 55px;">Delivery No</th>';
+      html += '<th style="background-color: #f5f5f5; padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; width: 55px;">D/N</th>';
+      html += '<th style="background-color: #f5f5f5; padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; width: 55px;">P/I</th>';
+      html += '<th style="background-color: #f5f5f5; padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; width: 55px;">P/I2</th>';
+      html += '<th style="background-color: #f5f5f5; padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; width: 55px;">Invoice</th>';
+      html += '<th style="background-color: #f5f5f5; padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; width: 30px;">개수</th>';
+      html += '<th style="background-color: #f5f5f5; padding: 6px; border: 1px solid #ddd; text-align: center; font-weight: bold; width: 55px;">Select</th>';
+      html += '</tr></thead><tbody>';
+      
+      sortedDeliveryNos.forEach(deliveryNo => {
+        const group = deliveryGroups[deliveryNo];
+        html += `<tr>`;
+        html += `<td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-size: 11px; vertical-align: top;">${group.deliveryNo}</td>`;
+        
+        // D/N 컬럼 (2줄)
+        html += `<td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-size: 10px; vertical-align: top;">`;
+        if (group.hasDN) {
+          html += `${group.dnno || ''}<br>`;
+          html += `${group.dndate || ''}`;
+        }
+        html += `</td>`;
+        
+        // P/I 컬럼 (3줄)
+        html += `<td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-size: 10px; vertical-align: top;">`;
+        if (group.hasPI) {
+          html += `${group.pino || ''}<br>`;
+          html += `${group.pidate || ''}<br>`;
+          html += `${group.piprice || ''}`;
+        }
+        html += `</td>`;
+        
+        // P/I2 컬럼 (3줄)
+        html += `<td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-size: 10px; vertical-align: top;">`;
+        if (group.hasPI2) {
+          html += `${group.pino2 || ''}<br>`;
+          html += `${group.pidate2 || ''}<br>`;
+          html += `${group.piprice2 || ''}`;
+        }
+        html += `</td>`;
+        
+        // Invoice 컬럼 (4줄)
+        html += `<td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-size: 10px; vertical-align: top;">`;
+        if (group.hasInvoice) {
+          html += `${group.invoiceno || ''}<br>`;
+          html += `${group.invoicedate || ''}<br>`;
+          html += `${group.invoicedue || ''}<br>`;
+          html += `${group.invoiceprice || ''}`;
+        }
+        html += `</td>`;
+        
+        html += `<td style="padding: 6px; border: 1px solid #ddd; text-align: center; font-size: 11px; vertical-align: top;">${group.itemCount}개</td>`;
+        html += `<td style="padding: 6px; border: 1px solid #ddd; text-align: center; vertical-align: top;">`;
+        html += `<button class="top-menu-btn" onclick="selectDeliveryNo('${group.deliveryNo}')" style="padding: 3px 6px; margin: 0 2px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer; font-size: 10px; min-width: 50px; height: 24px; line-height: 1.2;">Select</button>`;
+        html += `<button class="top-menu-btn" onclick="deleteDeliveryNo('${group.deliveryNo}')" style="padding: 3px 6px; margin: 0 2px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer; font-size: 10px; min-width: 50px; height: 24px; line-height: 1.2;">Delete</button>`;
+        html += `</td></tr>`;
+      });
+      
+      html += '</tbody></table>';
+      fileListDiv.innerHTML = html;
+      
+      } catch (error) {
+      fileListDiv.innerHTML = `<p style='color: red;'>서버에서 파일 목록을 불러오는데 실패했습니다.<br>에러: ${error.message}</p>`;
+    }
+  }
+
+  // deliveryNo 선택 함수 (간소화)
+  async function selectDeliveryNo(deliveryNo) {
+    // 입력 필드에 deliveryNo 설정
+    document.getElementById('deliveryNoInput').value = deliveryNo;
+    
+    // 모달 닫기
+    document.getElementById('serverFileModal').style.display = 'none';
+    
+    // 모드를 D/N으로 변경
+    const dnButton = document.getElementById('dnBtn');
+    if (dnButton) {
+      dnButton.click(); // D/N 버튼 클릭하여 모드 변경
+    }
+    
+    // 해당 deliveryNo의 아이템들을 찾아서 테이블에 로드
+    try {
+      const response = await fetch('/api/orders');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const allOrders = await response.json();
+      const matchingItems = [];
+      
+      // 해당 deliveryNo를 가진 모든 아이템 찾기
+      for (const order of allOrders) {
+        if (order.items && order.items.length > 0) {
+          for (const item of order.items) {
+            if ((item.deliveryno || item.deliveryNo) === deliveryNo) {
+              matchingItems.push({
+                ...item,
+                orderNo: order.orderNo,
+                mode: order.mode || 'NT'
+              });
+            }
+          }
+        }
+      }
+      
+      if (matchingItems.length > 0) {
+        // D/N 정보를 헤더 필드에 로드
+        const firstItem = matchingItems[0];
+        if (firstItem['d/nno'] && firstItem['d/ndate']) {
+          document.getElementById('tfNoInput').value = firstItem['d/nno'];
+          document.getElementById('orderDateInput').value = firstItem['d/ndate'];
+        }
+        
+        await fillTableWithDeliveryData(matchingItems, deliveryNo);
+    } else {
+        alert(`deliveryNo '${deliveryNo}'에 해당하는 아이템을 찾을 수 없습니다.`);
+      }
+    } catch (error) {
+      alert(`데이터 로드 실패: ${error.message}`);
+    }
+  }
+
+  // deliveryNo 삭제 함수 (deliveryNo 포함 그 이후 모든 데이터 삭제)
+  async function deleteDeliveryNo(deliveryNo) {
+    if (!confirm(`deliveryNo '${deliveryNo}'의 모든 데이터를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+      return;
+    }
+    
+    try {
+      // 새로운 /api/deletedeliveryNo API 사용
+      const response = await fetch('/api/deletedeliveryNo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deliveryNo: deliveryNo
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`deliveryNo '${deliveryNo}'가 성공적으로 삭제되었습니다.\n삭제된 아이템: ${result.updatedCount}개`);
+        // 모달 새로고침
+        loadServerFileList();
+    } else {
+        alert(`삭제 실패: ${result.message}`);
+      }
+    } catch (error) {
+      alert(`삭제 실패: ${error.message}`);
+    }
+  }
+
+  // deliveryNo 데이터로 테이블 채우기 함수
+  async function fillTableWithDeliveryData(items, targetDeliveryNo) {
+    // console.log("[fillTableWithDeliveryData] 테이블 채우기 시작:", items, "Target deliveryNo:", targetDeliveryNo);
+    
+    const tableBody = document.getElementById('shipmentTableBody');
+    if (!tableBody) {
+      // console.error("[fillTableWithDeliveryData] shipmentTableBody를 찾을 수 없습니다!");
+      return;
+    }
+    
+    // 기존 테이블 내용 초기화
+    tableBody.innerHTML = '';
+    
+    
+    // 각 아이템에 대해 행 생성 (createTableRow 함수 재사용)
+    for (let index = 0; index < items.length; index++) {
+      const item = items[index];
+      const row = createTableRow();
+      
+      // 아이템 데이터로 행 채우기
+      const modeSelect = row.querySelector('.modeDropdown');
+      const orderNoSelect = row.querySelector('.orderDropdown');
+      const itemNoSelect = row.querySelector('.itemDropdown');
+      const itemInfoCell = row.querySelector('.itemInfoCell');
+      const orderRInput = row.querySelector('.orderRInput');
+      const partialRInput = row.querySelector('.partialRInput');
+      const producedKGInput = row.querySelector('.producedKGInput');
+      const deliveredKGInput = row.querySelector('.deliveredKGInput');
+      const upInput = row.querySelector('.upInput');
+      
+      // 드롭다운 값 저장 (옵션 로드 후 설정)
+      const displayMode = (item.mode === 'SM-B' || item.mode === 'SM-C') ? 'SM' : (item.mode || '');
+      row.dataset.mode = displayMode;
+      row.dataset.orderNo = item.orderNo || '';
+      row.dataset.itemNo = item.itemNo || '';
+      
+      
+      tableBody.appendChild(row);
+    }
+    
+    // 드롭다운 옵션 일괄 로드
+    setTimeout(async () => {
+      const allRows = document.querySelectorAll('#shipmentTableBody tr');
+      const uniqueModes = new Set();
+      const uniqueOrderNos = new Set();
+      
+      // 모든 행에서 고유한 Mode와 Order No 수집
+      allRows.forEach(row => {
+        const modeSelect = row.querySelector('.modeDropdown');
+        const orderNoSelect = row.querySelector('.orderDropdown');
+        if (modeSelect && modeSelect.value) {
+          uniqueModes.add(modeSelect.value);
+        }
+        if (orderNoSelect && orderNoSelect.value) {
+          uniqueOrderNos.add(orderNoSelect.value);
+        }
+      });
+      
+      // 각 Mode에 대해 Order No 드롭다운 업데이트
+      for (const mode of uniqueModes) {
+        await updateOrderDropdown(mode);
+      }
+      
+      // 각 Order No에 대해 Item No 드롭다운 업데이트
+      for (const orderNo of uniqueOrderNos) {
+        const rowsWithOrderNo = Array.from(allRows).filter(row => {
+          const orderNoSelect = row.querySelector('.orderDropdown');
+          return orderNoSelect && orderNoSelect.value === orderNo;
+        });
+        
+        for (const row of rowsWithOrderNo) {
+          await updateItemDropdownForRow(row, orderNo);
+        }
+      }
+      
+      // 드롭다운 값 설정 (옵션 로드 후)
+      allRows.forEach((row) => {
+        const modeSelect = row.querySelector('.modeDropdown');
+        
+        if (modeSelect && row.dataset.mode) {
+          modeSelect.value = row.dataset.mode;
+          // Mode change 이벤트 수동 트리거 (Order No 드롭다운 로드)
+          modeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+      
+      // 잠시 대기 후 Order No와 Item No 설정
+      setTimeout(() => {
+        allRows.forEach((row) => {
+          const orderNoSelect = row.querySelector('.orderDropdown');
+          
+          if (orderNoSelect && row.dataset.orderNo) {
+            orderNoSelect.value = row.dataset.orderNo;
+            // Order No change 이벤트 수동 트리거 (Item No 드롭다운 로드)
+            orderNoSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        });
+        
+        // 다시 잠시 대기 후 Item No 설정
+        setTimeout(() => {
+          allRows.forEach((row) => {
+            const itemNoSelect = row.querySelector('.itemDropdown');
+            
+            if (itemNoSelect && row.dataset.itemNo) {
+              itemNoSelect.value = row.dataset.itemNo;
+            }
+          });
+        }, 200);
+      }, 200);
+      
+      // 모든 행의 아이템 정보 업데이트
+      for (let i = 0; i < items.length && i < allRows.length; i++) {
+      const item = items[i];
+        const row = allRows[i];
+        updateItemInfo(row, item);
+      }
+    }, 100);
+    
+    // 이벤트 리스너 재등록
+    setupDragHandles();
+    
+    // Total 업데이트
+    updateTotal();
+  }
+
+  // Organize 버튼 이벤트 리스너 등록 함수
+  function setupOrganizeButton() {
+    const organizeBtn = document.getElementById("organizeButton");
+    if (organizeBtn) {
+      organizeBtn.addEventListener("click", function() {
+        organizeTable();
+      });
+    }
+  }
+
+  // Drag & Drop 기능 (SortableJS 사용)
+  function setupDragHandles() {
+    if (typeof Sortable !== 'undefined') {
+      Sortable.create(document.getElementById("shipmentTableBody"), {
+        animation: 150,
+        handle: '.drag-handle',
+        onEnd: function(evt) {
+          updateTotal();
+        }
+      });
+    }
+  }
+
+  // Open 버튼 이벤트 리스너 등록 함수
+  function setupOpenButton() {
+    const openBtn = document.getElementById("openServerBtn");
+    const modal = document.getElementById("serverFileModal");
+    const closeBtn = document.querySelector(".close-server");
+    const modeFilter = document.getElementById("modeFilter");
+    
+    if (!openBtn || !modal || !closeBtn) {
+      // console.error("[OPEN] 필요한 요소를 찾을 수 없습니다!");
+      return;
+    }
+    
+    // Open 버튼 클릭 이벤트
+    openBtn.addEventListener("click", () => {
+      // console.log("[OPEN] 서버 파일 모달 열기");
+      modal.style.display = "block";
+      // 드롭다운 기본값을 'all'로 설정
+      if (modeFilter) {
+        modeFilter.value = 'all';
+      }
+      loadServerFileList();
+    });
+    
+    // 닫기 버튼 클릭 이벤트
+    closeBtn.addEventListener("click", () => {
+      // console.log("[OPEN] 모달 닫기");
+      modal.style.display = "none";
+    });
+    
+    // 모달 외부 클릭 시 닫기
+    window.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+    
+    // 모드 필터 변경 이벤트 등록
+    if (modeFilter) {
+      modeFilter.addEventListener("change", () => {
+        // console.log("[FILTER] 모드 필터 변경:", modeFilter.value);
+        loadServerFileList();
+      });
+    }
+  }
+
+  // ========================================
+  // Delivery No 정렬 관련 함수들 (shipment.html과 동일)
+  // ========================================
+  
+  // DD.MM.YYYY 형식의 날짜 문자열을 Date 객체로 파싱하는 함수
+  function parseDateString(dateString) {
+    if (!dateString) return null;
+    
+    const parts = dateString.split('.');
+    if (parts.length >= 3) {
+      const day = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1; // JavaScript 월은 0부터 시작
+      const year = parseInt(parts[2]);
+      return new Date(year, month, day);
+    }
+    
+    return null;
+  }
+  
+  // 아이템에서 가장 오래된 날짜(Date 객체)를 반환하는 함수
+  function getOldestDateFromItem(item) {
+    const dates = [];
+    
+    // 각 날짜를 파싱하여 Date 객체로 변환
+    if (item['d/ndate']) {
+      const parsedDate = parseDateString(item['d/ndate']);
+      if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
+    }
+    if (item['p/idate']) {
+      const parsedDate = parseDateString(item['p/idate']);
+      if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
+    }
+    if (item['p/i2date']) {
+      const parsedDate = parseDateString(item['p/i2date']);
+      if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
+    }
+    if (item['invoicedate']) {
+      const parsedDate = parseDateString(item['invoicedate']);
+      if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
+    }
+    
+    // 날짜가 없으면 null 반환
+    if (dates.length === 0) return null;
+    
+    // 가장 오래된 날짜 반환
+    return dates.reduce((oldest, current) => {
+      return current < oldest ? current : oldest;
+    });
+  }
+  
+  // Delivery No를 날짜 기준으로 정렬하는 함수 (shipmentupdate.html 구조에 맞게 수정)
+  function sortDeliveryNosByDate(deliveryGroups) {
+    return Object.keys(deliveryGroups).sort((a, b) => {
+      const aGroup = deliveryGroups[a];
+      const bGroup = deliveryGroups[b];
+      
+      // shipmentupdate.html의 deliveryGroups 구조에 맞게 날짜 정보 가져오기
+      const aItem = {
+        'd/ndate': aGroup.dndate,
+        'p/idate': aGroup.pidate,
+        'p/i2date': aGroup.pidate2,
+        'invoicedate': aGroup.invoicedate
+      };
+      
+      const bItem = {
+        'd/ndate': bGroup.dndate,
+        'p/idate': bGroup.pidate,
+        'p/i2date': bGroup.pidate2,
+        'invoicedate': bGroup.invoicedate
+      };
+      
+      // 각 delivery group의 가장 오래된 날짜 찾기
+      const aOldestDate = getOldestDateFromItem(aItem);
+      const bOldestDate = getOldestDateFromItem(bItem);
+      
+      // 가장 오래된 날짜 기준으로 내림차순 정렬 (최신이 위로)
+      if (aOldestDate && bOldestDate) {
+        return bOldestDate.getTime() - aOldestDate.getTime();
+      } else if (aOldestDate) {
+        return -1; // a가 날짜가 있으면 a가 위로
+      } else if (bOldestDate) {
+        return 1; // b가 날짜가 있으면 b가 위로
+      } else {
+        // 둘 다 날짜가 없으면 EK-번호 기준으로 정렬
+        const aNum = parseInt(a.replace('EK-', '')) || 0;
+        const bNum = parseInt(b.replace('EK-', '')) || 0;
+        return bNum - aNum;
+      }
+    });
+  }
+
+  // 페이지 로드 시 초기화
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Delivery No와 Date 초기화
+      initializeOrderFields();
+    
+    // 기본 모드(D/N) placeholder 설정
+    document.getElementById('dueInput').placeholder = 'Empty';
+    document.getElementById('invoicePriceInput').placeholder = 'Empty';
+    
+    // 버튼 이벤트 리스너 등록
+    setupDocButtons();
+    setupSimpleButton();
+    setupPriceButton();
+    setupOrganizeButton();
+    setupDragHandles();
+    setupExportButton();
+    setupAddRowsButton();
+    setupAddSingleButton();
+    setupRefreshButton();
+    setupOpenButton();
+    
+    
+  });
+
+  // 개별 아이템 기록 삭제 함수
+  async function deleteItemRecord(row) {
+    // Order No와 Item No 가져오기
+    const orderNoSelect = row.querySelector('.orderDropdown');
+    const itemNoSelect = row.querySelector('.itemDropdown');
+    
+    const orderNo = orderNoSelect ? orderNoSelect.value : '';
+    const itemNo = itemNoSelect ? itemNoSelect.value : '';
+    
+    // Order No와 Item No가 모두 선택되지 않은 경우 - 그냥 행 삭제
+    if (!orderNo || !itemNo) {
+      row.remove();
+      updateTotal();
+      return;
+    }
+    
+    // Order No와 Item No가 모두 있는 경우 - API 호출하여 데이터 삭제
+    if (!confirm(`정말로 이 아이템의 기록을 삭제하시겠습니까?\n주문번호: ${orderNo}\n아이템번호: ${itemNo}\n\n삭제될 정보:\n- Delivery No\n- D/N 정보\n- P/I 정보\n- Invoice 정보\n- 선적R, DeliveredKG 등`)) {
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/deletedeliveryNo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderNo: orderNo,
+          itemNo: itemNo
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert(`아이템 기록이 성공적으로 삭제되었습니다.\n주문번호: ${orderNo}\n아이템번호: ${itemNo}`);
+        
+        // 행 완전히 삭제
+        row.remove();
+        
+        // Total 업데이트
+        updateTotal();
+      } else {
+        alert(`삭제 실패: ${result.message}`);
+      }
+    } catch (error) {
+      alert('아이템 기록 삭제 중 오류가 발생했습니다.');
+      console.error('Delete error:', error);
+    }
+  }
+
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>송금내역</title>
+  <!-- SortableJS (드래그 정렬) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <!-- PDF 생성을 위한 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #000;
+      line-height: 1.5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      margin: 20px;
+      padding: 0;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+
+    /* 메인 페이지 컨테이너 */
+    .page-container {
+      max-width: 210mm; /* A4 가로 사이즈 */
+      margin: 20px auto;
+      padding: 0;
+    }
+
+    .page {
+      width: 210mm; /* A4 가로 사이즈 고정 */
+      min-height: 297mm; /* A4 세로 최소 높이 */
+      margin: 0 auto 20px auto;
+      padding: 10mm 25mm 25mm 25mm;
+      box-sizing: border-box;
+      background: #fff;
+      position: relative;
+      border: 1px solid #ddd;
+    }
+
+    /* 상단 타이틀 */
+    .document-title {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    /* 날짜 선택 영역 */
+    .date-selection {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+
+    .date-selection label {
+      font-weight: bold;
+      color: #333;
+      font-size: 0.9rem;
+    }
+
+    .date-selection select {
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      background: #fff;
+      font-size: 0.9rem;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .date-selection select:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 3px rgba(0, 123, 255, 0.3);
+    }
+
+    /* 공통 버튼 스타일 */
+    .common-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    .common-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* Apply 버튼 필터 적용 상태 */
+    .apply-btn.filtered {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+    }
+
+    /* Save 버튼 스타일 */
+    .save-btn {
+      background: #fff;
+      color: #000;
+      border-color: #ccc;
+    }
+
+    .save-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* 숫자 입력 필드 스피너 제거 */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    /* 입력 필드 하이라이트 제거 - PDF용 강화 */
+    .transfer-table td input,
+    .transfer-table td input[type="text"],
+    .transfer-table td input[type="number"] {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      -webkit-border-radius: 0;
+      -moz-border-radius: 0;
+      border-radius: 0;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: auto;
+      line-height: inherit;
+      font-size: inherit;
+      color: inherit;
+    }
+
+    .transfer-table td input:focus,
+    .transfer-table td input:active,
+    .transfer-table td input:hover {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+
+    /* 텍스트 잘림 방지 */
+    .transfer-table td {
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
+    }
+
+    .transfer-table input {
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
+      min-width: 100%;
+    }
+
+    /* 송금내역 테이블 */
+    .transfer-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      margin-bottom: 200px; /* 하단 메뉴바 높이 + 충분한 여백 */
+      background: #fff;
+      border: 1px solid #ddd;
+    }
+
+    .transfer-table th {
+      background-color: #f5f5f5;
+      padding: 8px 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-weight: bold;
+      font-size: 0.7rem;
+      color: #333;
+    }
+
+    .transfer-table td {
+      padding: 5px 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-size: 0.7rem;
+    }
+
+    .transfer-table tr {
+      background-color: #fff;
+    }
+
+    .transfer-table tr:hover {
+      background-color: #fff;
+    }
+
+    /* 숨기기 버튼 스타일 */
+    .hideButton {
+      background: #666666;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 2px 6px;
+      margin-left: 3px;
+      transition: background-color 0.2s;
+    }
+
+    .hideButton:hover {
+      background: #444444;
+    }
+
+    /* Paper 버튼 스타일 */
+    .button-container .paperButton {
+      background: #fff;
+      color: #000;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 2px 6px;
+      margin-left: 3px;
+      transition: all 0.2s;
+    }
+
+    .button-container .paperButton:hover {
+      background: #f0f0f0;
+    }
+
+    .button-container .paperButton.active {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+    }
+
+    .button-container .paperButton.active:hover {
+      background: #333;
+    }
+
+    /* 숨겨진 행 스타일 */
+    .transfer-table tr.hidden-row {
+      display: none;
+    }
+
+    /* 컬럼 너비 설정 - 절대값 */
+    .transfer-table th:nth-child(1),
+    .transfer-table td:nth-child(1) {
+      width: 50px; /* 삭제/드래그 버튼 */
+    }
+
+    .transfer-table th:nth-child(2),
+    .transfer-table td:nth-child(2) {
+      width: 120px; /* 내역 */
+    }
+
+    .transfer-table th:nth-child(3),
+    .transfer-table td:nth-child(3) {
+      width: 60px; /* 은행 */
+    }
+
+    .transfer-table th:nth-child(4),
+    .transfer-table td:nth-child(4) {
+      width: 140px; /* 계좌번호 */
+    }
+
+    .transfer-table th:nth-child(5),
+    .transfer-table td:nth-child(5) {
+      width: 100px; /* 예금주 */
+    }
+    
+    /* 예금주 열 왼쪽 패딩 줄이기 */
+    .transfer-table tbody td:nth-child(5) {
+      padding-left: 4px;
+    }
+
+    .transfer-table th:nth-child(6),
+    .transfer-table td:nth-child(6) {
+      width: 80px; /* 금액 */
+    }
+    
+    /* 마지막 열(금액) 데이터 행만 오른쪽 정렬 */
+    .transfer-table tbody td:nth-child(6) {
+      text-align: right;
+      padding: 5px 12px 5px 8px;
+    }
+    
+    /* 금액 열의 입력 필드도 오른쪽 정렬 */
+    .transfer-table tbody td:nth-child(6) input {
+      text-align: right;
+    }
+    
+    /* 드래그 핸들 */
+    .drag-handle {
+      width: 18px;
+      height: 14px;
+      cursor: move;
+      font-size: 0.8rem;
+      display: inline-block;
+      text-align: center;
+      line-height: 14px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 2px;
+      margin-right: 2px;
+    }
+    
+    .drag-handle:hover {
+      background-color: #f0f0f0;
+    }
+    
+    /* 버튼 컨테이너 */
+    .button-container {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    
+
+    /* 하단 버튼 영역 전체 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 확장 손잡이 (서랍 손잡이처럼 위쪽에 튀어나옴) */
+    .expand-handle {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    /* 확장/축소 버튼 */
+    .expand-btn {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #666;
+      border-radius: 8px 8px 0 0;
+      min-width: 40px;
+      height: 20px;
+      line-height: 1;
+      transition: all 0.2s ease;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    .expand-btn:hover {
+      background: #e8e8e8;
+      border-color: #999;
+      box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    }
+
+    .expand-btn.expanded {
+      transform: rotate(180deg);
+      background: #e0e0e0;
+    }
+
+    /* 기본 버튼 그룹 레이아웃 */
+    .main-button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+    
+    .left-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .right-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .main-button-group button {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+    
+    .main-button-group button:hover {
+      background: #f0f0f0;
+    }
+
+    /* 상세 버튼 영역 */
+    .detail-button-area {
+      margin-top: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      animation: slideDown 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+  <body>
+    <div class="page-container">
+      <div class="page">
+    <h1 class="document-title">송금내역</h1>
+    
+    <div class="date-selection">
+      <select id="yearSelect">
+        <!-- JavaScript로 동적 생성 -->
+      </select>
+      
+      <select id="monthSelect">
+        <option value="1">1월</option>
+        <option value="2">2월</option>
+        <option value="3">3월</option>
+        <option value="4">4월</option>
+        <option value="5">5월</option>
+        <option value="6">6월</option>
+        <option value="7">7월</option>
+        <option value="8">8월</option>
+        <option value="9">9월</option>
+        <option value="10">10월</option>
+        <option value="11">11월</option>
+        <option value="12">12월</option>
+      </select>
+      
+      <select id="daySelect">
+        <!-- JavaScript로 동적 생성 -->
+      </select>
+      
+      <button type="button" onclick="applyDateFilter()" class="common-btn apply-btn" id="applyBtn">Apply</button>
+      <button type="button" onclick="saveTransferData()" class="common-btn save-btn" id="saveBtn">Save</button>
+      <button type="button" id="pdfBtn" class="common-btn">PDF</button>
+    </div>
+    
+    <!-- 송금내역 테이블 -->
+    <table class="transfer-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>내역</th>
+          <th>은행</th>
+          <th>계좌번호</th>
+          <th>예금주</th>
+          <th>금액</th>
+        </tr>
+      </thead>
+      <tbody id="transferTableBody">
+        <!-- 데이터가 여기에 동적으로 추가됩니다 -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 하단 버튼 영역 -->
+  <div class="bottom-buttons">
+    <!-- 확장/축소 버튼 (서랍 손잡이처럼 위쪽에 튀어나옴) -->
+    <div class="expand-handle">
+      <button id="expandButton" type="button" class="expand-btn">▼</button>
+    </div>
+    
+    <!-- 기본 버튼 영역 (항상 보임) -->
+    <div class="main-button-group">
+      <div class="left-buttons">
+        <button type="button" onclick="addTransferRow()" class="common-btn">행추가</button>
+        <button type="button" onclick="saveAllTransfers()" class="common-btn">Update</button>
+      </div>
+      <div class="right-buttons">
+        <button type="button" onclick="location.href='eltrokorea9.html'" class="common-btn">Home</button>
+        <button type="button" onclick="location.href='calendar.html'" class="common-btn">Calendar</button>
+        <button type="button" onclick="location.href='vat.html'" class="common-btn">세금계산서</button>
+      </div>
+    </div>
+
+    <!-- 확장 가능한 상세 버튼 영역 (기본적으로 숨김) -->
+    <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+      <!-- 필요시 추가 버튼들 -->
+    </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const expandButton = document.getElementById('expandButton');
+      const detailArea = document.getElementById('detailButtonArea');
+      const yearSelect = document.getElementById('yearSelect');
+      const monthSelect = document.getElementById('monthSelect');
+      const daySelect = document.getElementById('daySelect');
+      const pdfBtn = document.getElementById('pdfBtn');
+      
+      // 확장 버튼 이벤트
+      expandButton.addEventListener('click', function() {
+        const isExpanded = detailArea.style.display !== 'none';
+        detailArea.style.display = isExpanded ? 'none' : 'flex';
+        expandButton.classList.toggle('expanded', !isExpanded);
+        expandButton.textContent = isExpanded ? '▼' : '▲';
+      });
+      
+      // 년도 옵션 생성 함수
+      function updateYearOptions() {
+        const currentYear = new Date().getFullYear();
+        yearSelect.innerHTML = '';
+        
+        for (let i = 0; i < 3; i++) {
+          const year = currentYear + i;
+          const option = document.createElement('option');
+          option.value = year;
+          option.textContent = year;
+          yearSelect.appendChild(option);
+        }
+        yearSelect.value = currentYear;
+      }
+      
+      // 일자 옵션 생성 함수
+      function updateDayOptions() {
+        const year = parseInt(yearSelect.value);
+        const month = parseInt(monthSelect.value);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const currentDay = parseInt(daySelect.value) || 1;
+        
+        daySelect.innerHTML = '';
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+          const option = document.createElement('option');
+          option.value = day;
+          option.textContent = day + '일';
+          daySelect.appendChild(option);
+        }
+        // 유효한 일자 범위 내에서 선택된 일자 유지
+        daySelect.value = Math.min(currentDay, daysInMonth);
+      }
+      
+      // 년도 옵션 생성 및 현재 날짜로 초기화
+      updateYearOptions();
+      const today = new Date();
+      monthSelect.value = today.getMonth() + 1;
+      updateDayOptions();
+      daySelect.value = today.getDate();
+      
+      // 년도/월 변경 시 일자 옵션 업데이트
+      yearSelect.addEventListener('change', updateDayOptions);
+      monthSelect.addEventListener('change', updateDayOptions);
+      
+      // 초기 데이터 로드
+      loadTransferData();
+      
+      // PDF 버튼 이벤트 리스너
+      pdfBtn.addEventListener('click', generatePDF);
+    });
+    
+       // 1. Transfer 데이터 불러오기
+    async function loadTransferData() {
+      try {
+        const response = await fetch('/api/transfers');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        renderTransferTable(data.transfers || []);
+      } catch (error) {
+        alert('데이터 로드 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+    
+    // 2. Transfer 데이터 저장/업데이트
+    async function saveTransfer(transferData) {
+      try {
+        const response = await fetch('/api/transfers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(transferData)
+        });
+        
+        return await response.json();
+      } catch (error) {
+        return null;
+      }
+    }
+    
+    // Transfer 데이터 삭제 (description 기반)
+    async function deleteTransferByDescription(description) {
+      try {
+        const response = await fetch('/api/transfers', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description })
+        });
+        
+        if (response.ok) {
+          return await response.json();
+        } else {
+          const error = await response.json();
+          throw new Error(error.error || '삭제 실패');
+        }
+      } catch (error) {
+        return null;
+      }
+    }
+    
+    // 행추가 함수
+    function addTransferRow() {
+      const tableBody = document.getElementById('transferTableBody');
+      const rowCount = tableBody.children.length;
+      const newId = 1000 + rowCount;
+      
+      const row = document.createElement('tr');
+      row.dataset.transferId = newId;
+      row.innerHTML = createTransferRowHTML({});
+      tableBody.appendChild(row);
+      
+      setTimeout(() => {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const firstInput = row.querySelector('input');
+        if (firstInput) {
+          firstInput.focus();
+        }
+        initializeSortable();
+      }, 100);
+    }
+    
+    
+    // 행삭제 함수
+    async function removeTransferRow(button) {
+      const row = button.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      
+      if (inputs.length >= 5) {
+        const description = inputs[0].value.trim(); // 내역 필드 값
+        
+        // 내역이 있는 경우: transfer.json에서 삭제
+        if (description) {
+          // 삭제 확인
+          if (!confirm(`"${description}" 항목을 삭제하시겠습니까?`)) {
+            return; // 사용자가 취소하면 함수 종료
+          }
+          
+          // 서버에서 삭제 시도
+          await deleteTransferByDescription(description);
+        }
+        // 내역이 비어있는 경우: 그냥 화면에서만 삭제 (확인 없이)
+      }
+      
+      // 화면에서 행 제거 (내역 유무와 관계없이)
+      row.remove();
+    }
+    
+    // 버튼 상태 변경 헬퍼 함수
+    function toggleRowVisibilityButton(button, isHidden) {
+      button.textContent = isHidden ? 'S' : 'H';
+      button.onclick = isHidden ? function() { showTransferRow(this); } : function() { hideTransferRow(this); };
+    }
+
+    // 행 숨기기 함수
+    function hideTransferRow(button) {
+      const row = button.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      
+      if (inputs.length >= 5) {
+        const description = inputs[0].value.trim();
+        
+        if (description) {
+          if (!confirm(`"${description}" 항목을 숨기시겠습니까?`)) {
+            return;
+          }
+          
+          row.classList.add('hidden-row');
+          toggleRowVisibilityButton(button, true);
+        }
+      }
+    }
+    
+    // 행 다시 보이기 함수
+    function showTransferRow(button) {
+      const row = button.closest('tr');
+      row.classList.remove('hidden-row');
+      toggleRowVisibilityButton(button, false);
+    }
+    
+    // Paper 버튼 토글 함수
+    window.togglePaper = async function(button) {
+      const row = button.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      
+      if (inputs.length < 5) {
+        alert('입력 필드가 부족합니다.');
+        return;
+      }
+      
+      const description = inputs[0].value.trim();
+      
+      if (!description) {
+        alert('내역을 먼저 입력해주세요.');
+        return;
+      }
+      
+      const isActive = button.classList.contains('active');
+      const newPaperValue = !isActive;
+      const actionText = newPaperValue ? 'Paper로 설정' : 'Paper 해제';
+      
+      if (!confirm(`"${description}" 항목을 ${actionText}하시겠습니까?`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/transfers');
+        
+        if (!response.ok) {
+          throw new Error('데이터 로드 실패');
+        }
+        
+        const data = await response.json();
+        const transfers = data.transfers || [];
+        const transferIndex = transfers.findIndex(t => t.description === description);
+        
+        if (transferIndex === -1) {
+          alert('transfer.json에서 해당 항목을 찾을 수 없습니다.');
+          return;
+        }
+        
+        transfers[transferIndex].paper = newPaperValue;
+        
+        const saveResponse = await fetch('/api/transfers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'reorder',
+            transfers: transfers
+          })
+        });
+        
+        if (saveResponse.ok) {
+          button.classList.toggle('active', newPaperValue);
+          alert('저장되었습니다.');
+        } else {
+          alert('저장에 실패했습니다.');
+        }
+      } catch (error) {
+        alert('Paper 업데이트 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+    
+    // 날짜 필터 적용 함수
+    async function applyDateFilter() {
+      const applyBtn = document.getElementById('applyBtn');
+      
+      if (applyBtn.classList.contains('filtered')) {
+        applyBtn.classList.remove('filtered');
+        loadTransferData();
+        // Apply 필터 해제 시 드래그 다시 활성화
+        setTimeout(() => initializeSortable(), 100);
+        return;
+      }
+      
+      try {
+        const year = document.getElementById('yearSelect').value;
+        const month = document.getElementById('monthSelect').value;
+        const day = document.getElementById('daySelect').value;
+        
+        if (!year || !month || !day) {
+          alert('년, 월, 일을 모두 선택해주세요.');
+          return;
+        }
+        
+        const [calendarData, transferData] = await Promise.all([
+          fetch('/api/loadCalendar').then(res => res.json()),
+          fetch('/api/transfers').then(res => res.json())
+        ]);
+        
+        const dayPadded = day.padStart(2, '0');
+        const monthPadded = month.padStart(2, '0');
+        
+        // 이벤트 데이터 확인 (양쪽 형식 모두 체크)
+        let events = calendarData.events?.[year]?.[monthPadded]?.[dayPadded] || 
+                     calendarData.events?.[year]?.[month]?.[day];
+        
+        if (!events?.length) {
+          alert('선택한 날짜에 등록된 이벤트가 없습니다.');
+          return;
+        }
+        
+        // 한 번의 순회로 매칭된 송금내역과 일치하지 않는 이벤트 분류
+        const matchedTransfers = [];
+        const unmatchedEvents = [];
+        
+        events.forEach(event => {
+          const matchedTransfer = transferData.transfers.find(t => t.description === event.title);
+          if (matchedTransfer) {
+            matchedTransfers.push(matchedTransfer);
+          } else {
+            unmatchedEvents.push(event);
+          }
+        });
+        
+        // 일치하지 않는 이벤트들을 송금내역 형태로 변환
+        const allTransfers = [...matchedTransfers, ...unmatchedEvents.map(event => ({
+          id: Date.now() + Math.random(),
+          description: event.title,
+          bank: '',
+          accountNumber: '',
+          accountHolder: '',
+          amount: 0
+        }))];
+        
+        if (allTransfers.length === 0) {
+          alert('선택한 날짜의 이벤트와 매칭되는 송금내역이 없습니다.');
+          return;
+        }
+        
+        renderTransferTable(allTransfers);
+        applyBtn.classList.add('filtered');
+        // Apply 필터 적용 시 드래그 비활성화
+        initializeSortable();
+        
+        if (unmatchedEvents.length > 0) {
+          alert(`${unmatchedEvents.length}개의 일정이 송금내역과 일치하지 않아 새로 추가되었습니다.`);
+        }
+        
+      } catch (error) {
+        alert('날짜 필터 적용 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+
+    // Save 함수 - Transaction 데이터를 accounting.json에 저장 (날짜별 그룹화)
+    async function saveTransferData() {
+      try {
+        // Apply 필터가 적용되어 있는지 확인
+        const applyBtn = document.getElementById('applyBtn');
+        if (!applyBtn.classList.contains('filtered')) {
+          alert('Apply 필터가 적용되어 있지 않습니다.\nSave를 하려면 먼저 Apply를 실행해주세요.');
+          return;
+        }
+        
+        const year = document.getElementById('yearSelect').value;
+        const month = document.getElementById('monthSelect').value.padStart(2, '0');
+        const day = document.getElementById('daySelect').value.padStart(2, '0');
+        const date = `${year}-${month}-${day}`;
+        
+        const rows = document.querySelectorAll('#transferTableBody tr:not(.hidden-row)');
+        const withdrawalItems = [];
+        
+        rows.forEach(row => {
+          if (row.style.display === 'none') return;
+          
+          const inputs = row.querySelectorAll('input');
+          if (inputs.length < 5) return;
+          
+          const description = inputs[0].value.trim();
+          const amount = parseInt(inputs[4].value.replace(/,/g, '')) || 0;
+          
+          if (!description && amount === 0) return;
+          
+          withdrawalItems.push({
+            name: '',
+            description: description,
+            amount: amount
+          });
+        });
+        
+        if (withdrawalItems.length === 0) {
+          alert('저장할 데이터가 없습니다.');
+          return;
+        }
+        
+        const result = await saveTransactionDataByDate(date, withdrawalItems);
+        if (result?.success) {
+          const message = result.message || `${withdrawalItems.length}개 항목이 ${date} 날짜의 withdrawal에 저장되었습니다.`;
+          alert(`Transaction 데이터 저장 완료!\n${message}`);
+        } else {
+          alert('데이터 저장에 실패했습니다.');
+        }
+        
+      } catch (error) {
+        alert('데이터 저장 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+
+    // 날짜별 그룹화된 Transaction 데이터 저장 함수
+    async function saveTransactionDataByDate(date, withdrawalItems) {
+      try {
+        const response = await fetch('/api/accounting', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            category: 'transaction',
+            data: {
+              type: 'withdrawal',
+              date: date,
+              items: withdrawalItems
+            }
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        return null;
+      }
+    }
+
+    // Save 함수 - Transfers 데이터를 transfer.json에 저장 (순서 변경 후 ID 업데이트)
+    async function saveAllTransfers() {
+      try {
+        // Apply 필터가 적용되어 있는지 확인
+        const applyBtn = document.getElementById('applyBtn');
+        if (applyBtn.classList.contains('filtered')) {
+          alert('Apply 필터가 적용되어 있습니다.\nUpdate를 하려면 먼저 Apply를 해제해주세요.');
+          return;
+        }
+        
+        const rows = document.querySelectorAll('#transferTableBody tr:not(.hidden-row)');
+        const transferItems = [];
+        
+        rows.forEach(row => {
+          if (row.style.display === 'none') return;
+          
+          const inputs = row.querySelectorAll('input');
+          if (inputs.length < 5) return;
+          
+          const description = inputs[0].value.trim();
+          const bank = inputs[1].value.trim();
+          const accountNumber = inputs[2].value.trim();
+          const accountHolder = inputs[3].value.trim();
+          const amount = parseInt(inputs[4].value.replace(/,/g, '')) || 0;
+          
+          const paperButton = row.querySelector('.paperButton');
+          const paper = paperButton?.classList.contains('active') || false;
+          
+          transferItems.push({
+            id: transferItems.length + 1,
+            description: description,
+            bank: bank,
+            accountNumber: accountNumber,
+            accountHolder: accountHolder,
+            amount: amount,
+            paper: paper
+          });
+        });
+        
+        if (transferItems.length === 0) {
+          alert('저장할 데이터가 없습니다.');
+          return;
+        }
+        
+        // 순서 변경으로 전체 업데이트
+        const response = await fetch('/api/transfers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            action: 'reorder',
+            transfers: transferItems 
+          })
+        });
+        
+        if (response.ok) {
+          alert('Transfers 데이터 저장 완료! (순서 및 ID 업데이트)');
+          // 데이터 다시 로드
+          loadTransferData();
+        } else {
+          alert('데이터 저장에 실패했습니다.');
+        }
+        
+      } catch (error) {
+        alert('데이터 저장 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+    
+    // Sortable 인스턴스 전역 변수
+    let sortableInstance = null;
+    
+    // 드래그 정렬 초기화/해제
+    function initializeSortable() {
+      const tableBody = document.getElementById('transferTableBody');
+      if (!tableBody || typeof Sortable === 'undefined') return;
+      
+      // 기존 인스턴스 제거
+      if (sortableInstance) {
+        sortableInstance.destroy();
+        sortableInstance = null;
+      }
+      
+      // Apply 필터가 적용되어 있으면 드래그 비활성화
+      const applyBtn = document.getElementById('applyBtn');
+      if (applyBtn?.classList.contains('filtered')) {
+        return;
+      }
+      
+      // Apply 필터가 없을 때만 드래그 활성화
+      sortableInstance = Sortable.create(tableBody, {
+        animation: 150,
+        handle: '.drag-handle'
+      });
+    }
+    
+    // 테이블 렌더링
+    function renderTransferTable(transfers) {
+      const tableBody = document.getElementById('transferTableBody');
+      tableBody.innerHTML = '';
+      
+      transfers.forEach(transfer => {
+        const row = document.createElement('tr');
+        row.dataset.transferId = transfer.id;
+        row.innerHTML = createTransferRowHTML(transfer);
+        tableBody.appendChild(row);
+      });
+      
+      // 드래그 기능 초기화 (Apply 상태에 따라 활성화/비활성화)
+      initializeSortable();
+    }
+    
+    // Transfer 행 HTML 생성
+    function createTransferRowHTML(transfer) {
+      const inputStyle = "width: 100%; border: none; padding: 5px;";
+      const buttonStyle = "font-size: 0.7rem; padding: 1px 2px; cursor: pointer; margin: 0; display: inline-block; width: 18px; height: 14px; border: 1px solid #ccc; background: #fff; color: #000; border-radius: 2px;";
+      const paperButtonClass = transfer.paper ? 'paperButton active' : 'paperButton';
+      const paperButtonStyle = "font-size: 0.7rem; padding: 1px 2px; cursor: pointer; margin: 0; display: inline-block; width: 18px; height: 14px; border-radius: 2px;";
+      
+      return `
+        <td>
+          <div class="button-container">
+            <div class="drag-handle">☰</div>
+            <button type="button" onclick="removeTransferRow(this)" class="deleteButton" style="${buttonStyle}">X</button>
+            <button type="button" onclick="hideTransferRow(this)" class="hideButton" style="${buttonStyle}">H</button>
+            <button type="button" onclick="togglePaper(this)" class="${paperButtonClass}" style="${paperButtonStyle}">P</button>
+          </div>
+        </td>
+        <td><input type="text" value="${transfer.description || ''}" style="${inputStyle}" onkeydown="handleEnterKey(event, this)"></td>
+        <td><input type="text" value="${transfer.bank || ''}" style="${inputStyle}" onkeydown="handleEnterKey(event, this)"></td>
+        <td><input type="text" value="${transfer.accountNumber || ''}" style="${inputStyle}" onkeydown="handleEnterKey(event, this)"></td>
+        <td><input type="text" value="${transfer.accountHolder || ''}" style="${inputStyle}" onkeydown="handleEnterKey(event, this)"></td>
+        <td><input type="text" value="${formatNumber(transfer.amount || 0)}" style="${inputStyle}; text-align: right;" onchange="updateTransferData(this)" oninput="formatAmountInput(this)" onkeydown="handleEnterKey(event, this)"></td>
+      `;
+    }
+    
+    // 입력 필드 포커스 및 선택 헬퍼 함수
+    function focusInput(input) {
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }
+    
+    // 엔터키 처리 함수 - 같은 열의 아래 행으로 이동 (숨겨진 행 제외)
+    function handleEnterKey(event, currentInput) {
+      if (event.key !== 'Enter') return;
+      
+      event.preventDefault();
+      
+      const currentRow = currentInput.closest('tr');
+      const currentCell = currentInput.closest('td');
+      const currentCellIndex = currentCell.cellIndex;
+      
+      // 현재 보이는 행들만 가져오기
+      const visibleRows = Array.from(document.querySelectorAll('#transferTableBody tr:not(.hidden-row)')).filter(row => 
+        row.style.display !== 'none'
+      );
+      
+      // 현재 행의 인덱스 찾기
+      const currentRowIndex = visibleRows.indexOf(currentRow);
+      
+      // 다음 보이는 행 찾기
+      if (currentRowIndex !== -1 && currentRowIndex < visibleRows.length - 1) {
+        const nextVisibleRow = visibleRows[currentRowIndex + 1];
+        const sameColumnInput = nextVisibleRow.cells[currentCellIndex]?.querySelector('input');
+        if (sameColumnInput) {
+          focusInput(sameColumnInput);
+          return;
+        }
+      }
+      
+      // 아래 보이는 행이 없는 경우, 새 행 추가
+      addTransferRow();
+      
+      // 새로 추가된 행의 같은 열 입력 필드로 포커스
+      setTimeout(() => {
+        const newRow = document.querySelector('#transferTableBody tr:last-child:not(.hidden-row)');
+        const sameColumnInput = newRow?.cells[currentCellIndex]?.querySelector('input');
+        focusInput(sameColumnInput);
+      }, 100);
+    }
+    
+    // 숫자 포맷팅 함수 (콤마 추가)
+    function formatNumber(num) {
+      if (num === null || num === undefined || num === '') return '0';
+      return Number(num).toLocaleString();
+    }
+    
+    // 금액 입력 필드 포맷팅
+    function formatAmountInput(input) {
+      // 커서 위치 저장
+      const cursorPosition = input.selectionStart;
+      const originalValue = input.value;
+      const originalLength = originalValue.length;
+      
+      // 숫자만 추출
+      let value = input.value.replace(/[^0-9]/g, '');
+      
+      if (value === '') {
+        input.value = '0';
+        // 커서를 맨 앞으로 이동
+        input.setSelectionRange(0, 0);
+      } else {
+        // 포맷팅 전 숫자 문자열에서의 커서 위치 계산
+        // 콤마를 제거한 문자열에서의 위치를 찾기
+        let numBeforeCursor = 0;
+        for (let i = 0; i < Math.min(cursorPosition, originalLength); i++) {
+          if (originalValue[i] >= '0' && originalValue[i] <= '9') {
+            numBeforeCursor++;
+          }
+        }
+        
+        // 포맷팅된 값 설정
+        const formattedValue = formatNumber(value);
+        input.value = formattedValue;
+        
+        // 포맷팅된 문자열에서 적절한 커서 위치 계산
+        // 숫자만 추출한 문자열의 길이를 기준으로 포맷팅된 문자열에서의 위치 찾기
+        let newPosition = 0;
+        let numCount = 0;
+        for (let i = 0; i < formattedValue.length && numCount < numBeforeCursor; i++) {
+          if (formattedValue[i] >= '0' && formattedValue[i] <= '9') {
+            numCount++;
+          }
+          newPosition = i + 1;
+        }
+        
+        // 커서 위치 복원
+        input.setSelectionRange(newPosition, newPosition);
+      }
+    }
+    
+    // PDF 생성 함수
+    async function generatePDF() {
+      try {
+        // 파일명 생성
+        const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const fileName = `송금내역_${dateStr}.pdf`;
+        
+        // 페이지 요소와 메뉴들 가져오기
+        const page = document.querySelector('.page');
+        const elementsToHide = [
+          document.querySelector('.bottom-buttons'),
+          document.getElementById('applyBtn'),
+          document.getElementById('saveBtn'),
+          document.getElementById('pdfBtn')
+        ].filter(Boolean);
+        
+        // 원래 display 값 저장 및 숨기기
+        const originalDisplays = elementsToHide.map(el => el.style.display);
+        elementsToHide.forEach(el => el.style.display = 'none');
+        
+        // PDF 생성
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+        
+        // A4 크기에 맞춰서 캡처 (가로: 210mm, 세로: 297mm)
+        const a4WidthPx = page.offsetWidth;
+        const a4HeightPx = (a4WidthPx * 297) / 210;
+        
+        const canvas = await html2canvas(page, {
+          scale: 1.5,
+          useCORS: true,
+          letterRendering: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          width: a4WidthPx,
+          height: a4HeightPx
+        });
+        
+        // A4 페이지에 이미지 추가
+        doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297);
+        
+        // 메뉴들 다시 표시
+        elementsToHide.forEach((el, i) => {
+          el.style.display = originalDisplays[i];
+        });
+        
+        // PDF 저장
+        doc.save(fileName);
+        
+      } catch (error) {
+        alert('PDF 생성에 실패했습니다: ' + error.message);
+      }
+    }
+  </script>
+</body>
+</html>

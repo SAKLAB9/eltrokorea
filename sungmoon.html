@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>SUNGMOON</title>
+  <style>
+    /* 전체 페이지 스타일 */
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      position: relative;
+      padding-top: 16.67vh;
+    }
+
+    /* 배경 오버레이 (텍스트 가독성을 위해) */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+
+    /* 메인 컨테이너 */
+    .main-container {
+      width: 70%;
+      max-width: 900px;
+      padding: 20px;
+      position: relative;
+    }
+
+    /* 그리드 래퍼 (흰색 컨테이너 박스) */
+    .grid-wrapper {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e0e0e0;
+    }
+
+    /* 타이틀 스타일 */
+    .title {
+      text-align: center;
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 40px;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* INDEX 버튼 스타일 - production.html top-menu-btn과 동일 */
+    .index-button {
+      position: absolute;
+      top: -60px;
+      left: 30px; /* 메뉴 박스 패딩(30px)에 맞춤 */
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      z-index: 1000;
+      box-sizing: border-box;
+    }
+
+    .index-button:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* 그리드 컨테이너 */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(1, 1fr);
+      gap: 25px;
+      width: 100%;
+    }
+
+    /* 직사각형 스타일 버튼 */
+    .cube-button {
+      aspect-ratio: 2.2;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-decoration: none;
+      color: #333;
+      font-size: 1.1rem;
+      font-weight: 500;
+      position: relative;
+      overflow: hidden;
+      transform: translateY(0);
+    }
+
+    /* 버튼 호버 효과 */
+    .cube-button:hover {
+      background: #f8f9fa;
+      border-color: #bbb;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* 버튼 클릭 효과 */
+    .cube-button:active {
+      background: #e9ecef;
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 텍스트 스타일 */
+    .cube-text {
+      font-size: 1.2rem;
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.4;
+      letter-spacing: 0.8px;
+      padding: 0 10px;
+    }
+
+    /* 반응형 디자인 */
+    @media (max-width: 768px) {
+      .main-container {
+        width: 85%;
+        max-width: 1000px;
+      }
+      
+      .grid-wrapper {
+        padding: 24px;
+      }
+      
+      .grid-container {
+        gap: 20px;
+      }
+      
+      .title {
+        font-size: 2.2rem;
+        margin-bottom: 30px;
+      }
+      
+      .cube-button {
+        font-size: 1.0rem;
+      }
+      
+      .cube-text {
+        font-size: 1.1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main-container {
+        width: 95%;
+        max-width: 800px;
+      }
+      
+      .grid-wrapper {
+        padding: 20px;
+      }
+      
+      .grid-container {
+        gap: 18px;
+      }
+      
+      .title {
+        font-size: 2.0rem;
+        margin-bottom: 25px;
+      }
+      
+      .cube-button {
+        font-size: 0.95rem;
+      }
+      
+      .cube-text {
+        font-size: 1.0rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <a href="index.html" class="index-button">Home</a>
+    <div class="grid-wrapper">
+      <div class="title">SUNGMOON</div>
+      <div class="grid-container">
+        <!-- 첫 번째 줄 -->
+               <a href="sungmoonP.html" class="cube-button">
+                 <div class="cube-text">Production</div>
+               </a>
+        
+        <a href="sungmoonS.html" class="cube-button">
+          <div class="cube-text">Shipment</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

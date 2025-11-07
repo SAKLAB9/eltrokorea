@@ -1,0 +1,2750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Swift</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #000;
+      line-height: 1.5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+    /* 메인 페이지 컨테이너 */
+    .page-container {
+      max-width: 800px;
+      margin: 15px auto;
+      padding: 0;
+    }
+    
+    .page {
+      width: 210mm; /* A4 너비 */
+      height: 297mm; /* A4 높이 고정 */
+      margin: 0 auto 20px auto;
+      padding: 10mm 25mm 25mm 25mm; /* 상단만 10mm로 줄임 */
+      box-sizing: border-box;
+      background: #fff;
+      position: relative;
+      overflow: visible; /* 넘치는 내용 표시 */
+    }
+    
+    /* 두 번째 페이지 스타일 */
+    #page2 {
+      border: 1px solid #ddd;
+      margin-top: 20px;
+    }
+    
+    /* 페이지 분할 관련 클래스 */
+    .visible {
+      display: block;
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    .hidden {
+      display: none;
+      visibility: hidden;
+      opacity: 0;
+    }
+    .header, .footer {
+      text-align: center;
+    }
+    .header p, .footer p {
+      margin: 2px 0;
+    }
+    .logo {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin-bottom: 10px;
+    }
+    .order-details {
+      margin-top: 20px;
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 2px solid #000;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    /* 왼쪽/오른쪽 영역에 input 사용 */
+    .order-header .left, .order-header .right {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .order-header .left input,
+    .order-header .right input {
+      font-size: 1rem;
+      width: 140px;
+      padding: 4px 4px;
+      height: 24px;
+    }
+    .order-body {
+      margin-top: 20px;
+    }
+    .order-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    /* 테이블 헤더 셀 스타일 */
+    .order-body table thead th {
+      border: 1px solid #000;
+      background-color: #f0f0f0;
+      padding: 5px;
+      text-align: center;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      height: 30px;
+      min-height: 30px;
+      max-height: 30px;
+      box-sizing: border-box;
+      word-wrap: break-word;
+      white-space: normal;
+    }
+    
+    /* 테이블 열 너비 클래스 */
+    .col-ekno { width: 38px; min-width: 38px; max-width: 38px; }
+    .col-empty { width: 15px; min-width: 15px; max-width: 15px; }
+    .col-invoice { width: 38px; min-width: 38px; max-width: 38px; }
+    .col-billing { width: 32px; min-width: 32px; max-width: 32px; }
+    .col-due { width: 32px; min-width: 32px; max-width: 32px; }
+    .col-euro { width: 30px; min-width: 30px; max-width: 30px; }
+    .col-dollar { width: 30px; min-width: 30px; max-width: 30px; }
+    
+    /* Exchange Rate 스타일 */
+    .exchange-rate-container {
+      text-align: right;
+      margin-top: 10px;
+    }
+    
+    .exchange-rate-label {
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    
+    .exchange-rate-input {
+      width: 100px;
+      height: 33px;
+      text-align: center;
+      border: 1px solid #ccc;
+      padding: 2px;
+      box-sizing: border-box;
+    }
+    /* 테이블 본문 기본 스타일 */
+    .order-body table tbody tr:not(.total-row) {
+      height: 30px;
+      min-height: 30px;
+      max-height: 30px;
+    }
+    
+    .order-body table tbody td:not(.total-row td) {
+      padding: 5px;
+      line-height: 1.5;
+      vertical-align: middle;
+      font-size: 0.9rem;
+      border: 1px solid #000;
+      text-align: center;
+      height: 30px;
+      min-height: 30px;
+      max-height: 30px;
+      box-sizing: border-box;
+    }
+    
+    /* 카테고리 행 강제 높이 설정 (헤더와 동일) */
+    .category1-row {
+      height: 33px;
+      min-height: 33px;
+      max-height: 33px;
+    }
+    
+    .category2-row {
+      height: auto;
+      min-height: 33px;
+      max-height: none;
+    }
+    
+    .category1-row td {
+      height: 33px ;
+      min-height: 33px ;
+      max-height: 33px ;
+      padding: 5px ;
+      line-height: 1.5 ;
+      vertical-align: middle ;
+      border: 1px solid #000 ;
+      text-align: center ;
+      font-size: 0.9rem ;
+      box-sizing: border-box ;
+    }
+    
+    .category2-row td {
+      height: auto ;
+      min-height: 33px ;
+      max-height: none ;
+      padding: 5px ;
+      line-height: 1.5 ;
+      vertical-align: middle ;
+      border: 1px solid #000 ;
+      text-align: center ;
+      font-size: 0.9rem ;
+      box-sizing: border-box ;
+    }
+    
+    .category1-row input, .category1-row select {
+      height: 23px ;
+      line-height: 1.5 ;
+      padding: 0 ;
+      margin: 0 ;
+      border: none ;
+      background: transparent ;
+      font-size: inherit ;
+      width: 100% ;
+      text-align: center ;
+      text-align-last: center ;
+      -webkit-text-align-last: center ;
+      -moz-text-align-last: center ;
+      box-sizing: border-box ;
+    }
+    
+    .category2-row input, .category2-row select {
+      height: auto ;
+      min-height: 23px ;
+      max-height: none ;
+      line-height: 1.5 ;
+      padding: 0 ;
+      margin: 0 ;
+      border: none ;
+      background: transparent ;
+      font-size: inherit ;
+      width: 100% ;
+      text-align: center ;
+      text-align-last: center ;
+      -webkit-text-align-last: center ;
+      -moz-text-align-last: center ;
+      box-sizing: border-box ;
+    }
+    
+    /* Over Payment 특별 스타일 */
+    .category2-row td[colspan="2"] {
+      height: auto ;
+      min-height: 60px ;
+      max-height: none ;
+      vertical-align: top ;
+    }
+    
+    .category2-row td[colspan="2"] input {
+      height: auto ;
+      min-height: 50px ;
+      max-height: none ;
+      white-space: pre-line ;
+      line-height: 1.2 ;
+      font-size: 0.7rem ;
+    }
+
+    /* Total 행 스타일 */
+    .total-row {
+      height: 33px ;
+      min-height: 33px ;
+      max-height: 33px ;
+    }
+
+    .total-row td {
+      height: 33px ;
+      min-height: 33px ;
+      max-height: 33px ;
+      padding: 5px ;
+      line-height: 1.5 ;
+      vertical-align: middle ;
+      border: 1px solid #000 ;
+      text-align: center ;
+      font-size: 0.9rem ;
+      box-sizing: border-box ;
+    }
+
+    .total-row input {
+      height: 23px ;
+      line-height: 1.5 ;
+      padding: 0 ;
+      margin: 0 ;
+      border: none ;
+      background: transparent ;
+      text-align: center ;
+      font-weight: bold ;
+      font-size: inherit ;
+      color: inherit ;
+      outline: none ;
+      box-sizing: border-box ;
+    }
+
+    /* Save2 버튼 스타일 */
+    .save2-selected {
+      background: #000 !important;
+      color: #fff !important;
+      border-color: #000 !important;
+    }
+    
+    /* 더 강력한 선택자 */
+    button#save2Btn.save2-selected {
+      background: #000 !important;
+      color: #fff !important;
+      border-color: #000 !important;
+    }
+    /* 하단 정보 스타일 */
+    .notes, .remarks {
+      font-size: 0.95rem;
+      margin-top: 5px;
+      margin-bottom: 0;
+    }
+    .notes p {
+      margin: 0;
+      line-height: 1.2;
+    }
+    .remarks ul {
+      list-style-type: disc;
+      margin: 0 0 0 20px;
+      padding-left: 0;
+      line-height: 1.2;
+    }
+    .remarks ul ul {
+      margin-left: 20px;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+    .apply-btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 6px 12px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: 1px solid #444;
+      background: #f7f7f7;
+    }
+
+    /* 하단 버튼 영역 전체 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 확장 손잡이 (서랍 손잡이처럼 위쪽에 튀어나옴) */
+    .expand-handle {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    /* 확장/축소 버튼 */
+    .expand-btn {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #666;
+      border-radius: 8px 8px 0 0;
+      min-width: 40px;
+      height: 20px;
+      line-height: 1;
+      transition: all 0.2s ease;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    .expand-btn:hover {
+      background: #e8e8e8;
+      border-color: #999;
+      box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    }
+
+    .expand-btn.expanded {
+      transform: rotate(180deg);
+      background: #e0e0e0;
+    }
+
+    /* 기본 버튼 그룹 레이아웃 */
+    .main-button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+    
+    .left-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .right-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .main-button-group button {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+    
+    .main-button-group button:hover {
+      background: #f0f0f0;
+    }
+
+    /* 상세 버튼 영역 */
+    .detail-button-area {
+      margin-top: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      animation: slideDown 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .current-rows-info {
+      width: 100%;
+      max-width: 800px;
+    }
+    
+    .current-rows-info h4 {
+      margin: 0 0 10px 0;
+      color: #333;
+      font-size: 1rem;
+    }
+    
+    .rows-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #fff;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .row-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .row-item:last-child {
+      border-bottom: none;
+    }
+    
+    .row-info {
+      flex: 1;
+      font-size: 0.9rem;
+    }
+    
+    .row-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .row-actions button {
+      padding: 2px 6px;
+      font-size: 0.8rem;
+      border: 1px solid #ccc;
+      background: #f5f5f5;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    
+    .row-actions button:hover {
+      background: #e0e0e0;
+    }
+    
+    .rows-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    
+    .action-btn {
+      padding: 6px 12px;
+      font-size: 0.9rem;
+      border: 1px solid #666;
+      background: #f7f7f7;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    
+    .action-btn:hover {
+      background: #e8e8e8;
+    }
+    
+
+    .detail-button-area button {
+      margin: 0;
+    }
+
+
+    /* PDF 버튼 - Email 버튼과 동일한 스타일 */
+    #pdfBtn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    #pdfBtn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* Open 버튼 스타일 (Save 버튼과 동일) */
+    #openBtn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    #openBtn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* 테이블 하단 여백 (고정 버튼과 겹치지 않도록) */
+    .page {
+      margin-bottom: 120px;
+    }
+
+    /* 모달 창 스타일 - order.html과 동일 */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 2% auto;
+      padding: 0;
+      border: 1px solid #888;
+      width: 500px;
+      max-height: 90vh;
+      border-radius: 5px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 15px 20px;
+      background-color: #f8f8f8;
+      border-bottom: 1px solid #ddd;
+      border-radius: 5px 5px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: #333;
+    }
+
+    .close {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .close:hover {
+      color: #000;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      background-color: #f8f8f8;
+      border-top: 1px solid #ddd;
+      border-radius: 0 0 5px 5px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    
+    /* 모달 내부 버튼 호버 효과 */
+    .modal button:hover {
+      background: #f0f0f0 ;
+      border-color: #999 ;
+    }
+
+    /* 테이블 스타일 */
+    #swiftOrderTable {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 14px;
+    }
+    #swiftOrderTable th {
+      background-color: #f5f5f5;
+      padding: 8px 4px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-weight: bold;
+      width: 25%;
+    }
+    #swiftOrderTable th:nth-child(4) {
+      width: 15%;
+    }
+    #swiftOrderTable th:nth-child(5) {
+      width: 20%;
+    }
+    #swiftOrderTable td {
+      padding: 6px 4px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-size: 13px;
+    }
+    
+    .top-menu-btn {
+      padding: 3px 6px;
+      margin: 0 2px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 10px;
+      min-width: 50px;
+      height: 24px;
+      line-height: 1.2;
+    }
+    .top-menu-btn:hover {
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div id="pageContainer">
+    <!-- 첫 번째 페이지 -->
+    <div class="page" id="page1">
+      <!-- 헤더 -->
+      <div class="header">
+        <img src="images/NTorderlogo.png" alt="Order Logo" class="logo">
+      <p>MESSRS : Treofan Germany GmbH &amp; CO. KG</p>
+        <p>Ms. Nicole Hennes</p>
+      </div>
+
+      <!-- 주문 상세 내용 -->
+      <div class="order-details">
+        <div class="order-header">
+          <div class="left">
+            DATE :
+            <input type="text" id="orderDateInput" autocomplete="off" />
+          </div>
+          <div class="right">
+            Total Amount :
+            <input type="text" id="totalAmountInput" autocomplete="off" />
+          </div>
+        </div>
+
+        <!-- 주문 내역 테이블 -->
+        <div class="order-body">
+          <table>
+            <thead>
+              <tr>
+                <th class="col-ekno">EK-NO</th>
+                <th class="col-empty"></th>
+                <th class="col-invoice">Invoice No</th>
+                <th class="col-billing">Billing Date</th>
+                <th class="col-due">Due Date</th>
+                <th class="col-euro">€</th>
+                <th class="col-dollar">$</th>
+              </tr>
+            </thead>
+            <tbody id="orderTbody">
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Exchange Rate 필드 -->
+        <div class="exchange-rate-container">
+          <label class="exchange-rate-label">Exchange Rate (€ : $):</label>
+          <input type="text" id="exchangeRateInput" class="exchange-rate-input" placeholder="1.00" />
+        </div>
+    </div>
+  </div>
+
+  <script>
+    // 페이지 초기화 함수
+    async function initializePage() {
+      // Order Date와 Total Amount 초기화
+      const orderDateInput = document.getElementById('orderDateInput');
+      const totalAmountInput = document.getElementById('totalAmountInput');
+      
+      if (orderDateInput) {
+        // 오늘 날짜를 DD.MM.YYYY 형식으로 설정
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayString = `${day}.${month}.${year}`;
+        orderDateInput.value = todayString;
+      }
+      
+      if (totalAmountInput) {
+        totalAmountInput.value = '';
+      }
+      
+      // 카테고리 1의 1행 자동 로드 (우선 실행)
+      await addCategory1Row();
+      
+    }
+
+    // 날짜 문자열을 파싱하는 함수 (최적화됨)
+    function parseDateString(dateStr) {
+      if (!dateStr) return null;
+      
+      // 주로 사용되는 형식만 지원 (DD.MM.YYYY, YYYY-MM-DD)
+      const ddMmYyyy = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+      const yyyyMmDd = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
+      
+      let match = dateStr.match(ddMmYyyy);
+        if (match) {
+        const day = parseInt(match[1]);
+        const month = parseInt(match[2]) - 1;
+        const year = parseInt(match[3]);
+        return new Date(year, month, day);
+      }
+      
+      match = dateStr.match(yyyyMmDd);
+      if (match) {
+        const year = parseInt(match[1]);
+        const month = parseInt(match[2]) - 1;
+        const day = parseInt(match[3]);
+        return new Date(year, month, day);
+      }
+      
+      return null;
+    }
+
+    // 세 개의 날짜 중 가장 오래된 날짜를 반환하는 함수 (최적화됨)
+    function getOldestDate(dndate, pidate, invoicedate) {
+      let oldestDate = null;
+      
+      // 각 날짜를 파싱하여 가장 오래된 날짜 찾기 (한 번에 처리)
+      [dndate, pidate, invoicedate].forEach(dateStr => {
+        if (dateStr) {
+          const parsedDate = parseDateString(dateStr);
+          if (parsedDate && (!oldestDate || parsedDate < oldestDate)) {
+            oldestDate = parsedDate;
+          }
+        }
+      });
+      
+      return oldestDate;
+    }
+
+    // creditnote.json에서 creditnoteno 목록을 로드하는 함수 (최적화됨)
+    async function loadCreditNoteNumbers() {
+      try {
+        const response = await fetch('/api/creditnote');
+        const creditNoteData = await response.json();
+        
+        // creditnoteno 목록 추출 (isused: true인 항목 제외) - 한 번에 처리
+        return creditNoteData
+          .filter(item => item['c/nno'] && !item.isused)
+          .map(item => item['c/nno']);
+      } catch (error) {
+        return [];
+      }
+    }
+
+    // 카테고리 2의 7열 값을 계산하는 함수 (최적화됨)
+    function calculateCategory2Price(row) {
+      const commissionInput = row.querySelector('td:nth-child(6) input');
+      const priceInput = row.querySelector('td:nth-child(7) input');
+      const exchangeRateInput = document.getElementById('exchangeRateInput');
+      const categorySelect = row.querySelector('td:nth-child(1) select');
+      
+      // 계산 불가능한 조건들 체크 (한 번에 처리)
+      if (!commissionInput || !priceInput || !exchangeRateInput) return;
+      if (priceInput.getAttribute('data-fixed-value') === 'true') return;
+      if (categorySelect && ['Over Payment', 'Less Payment'].includes(categorySelect.value)) return;
+      
+      // 계산 실행
+        const commission = parseFloat(commissionInput.value) || 0;
+        const exchangeRate = parseFloat(exchangeRateInput.value) || 1;
+        const calculatedPrice = commission * exchangeRate * -1;
+        
+        priceInput.value = calculatedPrice.toFixed(2);
+      calculateTotal();
+    }
+
+    // creditnoteno에 해당하는 데이터를 로드하는 함수 (카테고리 2용)
+    async function loadCreditNoteData(creditNoteNo, dateInput, commissionInput) {
+      try {
+        const response = await fetch('/api/creditnote');
+        const creditNoteData = await response.json();
+        
+        // creditnoteno가 일치하는 항목 찾기
+        const foundItem = creditNoteData.find(item => item['c/nno'] === creditNoteNo);
+        
+        if (!foundItem) {
+          // 항목을 찾지 못한 경우 초기화
+          if (dateInput) dateInput.value = '';
+          if (commissionInput) commissionInput.value = '';
+          return;
+        }
+        
+        // 4열: c/ndate 로드
+        if (dateInput) {
+          dateInput.value = foundItem['c/ndate'] || '';
+        }
+        
+        if (!commissionInput) return;
+        
+            const row = commissionInput.closest('tr');
+        if (!row) return;
+        
+              const priceInput = row.querySelector('td:nth-child(7) input');
+        const exchangeRateInput = document.getElementById('exchangeRateInput');
+        
+        // c/neuro가 있는 경우: 6열에 로드, 7열에 *환율*-1 계산
+        if (foundItem['c/neuro']) {
+          commissionInput.value = foundItem['c/neuro'];
+          if (priceInput && exchangeRateInput) {
+            const euroValue = parseFloat(foundItem['c/neuro']) || 0;
+            const exchangeRate = parseFloat(exchangeRateInput.value) || 1;
+            priceInput.value = (euroValue * exchangeRate * -1).toFixed(2);
+            priceInput.removeAttribute('data-fixed-value'); // 환율 변경 시 재계산 허용
+          }
+        }
+        // c/ndollar가 있는 경우: 7열에 *-1하여 로드
+        else if (foundItem['c/ndollar']) {
+          commissionInput.value = '';
+              if (priceInput) {
+            const dollarValue = parseFloat(foundItem['c/ndollar']) || 0;
+                priceInput.value = (dollarValue * -1).toFixed(2);
+            priceInput.setAttribute('data-fixed-value', 'true'); // 환율 변경 시 재계산 방지
+              }
+            }
+        // 둘 다 없는 경우
+        else {
+            commissionInput.value = '';
+          if (priceInput) {
+            priceInput.value = '';
+            priceInput.removeAttribute('data-fixed-value');
+          }
+        }
+        
+      } catch (error) {
+        if (dateInput) dateInput.value = '';
+        if (commissionInput) commissionInput.value = '';
+      }
+    }
+
+
+    // Less Payment 번호 로드 함수 (isused: true 제외)
+    async function loadLpNumbers(selectElement) {
+      try {
+        const response = await fetch('/api/creditnote');
+        const creditNoteData = await response.json();
+        
+        // 필터링과 중복 제거를 한 번에 처리
+        const uniqueLpNumbers = [...new Set(
+          creditNoteData
+            .filter(item => item['l/pno'] && !item.isused)
+            .map(item => item['l/pno'])
+        )].sort();
+        
+        // 기존 옵션들 제거 (Choose 제외)
+        while (selectElement.children.length > 1) {
+          selectElement.removeChild(selectElement.lastChild);
+        }
+        
+        // 옵션들 추가
+        uniqueLpNumbers.forEach(lpno => {
+          const option = document.createElement('option');
+          option.value = lpno;
+          option.textContent = lpno;
+          selectElement.appendChild(option);
+        });
+        
+      } catch (error) {
+      }
+    }
+
+    // Less Payment 데이터 로드 함수
+    async function loadLpData(lpno, dateInput, priceInput) {
+      try {
+        const response = await fetch('/api/creditnote');
+        const creditNoteData = await response.json();
+        
+        const foundItem = creditNoteData.find(item => item['l/pno'] === lpno);
+        
+        if (foundItem) {
+          // 날짜 설정
+          if (dateInput) {
+            dateInput.value = foundItem['l/pdate'] || '';
+          }
+          
+          // 가격 설정 (l/pdollar 값을 그대로 로드)
+          if (priceInput) {
+            const dollarValue = foundItem['l/pdollar'];
+            if (dollarValue) {
+              const numericValue = parseFloat(dollarValue);
+              priceInput.value = !isNaN(numericValue) ? numericValue.toString() : '';
+            } else {
+              priceInput.value = '';
+            }
+            calculateTotal();
+          }
+        } else {
+          // 데이터가 없을 때 초기화
+          if (dateInput) dateInput.value = '';
+          if (priceInput) priceInput.value = '';
+        }
+        
+      } catch (error) {
+        if (dateInput) dateInput.value = '';
+        if (priceInput) priceInput.value = '';
+      }
+    }
+
+    // Over Payment 번호 로드 함수 (isused: true 제외)
+    async function loadOverPaymentNumbers(selectElement) {
+      try {
+        const response = await fetch('/api/creditnote');
+        const creditNoteData = await response.json();
+        
+        const uniqueOpNumbers = [...new Set(
+          creditNoteData
+            .filter(item => item['o/pno'] && !item.isused)
+            .map(item => item['o/pno'])
+        )].sort();
+        
+        while (selectElement.children.length > 1) {
+          selectElement.removeChild(selectElement.lastChild);
+        }
+        
+        uniqueOpNumbers.forEach(opno => {
+          const option = document.createElement('option');
+          option.value = opno;
+          option.textContent = opno;
+          selectElement.appendChild(option);
+        });
+        
+      } catch (error) {
+      }
+    }
+
+    // Over Payment 데이터 로드 함수 (통합)
+    async function loadOverPaymentData(opno, dateInput, priceInput, multiplyByMinusOne = false) {
+      try {
+        const response = await fetch('/api/creditnote');
+        const creditNoteData = await response.json();
+        
+        const foundItem = creditNoteData.find(item => item['o/pno'] === opno);
+        
+        if (foundItem) {
+        if (dateInput) {
+            dateInput.value = foundItem['o/pdate'] || '';
+          }
+          
+          if (priceInput) {
+            const dollarValue = foundItem['o/pdollar'];
+            if (dollarValue) {
+              const numericValue = parseFloat(dollarValue);
+              if (!isNaN(numericValue)) {
+                priceInput.value = multiplyByMinusOne ? (numericValue * -1).toString() : numericValue.toString();
+              } else {
+                priceInput.value = '';
+              }
+            } else {
+              priceInput.value = '';
+            }
+            calculateTotal();
+          }
+        } else {
+          if (dateInput) dateInput.value = '';
+          if (priceInput) priceInput.value = '';
+        }
+        
+      } catch (error) {
+        if (dateInput) dateInput.value = '';
+        if (priceInput) priceInput.value = '';
+      }
+    }
+
+    // deliveryNo 드랍다운 생성 함수
+    async function createDeliveryDropdown() {
+      try {
+        const response = await fetch('orderData.json');
+        const orderData = await response.json();
+        
+        const deliveryGroups = {};
+        orderData.forEach(order => {
+          if (order.items?.length) {
+            order.items.forEach(item => {
+              if (item.deliveryNo) {
+                if (!deliveryGroups[item.deliveryNo]) {
+                  deliveryGroups[item.deliveryNo] = [];
+                }
+                deliveryGroups[item.deliveryNo].push(item);
+              }
+            });
+          }
+        });
+        
+        const sortedDeliveryNos = Object.keys(deliveryGroups).sort((a, b) => {
+          const aFirstItem = deliveryGroups[a][0];
+          const bFirstItem = deliveryGroups[b][0];
+          
+          const aOldestDate = getOldestDate(aFirstItem['d/ndate'], aFirstItem['p/idate'], aFirstItem['invoicedate']);
+          const bOldestDate = getOldestDate(bFirstItem['d/ndate'], bFirstItem['p/idate'], bFirstItem['invoicedate']);
+          
+          if (aOldestDate && bOldestDate) {
+            return bOldestDate.getTime() - aOldestDate.getTime();
+          } else if (aOldestDate) return -1;
+          else if (bOldestDate) return 1;
+          else {
+            const aNum = parseInt(a.replace('EK-', '')) || 0;
+            const bNum = parseInt(b.replace('EK-', '')) || 0;
+            return bNum - aNum;
+          }
+        });
+        
+        
+        const options = sortedDeliveryNos.map(deliveryNo => 
+          `<option value="${deliveryNo}">${deliveryNo}</option>`
+        ).join('');
+        
+        return `<select style="width: 100%; border: none; background: transparent; font-size: inherit; color: inherit; outline: none; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; text-align: center; text-align-last: center;"><option value="" style="text-align: center;">Choose</option>${options}</select>`;
+        
+      } catch (error) {
+        return '<select style="width: 100%; border: none; background: transparent;"><option value="">로드 실패</option></select>';
+      }
+    }
+
+    // Total 행 생성 함수
+    function createTotalRow() {
+      const row = document.createElement('tr');
+      row.className = 'total-row';
+      row.style.height = '33px';
+      
+      // 공통 스타일 설정
+      const commonCellStyle = {
+        height: '33px',
+        padding: '5px',
+        lineHeight: '1.5',
+        boxSizing: 'border-box',
+        backgroundColor: '#f0f0f0'
+      };
+      
+      // 셀 생성 헬퍼 함수
+      const createCell = (width, text = '', isTotal = false) => {
+        const cell = document.createElement('td');
+        Object.assign(cell.style, commonCellStyle, { width });
+        if (isTotal) {
+          cell.style.textAlign = 'center';
+          cell.style.fontWeight = 'bold';
+        }
+        if (text) cell.textContent = text;
+        return cell;
+      };
+      
+      // 1열: Total
+      const cell1 = createCell('40px', 'Total', true);
+      
+      // 2-6열: 빈 셀들
+      const emptyCells = [
+        createCell('15px'),
+        createCell('35px'),
+        createCell('25px'),
+        createCell('25px'),
+        createCell('25px')
+      ];
+      
+      // 7열: 합계 입력 필드
+      const cell7 = createCell('30px', '', true);
+      const totalInput = document.createElement('input');
+      Object.assign(totalInput.style, {
+        width: '100%',
+        border: 'none',
+        background: 'transparent',
+        textAlign: 'center',
+        fontWeight: 'bold'
+      });
+      totalInput.type = 'text';
+      totalInput.readOnly = true;
+      totalInput.value = '0';
+      totalInput.id = 'totalAmount';
+      cell7.appendChild(totalInput);
+      
+      // 모든 셀을 행에 추가
+      row.appendChild(cell1);
+      emptyCells.forEach(cell => row.appendChild(cell));
+      row.appendChild(cell7);
+      
+      // 헤더와 동일한 높이로 설정
+        const headerCell = document.querySelector('.order-body table thead th');
+        const headerHeight = headerCell ? headerCell.offsetHeight : 33;
+        
+      // 공통 스타일 설정
+      const setRowHeight = (element, height) => {
+        element.style.height = `${height}px`;
+        element.style.minHeight = `${height}px`;
+        element.style.maxHeight = `${height}px`;
+      };
+      
+      // 행 높이 설정
+      setRowHeight(row, headerHeight);
+      
+      // 셀 높이 설정
+        const cells = row.querySelectorAll('td');
+        cells.forEach(cell => {
+        setRowHeight(cell, headerHeight);
+          
+        // 입력 필드 스타일 설정
+          const inputs = cell.querySelectorAll('input');
+          inputs.forEach(input => {
+          input.style.height = `${headerHeight - 10}px`;
+          input.style.textAlign = 'center';
+          input.style.fontWeight = 'bold';
+          input.style.padding = '0';
+          input.style.margin = '0';
+          });
+        });
+      
+      return row;
+    }
+
+    // 합계 계산 함수 (2% discount 포함)
+    function calculateTotal() {
+      const tbody = document.getElementById('orderTbody');
+      
+      // 카테고리1, 카테고리2, 2% discount 행의 모든 7열 값들을 합산
+      const allRows = tbody.querySelectorAll('tr:not(.total-row)');
+      let total = 0;
+      
+      allRows.forEach(row => {
+        const priceInput = row.querySelector('td:nth-child(7) input');
+        let value = 0;
+        
+        if (priceInput) {
+          value = parseFloat(priceInput.value) || 0;
+        } else {
+          // input이 없는 경우 (2% discount 행 등) 텍스트 내용에서 숫자 추출
+          const priceCell = row.querySelector('td:nth-child(7)');
+          if (priceCell && priceCell.textContent.trim()) {
+            value = parseFloat(priceCell.textContent.trim()) || 0;
+          }
+        }
+        
+        total += value;
+      });
+      
+      // 결과값 포맷팅
+      const formattedTotal = total.toFixed(2);
+      
+      // Total 행과 Total Amount 필드에 결과 설정
+      const totalInput = document.getElementById('totalAmount');
+      const totalAmountInput = document.getElementById('totalAmountInput');
+      
+      if (totalInput) totalInput.value = formattedTotal;
+      if (totalAmountInput) totalAmountInput.value = formattedTotal;
+    }
+
+    // 카테고리 1 행 추가 함수
+    async function addCategory1Row() {
+      const tbody = document.getElementById('orderTbody');
+      const row = document.createElement('tr');
+      row.className = 'category1-row';
+      
+      // deliveryNo 드랍다운 생성
+      const deliveryDropdown = await createDeliveryDropdown();
+      
+         row.innerHTML = `
+           <td style="width: 38px; min-width: 38px; max-width: 38px; word-wrap: break-word; white-space: normal;">${deliveryDropdown}</td>
+           <td style="width: 10px; min-width: 10px; max-width: 10px; word-wrap: break-word; white-space: normal;"><input type="text" style="width: 100%; border: none; background: transparent; font-size: inherit; color: inherit; outline: none; text-align: center;" /></td>
+        <td style="width: 38px; min-width: 38px; max-width: 38px; word-wrap: break-word; white-space: normal;"><select style="width: 100%; border: none; background: transparent; font-size: inherit; color: inherit; outline: none; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; text-align: center; text-align-last: center;" class="pino-select"><option value="" style="text-align: center;">Choose</option></select></td>
+        <td style="width: 30px; min-width: 30px; max-width: 30px; word-wrap: break-word; white-space: normal;"><input type="text" style="width: 100%; border: none; background: transparent; text-align: center;" /></td>
+        <td style="width: 30px; min-width: 30px; max-width: 30px; word-wrap: break-word; white-space: normal;"><input type="text" style="width: 100%; border: none; background: transparent; text-align: center;" /></td>
+        <td style="width: 30px; min-width: 30px; max-width: 30px; word-wrap: break-word; white-space: normal;"><input type="text" style="width: 100%; border: none; background: transparent; text-align: center;" /></td>
+        <td style="width: 38px; min-width: 38px; max-width: 38px; word-wrap: break-word; white-space: normal;"><input type="text" style="width: 100%; border: none; background: transparent; text-align: center;" /></td>
+      `;
+      
+      // Total 행이 있는지 확인하고 제거
+      const existingTotalRow = tbody.querySelector('.total-row');
+      if (existingTotalRow) {
+        existingTotalRow.remove();
+      }
+      
+      // 카테고리 1 행들을 찾아서 마지막 카테고리 1 행 다음에 삽입
+      const category1Rows = tbody.querySelectorAll('.category1-row');
+      if (category1Rows.length > 0) {
+        // 마지막 카테고리 1 행 다음에 삽입
+        const lastCategory1Row = category1Rows[category1Rows.length - 1];
+        lastCategory1Row.insertAdjacentElement('afterend', row);
+      } else {
+        // 카테고리 1 행이 없으면 맨 아래에 추가
+         tbody.appendChild(row);
+      }
+      
+      // 카테고리1 subtotal 행 추가
+      addCategory1SubtotalRow();
+      
+      // Total 행을 마지막에 추가 (한 번만)
+      if (!tbody.querySelector('.total-row')) {
+        const totalRow = createTotalRow();
+        tbody.appendChild(totalRow);
+      }
+      
+        // DOM 요소들 한 번에 쿼리
+      const deliverySelect = row.querySelector('td:nth-child(1) select');
+      const pinoSelect = row.querySelector('.pino-select');
+      const corpInput = row.querySelector('td:nth-child(2) input');
+      const dateInput = row.querySelector('td:nth-child(4) input');
+      const priceInput = row.querySelector('td:nth-child(7) input');
+      
+      if (deliverySelect && pinoSelect) {
+        // deliveryNo 선택 시 통합 이벤트 처리
+        deliverySelect.addEventListener('change', async function() {
+          const selectedDeliveryNo = this.value;
+          
+          // p/ino 드롭다운 업데이트
+          if (selectedDeliveryNo) {
+            await updatePinoDropdown(selectedDeliveryNo, pinoSelect);
+            // deliveryNo에 해당하는 mode 정보 로드
+            if (corpInput) {
+              loadModeForDeliveryNo(selectedDeliveryNo, corpInput);
+            }
+          } else {
+            // deliveryNo가 선택되지 않으면 p/ino 드롭다운 초기화
+            pinoSelect.innerHTML = '<option value="" style="text-align: center;">Choose</option>';
+          }
+          
+          // 카테고리1 subtotal 업데이트 (2% discount 재계산)
+          addCategory1SubtotalRow();
+          
+          // 토탈 재계산
+          calculateTotal();
+        });
+        
+        // p/ino 선택 시 날짜와 가격 로드
+        pinoSelect.addEventListener('change', async function() {
+          const selectedPino = this.value;
+          const selectedDeliveryNo = deliverySelect.value;
+          
+          if (selectedPino && selectedDeliveryNo) {
+            await loadPinoData(selectedDeliveryNo, selectedPino, row);
+          } else {
+            // p/ino가 선택되지 않으면 4열과 7열 초기화
+            if (dateInput) dateInput.value = '';
+            if (priceInput) priceInput.value = '';
+          }
+          
+          // 카테고리1 subtotal 업데이트 (2% discount 재계산)
+          addCategory1SubtotalRow();
+          
+          // 토탈 재계산
+          calculateTotal();
+          
+          // 카테고리 1의 첫 번째 행에서만 save/save2 버튼 상태 변경
+          const category1Rows = document.querySelectorAll('.category1-row');
+          const isFirstCategory1Row = category1Rows.length > 0 && row === category1Rows[0];
+          
+          if (isFirstCategory1Row) {
+            console.log('🔍 첫 번째 카테고리1 행에서 p/ino 선택됨');
+            console.log('  - selectedPino:', selectedPino);
+            console.log('  - row:', row);
+            
+            const save2Btn = document.getElementById('save2Btn');
+            const saveBtn = document.getElementById('saveBtn');
+            
+            if (selectedPino && save2Btn && saveBtn) {
+              // p/ino2 값들 확인 (실제 데이터에서 p/ino2 필드 값들)
+              const pino2Values = ['8993014165', '8993013490']; // 실제 p/ino2 값들
+              
+              if (pino2Values.includes(selectedPino)) {
+                console.log('✅ p/ino2 선택됨 - Save2 버튼 활성화, Save 버튼 비활성화');
+                // Save2 버튼 활성화 (검정색)
+                save2Btn.classList.add('save2-selected');
+                save2Btn.style.backgroundColor = '#000';
+                save2Btn.style.color = '#fff';
+                save2Btn.style.borderColor = '#000';
+                save2Btn.disabled = false;
+                save2Btn.style.opacity = '1';
+                save2Btn.style.cursor = 'pointer';
+                
+                // Save 버튼 비활성화
+                saveBtn.disabled = true;
+                saveBtn.style.opacity = '0.5';
+                saveBtn.style.cursor = 'not-allowed';
+                saveBtn.classList.remove('save2-selected');
+                saveBtn.style.backgroundColor = '';
+                saveBtn.style.color = '';
+                saveBtn.style.borderColor = '';
+              } else {
+                console.log('❌ 일반 p/ino 선택됨 - Save 버튼 활성화, Save2 버튼 비활성화');
+                // Save 버튼 활성화 (기본 상태)
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '1';
+                saveBtn.style.cursor = 'pointer';
+                saveBtn.classList.remove('save2-selected');
+                saveBtn.style.backgroundColor = '';
+                saveBtn.style.color = '';
+                saveBtn.style.borderColor = '';
+                
+                // Save2 버튼 비활성화 (기본 상태)
+                save2Btn.classList.remove('save2-selected');
+                save2Btn.style.backgroundColor = '';
+                save2Btn.style.color = '';
+                save2Btn.style.borderColor = '';
+                save2Btn.disabled = false;
+                save2Btn.style.opacity = '1';
+                save2Btn.style.cursor = 'pointer';
+              }
+            }
+          }
+        });
+      }
+      
+      // 합계 계산
+      calculateTotal();
+      
+      // 헤더와 동일한 높이로 설정
+        const headerCell = document.querySelector('.order-body table thead th');
+        const headerHeight = headerCell ? headerCell.offsetHeight : 33;
+        
+      // 공통 스타일 설정
+      const setRowHeight = (element, height) => {
+        element.style.height = `${height}px`;
+        element.style.minHeight = `${height}px`;
+        element.style.maxHeight = `${height}px`;
+      };
+      
+      // 행 높이 설정
+      setRowHeight(row, headerHeight);
+      
+      // 셀 높이 설정
+        const cells = row.querySelectorAll('td');
+        cells.forEach(cell => {
+        setRowHeight(cell, headerHeight);
+          
+        // 입력 필드 스타일 설정
+          const inputs = cell.querySelectorAll('input, select');
+          inputs.forEach(input => {
+          input.style.height = `${headerHeight - 10}px`;
+          input.style.textAlign = 'center';
+          input.style.textAlignLast = 'center';
+          input.style.padding = '0';
+          input.style.margin = '0';
+          });
+        });
+        
+        // 7열 가격 입력 필드에 이벤트 리스너 추가
+        if (priceInput) {
+          priceInput.addEventListener('input', function() {
+            // 사용자가 수동으로 값을 변경하면 고정 플래그 제거
+            priceInput.removeAttribute('data-fixed-value');
+            calculateTotal();
+            // 카테고리1 subtotal 업데이트
+            addCategory1SubtotalRow();
+          });
+          priceInput.addEventListener('change', function() {
+            // 사용자가 수동으로 값을 변경하면 고정 플래그 제거
+            priceInput.removeAttribute('data-fixed-value');
+            calculateTotal();
+            // 카테고리1 subtotal 업데이트
+            addCategory1SubtotalRow();
+          });
+        }
+         
+       }
+
+        // deliveryNo에 해당하는 mode와 invoice 정보를 찾아서 표시하는 함수
+    async function loadModeForDeliveryNo(deliveryNo, corpInput) {
+      try {
+        const response = await fetch('orderData.json');
+        const orderData = await response.json();
+        
+        // deliveryNo가 일치하는 order를 찾기
+        let foundData = null;
+        
+        for (const order of orderData) {
+          if (order.items?.length) {
+            const matchingItem = order.items.find(item => item.deliveryNo === deliveryNo);
+            if (matchingItem) {
+              const hasPino = matchingItem['p/ino']?.trim();
+              foundData = {
+                mode: order.mode,
+                invoice: hasPino ? matchingItem['p/ino'] : matchingItem.invoiceno || '',
+                date: hasPino ? matchingItem['p/idate'] || '' : matchingItem.invoicedate || '',
+                dueDate: hasPino ? '' : matchingItem.invoicedue || '',
+                price: hasPino ? matchingItem['p/iprice'] || '' : matchingItem.invoiceprice || '',
+                hasPino: !!hasPino
+              };
+                break;
+              }
+          }
+        }
+        
+        if (foundData) {
+          // NT는 NT로, SM-B/SM-C는 SM으로 표시
+          const displayMode = (foundData.mode === 'SM-B' || foundData.mode === 'SM-C') ? 'SM' : foundData.mode;
+          corpInput.value = displayMode;
+          
+          // DOM 요소들 한 번에 쿼리
+          const currentRow = corpInput.closest('tr');
+          const invoiceSelect = currentRow.querySelector('.pino-select');
+          const dateInput = currentRow.querySelector('td:nth-child(4) input');
+          const dueDateInput = currentRow.querySelector('td:nth-child(5) input');
+          const priceInput = currentRow.querySelector('td:nth-child(7) input');
+          
+          // 3열에 invoice 정보 설정
+          if (invoiceSelect && foundData.invoice?.trim()) {
+            // 기존 옵션 확인 및 추가
+            const existingOption = [...invoiceSelect.options].find(opt => opt.value === foundData.invoice);
+              if (!existingOption) {
+                const newOption = document.createElement('option');
+              newOption.value = foundData.invoice;
+              newOption.textContent = foundData.invoice;
+                invoiceSelect.appendChild(newOption);
+              }
+            invoiceSelect.value = foundData.invoice;
+          }
+          
+          // 4-7열 데이터 설정
+          if (dateInput) dateInput.value = foundData.date;
+          if (dueDateInput) dueDateInput.value = foundData.dueDate;
+          if (priceInput) {
+            priceInput.value = foundData.price;
+            calculateTotal();
+          }
+          
+          // 헤더 동적 변경 (1행에서만)
+          const tbody = document.getElementById('orderTbody');
+          const isFirstRow = currentRow === tbody.querySelector('tr:not(.total-row)');
+          
+          if (isFirstRow) {
+            const headerCell = document.querySelector('.order-body table thead th:nth-child(3)');
+            if (headerCell) {
+              headerCell.textContent = foundData.hasPino ? 'Proforma Invoice No' : 'Invoice No';
+            }
+          }
+        } else {
+          corpInput.value = '';
+        }
+        
+      } catch (error) {
+        corpInput.value = '';
+      }
+      }
+      
+      // 카테고리 2 행 초기화 함수
+      function resetCategory2Row(row) {
+        // 3열 드랍다운 초기화
+        const creditNoteSelect = row.querySelector('td:nth-child(3) select');
+        if (creditNoteSelect) {
+          creditNoteSelect.value = '';
+          // 기존 옵션들 제거 (Choose 제외)
+          while (creditNoteSelect.children.length > 1) {
+            creditNoteSelect.removeChild(creditNoteSelect.lastChild);
+          }
+        }
+        
+        // 4열 날짜 입력 초기화
+        const dateInput = row.querySelector('td:nth-child(4) input');
+        if (dateInput) dateInput.value = '';
+        
+        // 5열과 6열 복원 (Less Payment/Over Payment에서 변경된 경우)
+        const dueDateCell = row.querySelector('td:nth-child(5)');
+        const commissionCell = row.querySelector('td:nth-child(6)');
+        
+        if (dueDateCell && commissionCell) {
+          // colspan 제거
+          dueDateCell.removeAttribute('colspan');
+          
+          // 스타일 초기화
+          Object.assign(dueDateCell.style, {
+            width: '30px',
+            minWidth: '30px',
+            maxWidth: '30px',
+            height: 'auto',
+            minHeight: '33px',
+            verticalAlign: 'top'
+          });
+          
+          // 6열 다시 표시
+          commissionCell.style.display = '';
+          
+        }
+        
+        // 6열 수수료 입력 초기화
+        const commissionInput = row.querySelector('td:nth-child(6) input');
+        if (commissionInput) commissionInput.value = '';
+        
+        // 7열 가격 입력 초기화
+        const priceInput = row.querySelector('td:nth-child(7) input');
+        if (priceInput) {
+          priceInput.value = '';
+          priceInput.removeAttribute('data-fixed-value');
+        }
+      }
+      
+      // 셀 복원 함수
+      function restoreCells(dueDateCell, commissionCell) {
+        // 5열 원래대로 복원
+        dueDateCell.removeAttribute('colspan');
+        Object.assign(dueDateCell.style, {
+          width: '30px',
+          minWidth: '30px',
+          maxWidth: '30px',
+          height: '33px',
+          minHeight: '33px',
+          verticalAlign: 'middle'
+        });
+        
+        // 6열 다시 표시
+        commissionCell.style.display = '';
+        
+        // 5열 입력 필드 초기화
+        const existingDiv = dueDateCell.querySelector('div');
+        const existingInput = dueDateCell.querySelector('input');
+        
+        if (existingDiv) {
+          const newInput = document.createElement('input');
+          newInput.type = 'text';
+          newInput.value = '';
+          Object.assign(newInput.style, {
+            width: '100%',
+            border: 'none',
+            background: 'transparent',
+            textAlign: 'center',
+            fontSize: 'inherit',
+            height: '23px',
+            minHeight: '23px',
+            resize: 'none'
+          });
+          
+          existingDiv.remove();
+          dueDateCell.appendChild(newInput);
+        } else if (existingInput) {
+          existingInput.value = '';
+          existingInput.readOnly = false;
+          Object.assign(existingInput.style, {
+            fontWeight: 'normal',
+            fontSize: 'inherit',
+            lineHeight: 'inherit',
+            whiteSpace: 'normal',
+            height: '23px',
+            minHeight: '23px',
+            resize: 'none'
+          });
+        }
+      }
+      
+      // 입력 필드 초기화 함수
+      function clearInputFields(row) {
+        const inputs = [
+          row.querySelector('td:nth-child(4) input'),
+          row.querySelector('td:nth-child(6) input'),
+          row.querySelector('td:nth-child(7) input')
+        ];
+        
+        inputs.forEach(input => {
+          if (input) input.value = '';
+        });
+      }
+      
+      // 공통 셀 합치기 함수
+      function mergeCellsWithText(row, text) {
+        const dueDateCell = row.querySelector('td:nth-child(5)');
+        const commissionCell = row.querySelector('td:nth-child(6)');
+        
+        if (!dueDateCell || !commissionCell) return;
+        
+        // 5열과 6열을 합치기 (colspan=2)
+        dueDateCell.setAttribute('colspan', '2');
+        Object.assign(dueDateCell.style, {
+          width: '60px',
+          minWidth: '60px',
+          maxWidth: '60px',
+          height: 'auto',
+          minHeight: '33px',
+          verticalAlign: 'top'
+        });
+        commissionCell.style.display = 'none';
+        
+        // 5열에 텍스트 표시
+        const dueDateInput = dueDateCell.querySelector('input');
+        if (dueDateInput) {
+          const div = document.createElement('div');
+          div.innerHTML = text;
+          Object.assign(div.style, {
+            textAlign: 'center',
+            fontWeight: 'normal',
+            fontSize: 'inherit',
+            lineHeight: '1.2',
+            height: 'auto',
+            minHeight: '50px',
+            width: '100%',
+            border: 'none',
+            background: 'transparent',
+            outline: 'none',
+            padding: '10px 0',
+            margin: '0',
+            boxSizing: 'border-box',
+            fontFamily: 'inherit',
+            color: 'inherit',
+            verticalAlign: 'middle',
+            display: 'block'
+          });
+          
+          dueDateInput.remove();
+          dueDateCell.appendChild(div);
+          
+          Object.assign(dueDateCell.style, {
+            height: 'auto',
+            minHeight: '60px',
+            maxHeight: 'none'
+          });
+      }
+    }
+
+    // 카테고리 1 subtotal 행 추가 함수
+    function addCategory1SubtotalRow() {
+      const tbody = document.getElementById('orderTbody');
+      
+      // 기존 subtotal 행 제거
+      const existingSubtotalRow = tbody.querySelector('.category1-subtotal-row');
+      if (existingSubtotalRow) {
+        existingSubtotalRow.remove();
+      }
+      
+      // 카테고리 1 행들 찾기
+      const category1Rows = tbody.querySelectorAll('.category1-row');
+      if (category1Rows.length === 0) return;
+      
+      // subtotal 계산 (2% 할인 적용)
+      let totalPrice = 0;
+      category1Rows.forEach(row => {
+        const priceInput = row.querySelector('td:nth-child(7) input');
+        const price = parseFloat(priceInput?.value) || 0;
+        totalPrice += price;
+      });
+      
+      // 2% 할인 적용하여 음수로 표시
+      const discountedAmount = -(totalPrice * 0.02);
+      
+      // subtotal 행 생성 (total 행과 동일한 스타일)
+      const subtotalRow = document.createElement('tr');
+      subtotalRow.className = 'category1-subtotal-row';
+      subtotalRow.style.height = '33px';
+      
+      // 공통 스타일 설정 (total 행과 동일)
+      const commonCellStyle = {
+        height: '33px',
+        padding: '5px',
+        lineHeight: '1.5',
+        boxSizing: 'border-box',
+        backgroundColor: '#f0f0f0'
+      };
+      
+      subtotalRow.innerHTML = `
+        <td style="width: 38px; min-width: 38px; max-width: 38px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0; font-weight: bold;">2% discount</td>
+        <td style="width: 10px; min-width: 10px; max-width: 10px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0;"></td>
+        <td style="width: 38px; min-width: 38px; max-width: 38px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0;"></td>
+        <td style="width: 30px; min-width: 30px; max-width: 30px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0;"></td>
+        <td style="width: 30px; min-width: 30px; max-width: 30px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0;"></td>
+        <td style="width: 30px; min-width: 30px; max-width: 30px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0;"></td>
+        <td style="width: 38px; min-width: 38px; max-width: 38px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0; font-weight: bold;">${discountedAmount.toFixed(2)}</td>
+      `;
+      
+      // 마지막 카테고리 1 행 다음에 삽입
+      const lastCategory1Row = category1Rows[category1Rows.length - 1];
+      lastCategory1Row.insertAdjacentElement('afterend', subtotalRow);
+    }
+
+    // 카테고리 2 행 추가 함수 (카테고리 1 행 아래에 배치)
+    function addCategory2Row() {
+      const tbody = document.getElementById('orderTbody');
+      const row = document.createElement('tr');
+      row.className = 'category2-row';
+      
+      row.innerHTML = `
+        <td style="width: 38px; min-width: 38px; max-width: 38px; word-wrap: break-word; white-space: normal;">
+          <select style="width: 100%; border: none; background: transparent; font-size: inherit; color: inherit; outline: none; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; text-align: center; text-align-last: center;">
+            <option value="" style="text-align: center;">Choose</option>
+            <option value="Less Payment">Less Payment</option>
+            <option value="Over Payment">Over Payment</option>
+            <option value="Credit Note">Credit Note</option>
+          </select>
+        </td>
+        <td style="width: 10px; min-width: 10px; max-width: 10px; word-wrap: break-word; white-space: normal;"><input type="text" style="width: 100%; border: none; background: transparent; text-align: center;" /></td>
+        <td style="width: 38px; min-width: 38px; max-width: 38px; word-wrap: break-word; white-space: normal;">
+          <select style="width: 100%; border: none; background: transparent; font-size: inherit; color: inherit; outline: none; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; text-align: center; text-align-last: center;">
+            <option value="" style="text-align: center;">Choose</option>
+          </select>
+        </td>
+        <td style="width: 30px; min-width: 30px; max-width: 30px; word-wrap: break-word; white-space: normal;">
+          <input type="text" style="width: 100%; border: none; background: transparent; text-align: center;" />
+        </td>
+        <td style="width: 30px; min-width: 30px; max-width: 30px; word-wrap: break-word; white-space: normal;"><input type="text" style="width: 100%; border: none; background: transparent; text-align: center;" /></td>
+        <td style="width: 30px; min-width: 30px; max-width: 30px; word-wrap: break-word; white-space: normal;"><input type="text" style="width: 100%; border: none; background: transparent; text-align: center;" /></td>
+        <td style="width: 38px; min-width: 38px; max-width: 38px; word-wrap: break-word; white-space: normal;"><input type="text" style="width: 100%; border: none; background: transparent; text-align: center;" /></td>
+      `;
+      
+      // Total 행이 있는지 확인하고 제거
+      const existingTotalRow = tbody.querySelector('.total-row');
+      if (existingTotalRow) {
+        existingTotalRow.remove();
+      }
+      
+      // 카테고리 2 행 삽입 및 Total 행 관리 통합
+      const category2Rows = tbody.querySelectorAll('.category2-row');
+      
+      if (category2Rows.length > 0) {
+        // 마지막 카테고리 2 행 다음에 삽입
+        category2Rows[category2Rows.length - 1].insertAdjacentElement('afterend', row);
+      } else {
+        // 카테고리 2 행이 없으면 맨 아래에 추가
+        tbody.appendChild(row);
+      }
+      
+      // Total 행 재추가 (제거했으므로 항상 추가)
+      tbody.appendChild(createTotalRow());
+      
+      // 합계 계산
+      calculateTotal();
+      
+      // 헤더와 동일한 높이로 설정
+        const headerCell = document.querySelector('.order-body table thead th');
+        const headerHeight = headerCell ? headerCell.offsetHeight : 33;
+      const inputHeight = headerHeight - 10;
+      
+      // 공통 스타일 설정
+      const setRowHeight = (element, height) => {
+        element.style.height = `${height}px`;
+        element.style.minHeight = `${height}px`;
+        element.style.maxHeight = `${height}px`;
+      };
+      
+      // 입력 필드 공통 스타일
+      const setInputStyle = (input) => {
+        input.style.height = `${inputHeight}px`;
+        input.style.textAlign = 'center';
+        input.style.textAlignLast = 'center';
+        input.style.padding = '0';
+        input.style.margin = '0';
+      };
+      
+      // 행 높이 설정
+      setRowHeight(row, headerHeight);
+      
+      // 셀 높이 및 입력 필드 스타일 설정
+        const cells = row.querySelectorAll('td');
+        cells.forEach(cell => {
+        setRowHeight(cell, headerHeight);
+        cell.querySelectorAll('input, select').forEach(setInputStyle);
+      });
+      
+      // DOM 요소들 한 번에 쿼리
+        const commissionInput = row.querySelector('td:nth-child(6) input');
+      const priceInput = row.querySelector('td:nth-child(7) input');
+      
+      // 6열 수수료 입력 필드 이벤트 리스너
+        if (commissionInput) {
+        ['input', 'change'].forEach(eventType => {
+          commissionInput.addEventListener(eventType, () => calculateCategory2Price(row));
+        });
+      }
+      
+      // 7열 가격 입력 필드 이벤트 리스너
+        if (priceInput) {
+        const handlePriceChange = () => {
+            priceInput.removeAttribute('data-fixed-value');
+            calculateTotal();
+        };
+        ['input', 'change'].forEach(eventType => {
+          priceInput.addEventListener(eventType, function() {
+            handlePriceChange();
+            // 카테고리1 subtotal 업데이트
+            addCategory1SubtotalRow();
+          });
+        });
+      }
+        
+      // 1열 드랍다운 이벤트 리스너
+        const typeSelect = row.querySelector('td:nth-child(1) select');
+        if (typeSelect) {
+          typeSelect.addEventListener('change', async function() {
+            const selectedType = this.value;
+            const creditNoteSelect = row.querySelector('td:nth-child(3) select');
+          
+          // 모든 열 초기화
+          resetCategory2Row(row);
+            
+            if (selectedType === 'Credit Note' && creditNoteSelect) {
+              // creditnoteno 목록 로드
+              const creditNoteNumbers = await loadCreditNoteNumbers();
+              
+              // 기존 옵션들 제거 (Choose 제외)
+              while (creditNoteSelect.children.length > 1) {
+                creditNoteSelect.removeChild(creditNoteSelect.lastChild);
+              }
+              
+              // creditnoteno 옵션들 추가
+              creditNoteNumbers.forEach(creditNoteNo => {
+                const option = document.createElement('option');
+                option.value = creditNoteNo;
+                option.textContent = creditNoteNo;
+                creditNoteSelect.appendChild(option);
+              });
+              
+            // 3열 드랍다운 이벤트 리스너
+              creditNoteSelect.addEventListener('change', async function() {
+                const selectedCreditNoteNo = this.value;
+                const dateInput = row.querySelector('td:nth-child(4) input');
+                const commissionInput = row.querySelector('td:nth-child(6) input');
+                
+                if (selectedCreditNoteNo && (dateInput || commissionInput)) {
+                  await loadCreditNoteData(selectedCreditNoteNo, dateInput, commissionInput);
+                } else {
+                  if (dateInput) dateInput.value = '';
+                  if (commissionInput) commissionInput.value = '';
+                }
+              });
+              
+            } else if (selectedType === 'Less Payment') {
+              // Less Payment 선택 시 5열과 6열을 합치기
+              mergeCellsWithText(row, 'The outstanding balance<br>from the previous remittance');
+              
+              // Less Payment 선택 시 3열에 l/pno 로드
+              if (creditNoteSelect) {
+                creditNoteSelect.value = '';
+                // 기존 옵션들 제거 (Choose 제외)
+                while (creditNoteSelect.children.length > 1) {
+                  creditNoteSelect.removeChild(creditNoteSelect.lastChild);
+                }
+                
+                // l/pno 로드
+                await loadLpNumbers(creditNoteSelect);
+                
+                // 기존 이벤트 리스너 제거 후 새로 등록 (Less Payment용)
+                creditNoteSelect.removeEventListener('change', creditNoteSelect.lessPaymentHandler);
+                creditNoteSelect.lessPaymentHandler = async function() {
+                  const selectedLpno = this.value;
+                  const dateInput = row.querySelector('td:nth-child(4) input');
+                  const priceInput = row.querySelector('td:nth-child(7) input');
+                  
+                  
+                  if (selectedLpno) {
+                    // 4열에 l/pdate 로드하고 7열에 l/pdollar 직접 로드
+                    await loadLpData(selectedLpno, dateInput, priceInput);
+                  } else {
+                    if (dateInput) dateInput.value = '';
+                    if (priceInput) priceInput.value = '';
+                  }
+                };
+                creditNoteSelect.addEventListener('change', creditNoteSelect.lessPaymentHandler);
+              }
+              
+            } else if (selectedType === 'Over Payment') {
+              // Over Payment 선택 시 5열과 6열을 합치기
+              mergeCellsWithText(row, 'Proforma Invoice was<br>higher than Invoice');
+              
+              // Over Payment 선택 시 3열에 o/pno 로드
+              if (creditNoteSelect) {
+                creditNoteSelect.value = '';
+                // 기존 옵션들 제거 (Choose 제외)
+                while (creditNoteSelect.children.length > 1) {
+                  creditNoteSelect.removeChild(creditNoteSelect.lastChild);
+                }
+                
+                // o/pno 로드
+                await loadOverPaymentNumbers(creditNoteSelect);
+                
+                // 기존 이벤트 리스너 제거 후 새로 등록 (Over Payment용)
+                creditNoteSelect.removeEventListener('change', creditNoteSelect.overPaymentHandler);
+                creditNoteSelect.overPaymentHandler = async function() {
+                  const selectedOpno = this.value;
+                  const dateInput = row.querySelector('td:nth-child(4) input');
+                  const priceInput = row.querySelector('td:nth-child(7) input');
+                  
+                  if (selectedOpno) {
+                    await loadOverPaymentData(selectedOpno, dateInput, priceInput, true);
+                  } else {
+                    if (dateInput) dateInput.value = '';
+                    if (priceInput) priceInput.value = '';
+                  }
+                };
+                creditNoteSelect.addEventListener('change', creditNoteSelect.overPaymentHandler);
+              }
+            } else {
+              // Choose 선택 시 5-6열 원래대로 복원 (Less Payment나 Over Payment가 아닌 경우만)
+              const dueDateCell = row.querySelector('td:nth-child(5)');
+              const commissionCell = row.querySelector('td:nth-child(6)');
+              
+              // 현재 선택된 타입이 Less Payment나 Over Payment가 아닌 경우만 복원
+              const currentType = typeSelect.value;
+              if (currentType !== 'Less Payment' && currentType !== 'Over Payment' && dueDateCell && commissionCell) {
+                restoreCells(dueDateCell, commissionCell);
+              }
+              
+              // Choose 선택 시 초기화
+              if (creditNoteSelect) {
+                creditNoteSelect.value = '';
+                while (creditNoteSelect.children.length > 1) {
+                  creditNoteSelect.removeChild(creditNoteSelect.lastChild);
+                }
+                clearInputFields(row);
+              }
+            }
+          });
+        }
+      
+      // 행 추가 후 현재 행 목록 새로고침
+      displayCurrentRows();
+    }
+
+    // 현재 추가된 행들을 표시하는 함수
+    function displayCurrentRows() {
+      const currentRowsList = document.getElementById('currentRowsList');
+      if (!currentRowsList) return;
+      
+      const category2Rows = document.querySelectorAll('.category2-row');
+      
+      if (category2Rows.length === 0) {
+        currentRowsList.innerHTML = '<div class="row-item"><div class="row-info">추가된 행이 없습니다.</div></div>';
+        return;
+      }
+      
+      const rowsHtml = Array.from(category2Rows).map((row, index) => {
+          const typeSelect = row.querySelector('td:nth-child(1) select');
+          const itemSelect = row.querySelector('td:nth-child(3) select');
+        
+        const type = typeSelect?.value || '';
+        const item = itemSelect?.value || '';
+        
+        // Less Payment와 Over Payment의 경우 5열에 있는 문구를 가져오기
+        let currentText = '';
+        if (type === 'Less Payment' || type === 'Over Payment') {
+          const mergedCell = row.querySelector('td[colspan="2"]');
+          if (mergedCell) {
+            const textDiv = mergedCell.querySelector('div');
+            currentText = textDiv?.textContent.trim() || '';
+          }
+        } else {
+          // Credit Note의 경우 기존 로직
+          const amountDiv = row.querySelector('td:nth-child(5) div');
+          currentText = amountDiv?.textContent.trim() || '';
+        }
+        
+        const displayText = [type, item, currentText].filter(Boolean).join(' - ');
+        
+        return `
+            <div class="row-item" id="row-item-${index}">
+            <div class="row-info">${index + 1}. ${displayText}</div>
+              <div class="row-actions">
+                <button onclick="editRowText(${index})" class="edit-btn">수정</button>
+                <button onclick="deleteRow(${index})" class="delete-btn">삭제</button>
+              </div>
+            </div>
+          `;
+      }).join('');
+      
+      currentRowsList.innerHTML = rowsHtml;
+    }
+    
+    // 행 수정 함수
+    function editRow(index) {
+      const row = document.querySelectorAll('.category2-row')[index];
+      if (!row) return;
+      
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.style.backgroundColor = '#ffffcc';
+      setTimeout(() => row.style.backgroundColor = '', 2000);
+    }
+    
+    // 텍스트 편집 함수
+    function editRowText(index) {
+      const row = document.querySelectorAll('.category2-row')[index];
+      const amountDiv = row?.querySelector('td:nth-child(5) div');
+      
+      if (!amountDiv) return;
+      
+      const currentText = amountDiv.textContent.trim();
+      const newText = prompt('텍스트를 수정하세요:', currentText);
+      
+      if (newText !== null && newText !== currentText) {
+        amountDiv.innerHTML = newText.replace(/\n/g, '<br>');
+        displayCurrentRows();
+      }
+    }
+    
+    // 행 삭제 함수
+    function deleteRow(index) {
+      const row = document.querySelectorAll('.category2-row')[index];
+      if (row) {
+        row.remove();
+        displayCurrentRows();
+      }
+    }
+    
+     // 모든 행 삭제 함수
+     function clearAllRows() {
+       document.querySelectorAll('.category2-row').forEach(row => row.remove());
+       displayCurrentRows();
+     }
+     
+     // 2% discount 행만 제거하는 함수
+     function removeDiscountRows() {
+       const discountRows = Array.from(document.querySelectorAll('tr')).filter(row => 
+         row.querySelector('td:nth-child(1)')?.textContent?.includes('2% discount') ||
+         row.querySelector('td:nth-child(2)')?.textContent?.includes('2% discount')
+       );
+       
+       discountRows.forEach(row => row.remove());
+       displayCurrentRows();
+       
+       console.log(`✅ ${discountRows.length}개의 2% discount 행이 제거되었습니다.`);
+     }
+    
+    // 모두 적용 함수 - 기존 (+)Add 버튼을 사용해서 행 추가
+    async function applyAllItems() {
+      try {
+        // 기존 카테고리 2 행 모두 삭제
+        document.querySelectorAll('.category2-row').forEach(row => row.remove());
+        
+        // Credit Note 데이터 로드
+        const response = await fetch('/api/creditnote');
+        const creditNoteData = await response.json();
+        
+        // 사용 가능한 항목들 수집 (단일 루프로 통합)
+        const availableItems = creditNoteData
+          .filter(item => !item.isused)
+          .flatMap(item => [
+            ...(item['l/pno'] ? [{ type: 'Less Payment', no: item['l/pno'] }] : []),
+            ...(item['o/pno'] ? [{ type: 'Over Payment', no: item['o/pno'] }] : []),
+            ...(item['c/nno'] ? [{ type: 'Credit Note', no: item['c/nno'] }] : [])
+          ])
+          .sort((a, b) => {
+          const typeOrder = { 'Less Payment': 1, 'Over Payment': 2, 'Credit Note': 3 };
+          return typeOrder[a.type] - typeOrder[b.type];
+        });
+        
+        // 각 항목에 대해 행 추가
+        for (const item of availableItems) {
+          document.getElementById('addCategory2Btn').click();
+          
+          // DOM 업데이트 대기
+          await new Promise(resolve => setTimeout(resolve, 50));
+          
+          const category2Rows = document.querySelectorAll('.category2-row');
+          const newRow = category2Rows[category2Rows.length - 1];
+          
+          if (newRow) {
+            const typeSelect = newRow.querySelector('td:nth-child(1) select');
+            const itemSelect = newRow.querySelector('td:nth-child(3) select');
+            
+            if (typeSelect && itemSelect) {
+              typeSelect.value = item.type;
+              typeSelect.dispatchEvent(new Event('change'));
+              
+              await new Promise(resolve => setTimeout(resolve, 100));
+              
+                itemSelect.value = item.no;
+                itemSelect.dispatchEvent(new Event('change'));
+            }
+          }
+        }
+        
+        // 정렬 및 목록 새로고침
+        organizeTable();
+        displayCurrentRows();
+        
+      } catch (error) {
+      }
+    }
+    
+    
+
+    // 테이블 정렬 함수
+    function organizeTable() {
+      const tbody = document.getElementById('orderTbody');
+      const rows = Array.from(tbody.querySelectorAll('tr:not(.total-row)'));
+      
+      // 숫자 추출 헬퍼 함수
+      const extractNumber = (value, prefix = '') => {
+        const cleanValue = prefix ? value.replace(prefix, '') : value;
+        return parseInt(cleanValue.replace(/[^\d]/g, '')) || 0;
+      };
+      
+      // 행 분류 및 정렬
+      const category1Rows = rows.filter(row => row.classList.contains('category1-row'))
+        .sort((a, b) => {
+          const [aSelect, bSelect] = [a, b].map(row => row.querySelector('td:nth-child(1) select'));
+        if (!aSelect || !bSelect) return 0;
+          return extractNumber(bSelect.value, 'EK-') - extractNumber(aSelect.value, 'EK-');
+        });
+      
+      const category2Rows = rows.filter(row => row.classList.contains('category2-row'))
+        .sort((a, b) => {
+          const [aSelect, bSelect] = [a, b].map(row => row.querySelector('td:nth-child(1) select'));
+        if (!aSelect || !bSelect) return 0;
+        
+          const [aValue, bValue] = [aSelect.value, bSelect.value];
+          const typeOrder = { 'Less Payment': 1, 'Over Payment': 2, 'Credit Note': 3 };
+          const typeDiff = typeOrder[aValue] - typeOrder[bValue];
+          
+          if (typeDiff !== 0) return typeDiff;
+          
+          const [aItemSelect, bItemSelect] = [a, b].map(row => row.querySelector('td:nth-child(3) select'));
+          if (aItemSelect && bItemSelect) {
+            return extractNumber(aItemSelect.value) - extractNumber(bItemSelect.value);
+          }
+        return 0;
+      });
+      
+      // DOM 재구성
+      const totalRow = tbody.querySelector('.total-row');
+      rows.forEach(row => row.remove());
+      [...category1Rows, ...category2Rows].forEach(row => tbody.appendChild(row));
+      if (totalRow) tbody.appendChild(totalRow);
+      
+      displayCurrentRows();
+    }
+
+
+    // 공통 Swift 데이터 저장 함수 (카테고리별 API 호출)
+    async function saveSwiftDataCommon(fields) {
+      try {
+        const swiftDate = document.getElementById('orderDateInput').value;
+        const swiftAmount = document.getElementById('totalAmountInput').value;
+        
+        if (!swiftDate || !swiftAmount) {
+          alert('Date와 Total Amount를 입력해주세요.');
+          return;
+        }
+        
+        const deliveryNos = Array.from(document.querySelectorAll('.category1-row'))
+          .map(row => row.querySelector('td:nth-child(1) select')?.value)
+          .filter(Boolean);
+        
+        if (deliveryNos.length === 0) {
+          alert('카테고리 1 행에서 deliveryNo를 선택해주세요.');
+          return;
+        }
+        
+        // 각 deliveryNo별로 모든 주문 업데이트 (shipmentarchive 방식)
+        let totalUpdated = 0;
+        let totalSkipped = 0;
+        let hasError = false;
+        
+        for (const deliveryNo of deliveryNos) {
+          console.log(`[SWIFT] ${deliveryNo} 처리 시작`);
+          
+          // 1. deliveryNo로 모든 주문 찾기
+          const allOrdersResponse = await fetch('/api/orders');
+          const allOrders = await allOrdersResponse.json();
+          
+          // 2. deliveryNo가 포함된 모든 주문 찾기
+          const matchingOrders = allOrders.filter(order => 
+            order.items && order.items.some(item => item.deliveryNo === deliveryNo)
+          );
+          
+          console.log(`[SWIFT] ${deliveryNo} 매칭 주문: ${matchingOrders.length}개`);
+          
+          // 3. 각 주문별로 개별 업데이트
+          for (const order of matchingOrders) {
+            try {
+              const response = await fetch('/api/updateOrder', {
+          method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+                  searchOrderBy: 'orderNo',
+                  orderNo: order.orderNo,
+                  searchMethod: 'deliveryNo',
+                  items: [{
+                    deliveryNo: deliveryNo,
+                    [fields.date]: swiftDate,
+                    [fields.amount]: swiftAmount
+                  }],
+                  itemUpdateFields: [fields.date, fields.amount]
+          })
+        });
+        
+              if (response.ok) {
+                const result = await response.json();
+                totalUpdated += result.updatedItems || 0;
+                totalSkipped += result.skippedItems || 0;
+                console.log(`[SWIFT] ${order.orderNo} 업데이트 성공: ${result.updatedItems}개 아이템`);
+        } else {
+                console.error(`[SWIFT] ${order.orderNo} 업데이트 실패:`, response.status);
+                hasError = true;
+        }
+      } catch (error) {
+              console.error(`[SWIFT] ${order.orderNo} 업데이트 실패:`, error);
+              hasError = true;
+            }
+          }
+        }
+        
+        // 4. 결과 표시
+        if (totalUpdated > 0) {
+          alert(`${fields.name} 데이터가 성공적으로 저장되었습니다.\n업데이트된 아이템: ${totalUpdated}개${totalSkipped > 0 ? `, 건너뛴 아이템: ${totalSkipped}개` : ''}`);
+        } else if (hasError) {
+          alert(`일부 ${fields.name} 데이터 저장에 실패했습니다.\n업데이트된 아이템: ${totalUpdated}개, 건너뛴 아이템: ${totalSkipped}개`);
+        } else {
+          alert(`${fields.name} 업데이트할 데이터가 없습니다.`);
+        }
+        
+      } catch (error) {
+        console.error(`[SWIFT] ${fields.name} 저장 실패:`, error);
+        alert(`${fields.name} 데이터 저장에 실패했습니다: ${error.message}`);
+      }
+    }
+
+    // Save 버튼 기능: Swift 데이터를 orderData.json에 저장
+    async function saveSwiftData() {
+      await saveSwiftDataCommon({
+        name: 'Swift',
+        date: 'swiftdate',
+        amount: 'swiftamount'
+      });
+    }
+
+    // Save2 버튼 기능: Swift 데이터를 orderData.json에 저장 (swiftdate2, swiftamount2)
+    async function saveSwiftData2() {
+      await saveSwiftDataCommon({
+        name: 'Swift2',
+        date: 'swiftdate2',
+        amount: 'swiftamount2'
+      });
+    }
+
+    // Used 버튼 기능: Category 2의 c/nno와 o/pno를 creditnote.json에서 isused: true로 저장
+    async function markItemsAsUsed() {
+      try {
+        const category2Rows = document.querySelectorAll('.category2-row');
+        const itemsToMark = [];
+        
+        // 각 Category 2 행에서 c/nno, o/pno, l/pno 추출
+        category2Rows.forEach(row => {
+          const typeSelect = row.querySelector('td:nth-child(1) select');
+          if (!typeSelect?.value) return;
+          
+            const type = typeSelect.value;
+            const allSelects = row.querySelectorAll('select');
+            
+          for (let i = 1; i < allSelects.length; i++) {
+              const select = allSelects[i];
+            if (select.value && !['Less Payment', 'Credit Note', 'Over Payment'].includes(select.value)) {
+              const typeMap = {
+                'Credit Note': 'c/nno',
+                'Over Payment': 'o/pno', 
+                'Less Payment': 'l/pno'
+              };
+              
+              if (typeMap[type]) {
+                itemsToMark.push({ type: typeMap[type], value: select.value });
+              }
+                break;
+            }
+          }
+        });
+        
+        if (itemsToMark.length === 0) {
+          alert('사용할 수 있는 Credit Note, Over Payment, 또는 Less Payment가 없습니다.');
+          return;
+        }
+        
+        // 각 항목을 병렬로 처리
+        const updatePromises = itemsToMark.map(async (item) => {
+          try {
+            const response = await fetch('/api/creditnote', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'updateField',
+                identifier: item.value,
+                field: 'isused',
+                value: true
+              })
+            });
+            
+            return response.ok ? 1 : 0;
+          } catch (error) {
+            return 0;
+          }
+        });
+        
+        const results = await Promise.all(updatePromises);
+        const updatedCount = results.reduce((sum, count) => sum + count, 0);
+        
+        if (updatedCount > 0) {
+          alert(`${updatedCount}개의 항목이 사용됨으로 표시되었습니다.`);
+        } else {
+          alert('업데이트할 항목이 없습니다.');
+        }
+        
+      } catch (error) {
+        alert('Used 기능 실행에 실패했습니다: ' + error.message);
+      }
+    }
+
+    // PDF 생성 함수 (A4 페이지 단위)
+    async function generatePDF() {
+      const buttonBox = document.querySelector('.main-button-group');
+      const originalDisplay = buttonBox?.style.display;
+        
+      try {
+        const orderDate = document.getElementById('orderDateInput').value;
+        if (!orderDate) {
+          alert('Date를 입력해주세요.');
+          return;
+        }
+
+        // 버튼 박스 숨기기
+        if (buttonBox) buttonBox.style.display = 'none';
+
+        const page = document.getElementById('page1');
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+
+        // html2canvas로 페이지 캡처
+          const canvas = await html2canvas(page, {
+            scale: 1.5,
+            useCORS: true,
+            letterRendering: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            width: page.offsetWidth,
+            height: page.offsetHeight,
+            scrollX: 0,
+            scrollY: 0
+          });
+
+        // A4 비율에 맞게 이미지 크기 계산
+          const canvasAspectRatio = canvas.width / canvas.height;
+          const a4AspectRatio = 210 / 297;
+          
+        const isWider = canvasAspectRatio > a4AspectRatio;
+        const imgWidth = isWider ? 210 : 297 * canvasAspectRatio;
+        const imgHeight = isWider ? 210 / canvasAspectRatio : 297;
+        const x = isWider ? 0 : (210 - imgWidth) / 2;
+        const y = isWider ? (297 - imgHeight) / 2 : 0;
+        
+        // PDF에 이미지 추가
+        const imgData = canvas.toDataURL('image/png', 0.95);
+          doc.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight, undefined, 'FAST');
+          
+        // 파일명 결정
+        const corpInput = document.querySelector('.category1-row td:nth-child(2) input');
+        const corpValue = corpInput?.value?.trim();
+        const fileName = corpValue === 'NT' ? `ELTRO_Swift_${orderDate}` :
+                        corpValue === 'SM' ? `SM_Swift_${orderDate}` :
+                        `Swift_${orderDate}`;
+        
+        doc.save(`${fileName}.pdf`);
+        
+      } catch (error) {
+        alert('PDF 생성에 실패했습니다: ' + error.message);
+      } finally {
+        // 버튼 박스 복원
+        if (buttonBox) buttonBox.style.display = originalDisplay || '';
+      }
+    }
+
+    // 페이지 로드 시 초기화 및 버튼 이벤트 리스너 등록
+    document.addEventListener('DOMContentLoaded', function() {
+      initializePage();
+      
+      // 초기 Total 행 추가
+      const tbody = document.getElementById('orderTbody');
+      tbody.appendChild(createTotalRow());
+      calculateTotal();
+      
+      // Exchange Rate 입력 필드 설정
+      const exchangeRateInput = document.getElementById('exchangeRateInput');
+      if (exchangeRateInput) {
+          const table7thColumn = document.querySelector('.order-body table thead th:nth-child(7)');
+          if (table7thColumn) {
+            const columnWidth = table7thColumn.offsetWidth;
+          Object.assign(exchangeRateInput.style, {
+            width: `${columnWidth}px`,
+            minWidth: `${columnWidth}px`,
+            maxWidth: `${columnWidth}px`
+          });
+        }
+        
+        exchangeRateInput.addEventListener('input', () => {
+          document.querySelectorAll('.category2-row').forEach(calculateCategory2Price);
+        });
+      }
+      
+      // 환율 로드 함수
+      async function loadExchangeRate(selectedDate) {
+        if (!selectedDate?.trim()) return;
+        
+        // 날짜 형식 변환 및 검증 (DD.MM.YYYY -> YYYY-MM-DD)
+        let formattedDate;
+        if (selectedDate.includes('.')) {
+          const parts = selectedDate.split('.');
+          if (parts.length === 3) {
+            const [day, month, year] = parts;
+            formattedDate = `${year}-${month}-${day}`;
+          } else {
+          return;
+          }
+        } else {
+          formattedDate = selectedDate;
+        }
+        
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(formattedDate)) return;
+          
+          const exchangeRateInput = document.getElementById('exchangeRateInput');
+        if (!exchangeRateInput) return;
+        
+        // 환율 설정 및 재계산 공통 함수
+        const setRateAndRecalculate = (rate) => {
+          const roundedRate = Math.ceil(rate * 100) / 100;
+          exchangeRateInput.value = roundedRate.toFixed(2);
+          document.querySelectorAll('.category2-row').forEach(calculateCategory2Price);
+        };
+        
+        try {
+          // API 호출 시도
+            const apiUrl = `https://api.exchangeratesapi.io/${formattedDate}?base=EUR&symbols=USD&access_key=f6ab89bba805dc150972c7410a6d9b5d`;
+            const response = await fetch(apiUrl);
+            
+            if (response.ok) {
+              const data = await response.json();
+            const rate = data.rates?.USD || data.USD || data.result?.USD;
+              if (rate) {
+              setRateAndRecalculate(rate);
+                return;
+              }
+          }
+              
+              // 대안: 최신 환율 API
+          const latestResponse = await fetch('https://api.exchangerate-api.com/v4/latest/EUR');
+              if (latestResponse.ok) {
+                const latestData = await latestResponse.json();
+            setRateAndRecalculate(latestData.rates.USD);
+                return;
+          }
+          
+        } catch (error) {
+        }
+        
+        // 기본 환율 사용
+        setRateAndRecalculate(1.0856);
+      }
+      
+      // 이벤트 리스너 설정
+      const eventHandlers = {
+        expandButton: () => {
+        const detailArea = document.getElementById("detailButtonArea");
+        const expandBtn = document.getElementById("expandButton");
+          const isExpanded = detailArea.style.display !== "none";
+          
+          detailArea.style.display = isExpanded ? "none" : "flex";
+          expandBtn.classList.toggle("expanded", !isExpanded);
+          expandBtn.textContent = isExpanded ? "▼" : "▲";
+          if (!isExpanded) displayCurrentRows();
+        },
+        organizeBtn: organizeTable,
+        pdfBtn: generatePDF,
+        usedBtn: async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        await markItemsAsUsed();
+        },
+        saveBtn: saveSwiftData,
+        save2Btn: saveSwiftData2,
+        homeBtn: () => window.location.href = 'eltrokorea9.html',
+          exchangeBtn: async () => {
+            const orderDateInput = document.getElementById('orderDateInput');
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const defaultDate = `${day}.${month}.${year}`;
+            const date = orderDateInput?.value || defaultDate;
+            await loadExchangeRate(date);
+          },
+        refreshRowsBtn: removeDiscountRows,
+        clearRowsBtn: clearAllRows,
+        applyAllBtn: applyAllItems,
+        addCategory1Btn: addCategory1Row,
+        addCategory2Btn: addCategory2Row
+      };
+
+      // 이벤트 리스너 등록
+      Object.entries(eventHandlers).forEach(([id, handler]) => {
+        const element = document.getElementById(id);
+        if (element) element.addEventListener("click", handler);
+      });
+
+
+    });
+  </script>
+
+  <!-- jQuery for AJAX -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- PDF 생성을 위한 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+
+  <!-- 하단 버튼 영역 -->
+  <div class="bottom-buttons">
+    <!-- 확장/축소 버튼 (서랍 손잡이처럼 위쪽에 튀어나옴) -->
+    <div class="expand-handle">
+      <button id="expandButton" type="button" class="expand-btn">▼</button>
+    </div>
+    
+         <!-- 기본 버튼 영역 (항상 보임) -->
+     <div class="main-button-group">
+       <div class="left-buttons">
+         <button id="homeBtn">Home</button>
+         <button id="addCategory1Btn">(+)Add</button>
+         <button id="addCategory2Btn">(-)Add</button>
+         <button id="organizeBtn">Organize</button>
+         <button id="exchangeBtn">€:$</button>
+       </div>
+       <div class="right-buttons">
+         <button id="pdfBtn">PDF</button>
+         <button id="usedBtn">Used</button>
+         <button id="saveBtn">Save</button>
+         <button id="save2Btn">Save2</button>
+       </div>
+     </div>
+    
+    <!-- 확장 가능한 상세 버튼 영역 (기본적으로 숨김) -->
+    <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+      <div class="current-rows-info">
+        <div id="currentRowsList" class="rows-list">
+          <!-- 동적으로 생성될 행 목록 -->
+        </div>
+        <div class="rows-actions">
+          <button id="refreshRowsBtn" class="action-btn">2% 제거</button>
+          <button id="clearRowsBtn" class="action-btn">모두 삭제</button>
+          <button id="applyAllBtn" class="action-btn">모두 적용</button>
+        </div>
+      </div>
+    </div>
+  </div>
+    
+    <script>
+    // 공통 orderData 로드 함수
+    let cachedOrderData = null;
+    async function getOrderData() {
+      if (!cachedOrderData) {
+        const response = await fetch('orderData.json');
+        cachedOrderData = await response.json();
+      }
+      return cachedOrderData;
+    }
+
+    // p/ino 선택에 따라 날짜와 가격 로드 함수
+    async function loadPinoData(deliveryNo, pino, row) {
+      try {
+        const orderData = await getOrderData();
+        
+        // 해당 deliveryNo를 가진 아이템 찾기
+        const foundItem = orderData
+          .flatMap(order => order.items || [])
+          .find(item => item.deliveryNo === deliveryNo && 
+                      (pino === item['p/ino'] || pino === item['p/ino2']));
+        
+        if (foundItem) {
+          const isPino2 = pino === foundItem['p/ino2'];
+          const foundDate = isPino2 ? foundItem['p/idate2'] : foundItem['p/idate'];
+          const foundPrice = isPino2 ? foundItem['p/iprice2'] : foundItem['p/iprice'];
+        
+        // 4열(날짜)과 7열(가격)에 값 설정
+        const dateInput = row.querySelector('td:nth-child(4) input');
+        const priceInput = row.querySelector('td:nth-child(7) input');
+        
+          if (dateInput) dateInput.value = foundDate || '';
+        if (priceInput) {
+            priceInput.value = foundPrice || '';
+          calculateTotal();
+          }
+        }
+        
+      } catch (error) {
+      }
+    }
+
+    // deliveryNo에 따라 p/ino 드롭다운 업데이트 함수
+    async function updatePinoDropdown(deliveryNo, pinoSelect) {
+      try {
+        const orderData = await getOrderData();
+        
+        // 해당 deliveryNo를 가진 첫 번째 아이템 찾기
+        const foundItem = orderData
+          .flatMap(order => order.items || [])
+          .find(item => item.deliveryNo === deliveryNo);
+        
+        const pino = foundItem?.['p/ino'] || '';
+        const pino2 = foundItem?.['p/ino2'] || '';
+        
+        // 드롭다운 옵션 업데이트
+        pinoSelect.innerHTML = '<option value="" style="text-align: center;">Choose</option>';
+        
+        [pino, pino2].filter(Boolean).forEach((pinoValue, index) => {
+          const option = document.createElement('option');
+          option.value = pinoValue;
+          option.textContent = pinoValue;
+          option.style.textAlign = 'center';
+          if (index === 0) option.selected = true; // 첫 번째 p/ino를 기본 선택
+          pinoSelect.appendChild(option);
+        });
+        
+        // p/ino가 기본 선택된 경우 자동으로 날짜와 가격 로드
+        if (pino) {
+          const row = pinoSelect.closest('tr');
+          if (row) {
+            await loadPinoData(deliveryNo, pino, row);
+            
+            // 자동 로드된 p/ino에 대해서도 버튼 상태 업데이트
+            const category1Rows = document.querySelectorAll('.category1-row');
+            const isFirstCategory1Row = category1Rows.length > 0 && row === category1Rows[0];
+            
+            if (isFirstCategory1Row) {
+              console.log('🔍 자동 로드된 p/ino로 버튼 상태 업데이트');
+              console.log('  - auto-loaded pino:', pino);
+              console.log('  - row:', row);
+              
+              const save2Btn = document.getElementById('save2Btn');
+              const saveBtn = document.getElementById('saveBtn');
+              
+              if (pino && save2Btn && saveBtn) {
+                // p/ino2 값들 확인 (실제 데이터에서 p/ino2 필드 값들)
+                const pino2Values = ['8993014165', '8993013490']; // 실제 p/ino2 값들
+                
+                if (pino2Values.includes(pino)) {
+                  console.log('✅ 자동 로드된 p/ino2 - Save2 버튼 활성화, Save 버튼 비활성화');
+                  // Save2 버튼 활성화 (검정색)
+                  save2Btn.classList.add('save2-selected');
+                  save2Btn.style.backgroundColor = '#000';
+                  save2Btn.style.color = '#fff';
+                  save2Btn.style.borderColor = '#000';
+                  save2Btn.disabled = false;
+                  save2Btn.style.opacity = '1';
+                  save2Btn.style.cursor = 'pointer';
+                  
+                  // Save 버튼 비활성화
+                  saveBtn.disabled = true;
+                  saveBtn.style.opacity = '0.5';
+                  saveBtn.style.cursor = 'not-allowed';
+                  saveBtn.classList.remove('save2-selected');
+                  saveBtn.style.backgroundColor = '';
+                  saveBtn.style.color = '';
+                  saveBtn.style.borderColor = '';
+                } else {
+                  console.log('❌ 자동 로드된 일반 p/ino - Save 버튼 활성화, Save2 버튼 비활성화');
+                  // Save 버튼 활성화 (기본 상태)
+                  saveBtn.disabled = false;
+                  saveBtn.style.opacity = '1';
+                  saveBtn.style.cursor = 'pointer';
+                  saveBtn.classList.remove('save2-selected');
+                  saveBtn.style.backgroundColor = '';
+                  saveBtn.style.color = '';
+                  saveBtn.style.borderColor = '';
+                  
+                  // Save2 버튼 비활성화 (기본 상태)
+                  save2Btn.classList.remove('save2-selected');
+                  save2Btn.style.backgroundColor = '';
+                  save2Btn.style.color = '';
+                  save2Btn.style.borderColor = '';
+                  save2Btn.disabled = false;
+                  save2Btn.style.opacity = '1';
+                  save2Btn.style.cursor = 'pointer';
+                }
+              }
+            }
+          }
+        }
+        
+      } catch (error) {
+        pinoSelect.innerHTML = '<option value="" style="text-align: center;">Choose</option>';
+      }
+    }
+    </script>
+
+</body>
+</html>

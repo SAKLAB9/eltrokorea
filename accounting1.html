@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>수입원가명세서</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #000;
+      line-height: 1.5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+
+    /* 메인 페이지 컨테이너 */
+    .page-container {
+      max-width: 800px;
+      margin: 15px auto;
+      padding: 0;
+    }
+    
+    .page {
+      width: 210mm; /* A4 너비 */
+      height: 297mm; /* A4 높이 고정 */
+      margin: 0 auto 20px auto;
+      padding: 20mm 25mm 25mm 25mm;
+      box-sizing: border-box;
+      background: #fff;
+      position: relative;
+      overflow: visible;
+      border: 1px solid #ddd;
+    }
+
+    /* 상단 타이틀 */
+    .document-title {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    /* 회사 정보 스타일 */
+    .company-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding: 5px 0;
+    }
+
+    .company-left {
+      font-size: 1rem;
+      color: #333;
+    }
+
+    .company-right {
+      font-size: 1rem;
+      color: #333;
+    }
+
+    /* 구분선 */
+    .divider {
+      border-bottom: 2px solid #000;
+      margin-bottom: 20px;
+    }
+
+    /* Date와 Total Amount 필드 스타일 - swift.html과 동일 */
+    .order-details {
+      margin-top: 20px;
+    }
+
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    /* 왼쪽/오른쪽 영역에 input 사용 */
+    .order-header .left, .order-header .right {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .order-header .left input,
+    .order-header .right input {
+      font-size: 1rem;
+      width: 200px;
+      padding: 4px 4px;
+      height: 24px;
+    }
+
+    /* 테이블 스타일 */
+    .cost-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .cost-table th,
+    .cost-table td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .cost-table th {
+      background-color: #f0f0f0;
+      font-weight: bold;
+      height: 40px;
+    }
+
+    .cost-table td {
+      height: 35px;
+    }
+
+    .cost-table input {
+      width: 100%;
+      border: none;
+      background: #fff;
+      text-align: center;
+      font-size: 0.9rem;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+     /* 창고료 행의 윗 테두리 두껍게 */
+     .cost-table tbody tr:nth-child(5) td {
+       border-top: 2px solid #000;
+     }
+     .cost-table tbody tr:nth-child(9) td {
+       border-top: 2px solid #000;
+     }
+     .cost-table tbody tr:nth-child(11) td {
+       border-top: 2px solid #000;
+     }
+     .cost-table tbody tr:nth-child(12) td {
+       border-top: 2px solid #000;
+     }
+
+
+     /* 숫자 입력 필드의 스피너 제거 */
+     .cost-table input[type="text"]::-webkit-outer-spin-button,
+     .cost-table input[type="text"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .cost-table input[type="text"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    .cost-table select {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-size: 0.9rem;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+
+    /* 하단 버튼 영역 전체 - orderarchive.html과 동일 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 확장 손잡이 (서랍 손잡이처럼 위쪽에 튀어나옴) */
+    .expand-handle {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    /* 확장/축소 버튼 */
+    .expand-btn {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #666;
+      border-radius: 8px 8px 0 0;
+      min-width: 40px;
+      height: 20px;
+      line-height: 1;
+      transition: all 0.2s ease;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    .expand-btn:hover {
+      background: #e8e8e8;
+      border-color: #999;
+      box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    }
+
+    .expand-btn.expanded {
+      transform: rotate(180deg);
+      background: #e0e0e0;
+    }
+
+    /* 기본 버튼 그룹 레이아웃 */
+    .main-button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+
+    /* 공통 버튼 스타일 */
+    .common-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    .common-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* 입력 필드 공통 스타일 */
+    .input-field {
+      width: 100px;
+      margin: 0 3px;
+      padding: 5px 10px;
+      font-size: 0.9rem;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 3px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    .input-field:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* 작은 버튼 스타일 */
+    .small-btn {
+      padding: 2px 6px;
+      font-size: 0.8rem;
+      border: 1px solid #ccc;
+      background: #f5f5f5;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    .small-btn:hover {
+      background: #e0e0e0;
+    }
+
+    /* 테이블 공통 스타일 */
+    .col-25 {
+      width: 25%;
+    }
+
+    .header-cell {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .sub-header-row {
+      background-color: #f0f0f0;
+      font-weight: bold;
+    }
+
+    .readonly-input {
+      background: #f5f5f5;
+    }
+
+    .readonly-input.total-row {
+      font-weight: bold;
+    }
+
+    .readonly-input.small-font {
+      font-size: 0.7rem;
+      white-space: normal;
+      line-height: 1.2;
+      height: auto;
+      min-height: 2.4rem;
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+
+    .transparent-select {
+      width: 100%;
+      border: none;
+      background: transparent;
+      font-size: inherit;
+      color: inherit;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      cursor: pointer;
+      text-align: center;
+      text-align-last: center;
+    }
+
+    /* 유틸리티 클래스 */
+    .hidden {
+      display: none;
+    }
+
+    /* 상세 버튼 영역 */
+    .detail-button-area {
+      margin-top: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      animation: slideDown 0.3s ease;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .detail-button-area button {
+      margin: 0;
+    }
+    
+    
+    .left-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .right-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* 애니메이션 */
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+
+    /* 반응형 디자인 */
+    @media print {
+      body {
+        background: white;
+      }
+      
+      .page {
+        margin: 0;
+        box-shadow: none;
+        border: none;
+      }
+      
+      .bottom-buttons {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page {
+        width: 100%;
+        height: auto;
+        min-height: 297mm;
+        padding: 15mm 10mm;
+      }
+      
+      .document-title {
+        font-size: 1.5rem;
+      }
+      
+      .cost-table th,
+      .cost-table td {
+        font-size: 0.8rem;
+        padding: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="page">
+      <h1 class="document-title">수입 원가 명세서</h1>
+      
+      <div class="company-info">
+        <div class="company-left">
+          <strong>회 사 명 :</strong> 엘트로코리아(주)
+        </div>
+        <div class="company-right">
+          <strong>수입거래처:</strong> TREOFAN, Germany
+        </div>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <!-- 신고일자와 신고번호 필드 -->
+      <div class="order-details">
+        <div class="order-header">
+          <div class="left">
+            신고번호 :
+            <input type="text" id="orderDateInput" autocomplete="off" />
+          </div>
+          <div class="right">
+            신고일자 :
+            <input type="text" id="totalAmountInput" autocomplete="off" />
+          </div>
+        </div>
+      </div>
+        
+      <table class="cost-table">
+        <thead>
+          <tr>
+            <th class="col-25">NO</th>
+            <th class="col-25">$</th>
+            <th class="col-25">환율</th>
+            <th class="col-25">₩</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <select class="transparent-select">
+                <option value="">Choose</option>
+              </select>
+            </td>
+            <td><input type="text" readonly></td>
+            <td><input type="text" step="0.0001" id="exchangeRate" placeholder="환율입력"></td>
+            <td><input type="text" readonly id="wonAmount" class="readonly-input total-row"></td>
+          </tr>
+          
+          <!-- 두 번째 표 헤더 -->
+          <tr class="sub-header-row">
+            <th class="col-25 header-cell">비용명</th>
+            <th class="col-25 header-cell">공급가</th>
+            <th class="col-25 header-cell">부가세</th>
+            <th class="col-25 header-cell">합계</th>
+          </tr>
+          
+          <tr>
+            <td><input type="text" value="관세" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input total-row"></td>
+          </tr>
+          <tr>
+            <td><input type="text" value="부가세" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input total-row"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+          </tr>
+          <tr>
+            <td><input type="text" value="창고료" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" class="total-row"></td>
+          </tr>
+          <tr>
+            <td><input type="text" value="선박운임" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+          </tr>
+          <tr>
+            <td><input type="text" value="운송료" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+          </tr>
+          <tr>
+            <td><input type="text" value="통관수수료" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+          </tr>
+          <tr>
+            <td><input type="text" value="NT비용합계" readonly class="readonly-input total-row"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+          </tr>
+          <tr>
+            <td><input type="text" value="TF비용합계" readonly class="readonly-input total-row"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text"></td>
+          </tr>
+          <tr>
+            <td><input type="text" value="총부대비용합계" readonly class="readonly-input total-row"></td>
+            <td><input type="text" readonly class="readonly-input total-row"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+            <td><input type="text" readonly class="readonly-input"></td>
+          </tr>
+          <tr>
+            <td colspan="2"><input type="text" value="수입원가+부가세+총부대비용" readonly class="readonly-input total-row"></td>
+            <td><input type="text" readonly class="readonly-input total-row"></td>
+            <td><input type="text" readonly class="readonly-input total-row"></td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+
+  <!-- 하단 버튼 영역 - orderarchive.html과 동일한 구조 -->
+  <div class="bottom-buttons">
+    <!-- 확장/축소 버튼 (서랍 손잡이처럼 위쪽에 튀어나옴) -->
+    <div class="expand-handle">
+      <button id="expandButton" type="button" class="expand-btn">▼</button>
+    </div>
+    
+    <!-- 기본 버튼 영역 (항상 보임) -->
+    <div class="main-button-group">
+      <div class="left-buttons">
+        <button id="pdfBtn" class="common-btn">PDF</button>
+        <button id="saveBtn" class="common-btn">Save</button>
+      </div>
+      <div class="right-buttons">
+        <button type="button" onclick="location.href='eltrokorea9.html'" class="common-btn">Home</button>
+        <button type="button" onclick="saveTable1DataAndUpdate()" class="common-btn">Update</button>
+      </div>
+    </div>
+
+    <!-- 확장 가능한 상세 버튼 영역 (기본적으로 숨김) -->
+    <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+      <!-- 선박운임 VAT 수정 영역 -->
+      <div class="ship-fee-settings">
+        <label for="shipFeeDefault">선박운임 VAT:</label>
+        <input type="text" id="shipFeeDefault" value="14,000" class="input-field">
+        <button id="updateShipFeeDefault" type="button" class="small-btn">수정</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    // 최적화된 날짜 파싱 함수
+    function parseDateString(dateStr) {
+      if (!dateStr) return null;
+      
+      // DD.MM.YYYY 형식만 지원 (프로젝트 표준)
+      const match = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+      if (match) {
+        const day = parseInt(match[1]);
+        const month = parseInt(match[2]) - 1;
+        const year = parseInt(match[3]);
+        const date = new Date(year, month, day);
+        return !isNaN(date.getTime()) ? date : null;
+      }
+      
+      return null;
+    }
+
+    // 최적화된 getOldestDate 함수
+    function getOldestDate(dndate, pidate, invoicedate) {
+      let oldestDate = null;
+      
+      // 각 날짜를 파싱하여 가장 오래된 날짜 찾기
+      [dndate, pidate, invoicedate].forEach(dateStr => {
+        if (dateStr) {
+          const parsedDate = parseDateString(dateStr);
+          if (parsedDate && (!oldestDate || parsedDate < oldestDate)) {
+            oldestDate = parsedDate;
+          }
+        }
+      });
+      
+      return oldestDate;
+    }
+
+    // 최적화된 deliveryNo 로드 함수
+    async function loadDeliveryNumbers() {
+      try {
+        const response = await fetch('orderData.json');
+        const orderData = await response.json();
+        
+        // deliveryNo별로 그룹화 (flatMap 사용)
+        const deliveryGroups = orderData
+          .flatMap(order => order.items || [])
+          .filter(item => item.deliveryNo)
+          .reduce((groups, item) => {
+            if (!groups[item.deliveryNo]) groups[item.deliveryNo] = [];
+            groups[item.deliveryNo].push(item);
+            return groups;
+          }, {});
+        
+        // 정렬 로직 최적화
+        const sortedDeliveryNos = Object.keys(deliveryGroups).sort((a, b) => {
+          const aFirstItem = deliveryGroups[a][0];
+          const bFirstItem = deliveryGroups[b][0];
+          
+          const aOldestDate = getOldestDate(aFirstItem['d/ndate'], aFirstItem['p/idate'], aFirstItem['invoicedate']);
+          const bOldestDate = getOldestDate(bFirstItem['d/ndate'], bFirstItem['p/idate'], bFirstItem['invoicedate']);
+          
+          if (aOldestDate && bOldestDate) {
+            return bOldestDate.getTime() - aOldestDate.getTime();
+          }
+          if (aOldestDate) return -1;
+          if (bOldestDate) return 1;
+          
+          // EK-번호 기준 정렬
+          const aNum = parseInt(a.replace('EK-', '')) || 0;
+          const bNum = parseInt(b.replace('EK-', '')) || 0;
+          return bNum - aNum;
+        });
+        
+        // 드롭다운 업데이트
+        const selectElement = document.querySelector('.cost-table tbody tr:first-child td:first-child select');
+        if (selectElement) {
+          selectElement.innerHTML = '<option value="">Choose</option>';
+          
+          sortedDeliveryNos.forEach(deliveryNo => {
+            const option = document.createElement('option');
+            option.value = deliveryNo;
+            option.textContent = deliveryNo;
+            selectElement.appendChild(option);
+          });
+
+          // 이벤트 리스너 추가 (중복 방지)
+          selectElement.removeEventListener('change', selectElement._changeHandler);
+          selectElement._changeHandler = async function() {
+            const selectedDeliveryNo = this.value;
+            if (selectedDeliveryNo) {
+              await loadInvoicePrice(selectedDeliveryNo);
+            } else {
+              const invoiceInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input');
+              if (invoiceInput) invoiceInput.value = '';
+            }
+          };
+          selectElement.addEventListener('change', selectElement._changeHandler);
+        }
+      } catch (error) {
+        alert('deliveryNo 로드 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 최적화된 invoiceprice 로드 함수
+    async function loadInvoicePrice(selectedDeliveryNo) {
+      try {
+        const response = await fetch('orderData.json');
+        const orderData = await response.json();
+        
+        // flatMap으로 단순화된 아이템 찾기
+        const firstItem = orderData
+          .flatMap(order => order.items || [])
+          .find(item => item.deliveryNo === selectedDeliveryNo);
+        
+        const invoiceInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input');
+        if (invoiceInput && firstItem) {
+          invoiceInput.value = firstItem.invoiceprice || '';
+          calculateWonAmount();
+        }
+      } catch (error) {
+        alert('invoiceprice 로드 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 최적화된 원화 계산 함수
+    function calculateWonAmount() {
+      const [dollarInput, exchangeRateInput, wonInput] = [
+        document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input'),
+        document.getElementById('exchangeRate'),
+        document.getElementById('wonAmount')
+      ];
+      
+      if (dollarInput && exchangeRateInput && wonInput) {
+        const dollarValue = parseFloat(dollarInput.value.replace(/,/g, '')) || 0;
+        const exchangeRate = parseFloat(exchangeRateInput.value) || 0;
+        const finalAmount = Math.round(Math.ceil(dollarValue * exchangeRate * 10) / 10);
+        wonInput.value = finalAmount.toLocaleString();
+        
+        // wonAmount 값이 변경되었으므로 최종 합계 재계산
+        calculateFinalTotal();
+      }
+    }
+
+
+    // PDF 버튼 클릭 이벤트
+    document.getElementById("pdfBtn").addEventListener("click", function() {
+      generatePDF();
+    });
+
+    // Save 버튼 클릭 이벤트
+    document.getElementById("saveBtn").addEventListener("click", async () => {
+      await saveAccountingData();
+    });
+
+    // 공통 Accounting 데이터 저장 함수 (카테고리별 API 호출 - swift.html 방식)
+    async function saveAccountingDataCommon(fields) {
+      try {
+        const reportdate = document.getElementById('totalAmountInput')?.value;
+        
+        if (!reportdate) {
+          alert('신고일자를 입력해주세요.');
+          return;
+        }
+        
+        const deliveryNos = Array.from(document.querySelectorAll('.cost-table tbody tr'))
+          .filter(row => row.querySelector('td:first-child select'))
+          .map(row => row.querySelector('td:first-child select')?.value)
+          .filter(Boolean);
+        
+        if (deliveryNos.length === 0) {
+          alert('deliveryNo를 선택해주세요.');
+          return;
+        }
+        
+        // 각 deliveryNo별로 모든 주문 업데이트 (swift.html 방식)
+        let totalUpdated = 0;
+        let totalSkipped = 0;
+        let hasError = false;
+        
+        for (const deliveryNo of deliveryNos) {
+          // 1. deliveryNo로 모든 주문 찾기
+          const allOrdersResponse = await fetch('/api/orders');
+          const allOrders = await allOrdersResponse.json();
+          
+          // 2. deliveryNo가 포함된 모든 주문 찾기
+          const matchingOrders = allOrders.filter(order => 
+            order.items && order.items.some(item => item.deliveryNo === deliveryNo)
+          );
+          
+          // 3. 각 주문별로 개별 업데이트
+          for (const order of matchingOrders) {
+            try {
+              const response = await fetch('/api/updateOrder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  searchOrderBy: 'orderNo',
+                  orderNo: order.orderNo,
+                  searchMethod: 'deliveryNo',
+                  items: [{
+                    deliveryNo: deliveryNo,
+                    [fields.reportdate]: reportdate,
+                    [fields.addprice]: fields.addpriceValue
+                  }],
+                  itemUpdateFields: [fields.reportdate, fields.addprice]
+                })
+              });
+              
+              if (response.ok) {
+                const result = await response.json();
+                totalUpdated += result.updatedItems || 0;
+                totalSkipped += result.skippedItems || 0;
+              } else {
+                hasError = true;
+              }
+            } catch (error) {
+              hasError = true;
+            }
+          }
+        }
+        
+        // 4. 결과 표시
+        if (totalUpdated > 0) {
+          alert(`${fields.name} 데이터가 성공적으로 저장되었습니다.\n업데이트된 아이템: ${totalUpdated}개${totalSkipped > 0 ? `, 건너뛴 아이템: ${totalSkipped}개` : ''}`);
+        } else if (hasError) {
+          alert(`일부 ${fields.name} 데이터 저장에 실패했습니다.\n업데이트된 아이템: ${totalUpdated}개, 건너뛴 아이템: ${totalSkipped}개`);
+        } else {
+          alert(`${fields.name} 업데이트할 데이터가 없습니다.`);
+        }
+        
+      } catch (error) {
+        alert(`${fields.name} 데이터 저장에 실패했습니다: ${error.message}`);
+      }
+    }
+
+    // Save 버튼 기능: Accounting 데이터를 orderData.json에 저장
+    async function saveAccountingData() {
+      // NT비용합계 공급가 값 가져오기
+      const costTotalRow = document.querySelectorAll('.cost-table tbody tr')[8];
+      const addprice = costTotalRow?.querySelectorAll('input')[1]?.value?.replace(/,/g, '');
+      
+      if (!addprice) {
+        alert('NT비용합계 공급가를 확인해주세요.');
+        return;
+      }
+      
+      await saveAccountingDataCommon({
+        name: 'Accounting',
+        reportdate: 'reportdate',
+        addprice: 'addprice',
+        addpriceValue: addprice
+      });
+    }
+
+
+    // 확장/축소 기능 
+    document.getElementById("expandButton").addEventListener("click", () => {
+      const detailArea = document.getElementById("detailButtonArea");
+      const expandBtn = document.getElementById("expandButton");
+      const isExpanded = detailArea.style.display !== "none";
+      
+      detailArea.style.display = isExpanded ? "none" : "flex";
+      expandBtn.classList.toggle("expanded", !isExpanded);
+      expandBtn.textContent = isExpanded ? "▼" : "▲";
+    });
+    
+    // 선박운임 기본값 전역 변수 (localStorage에서 불러오기)
+    let shipFeeDefaultValue = parseInt(localStorage.getItem('shipFeeDefaultValue')) || 14000;
+    
+    // 선박운임 기본값 수정 기능 (최적화)
+    function setupShipFeeSettings() {
+      const updateBtn = document.getElementById('updateShipFeeDefault');
+      const shipFeeInput = document.getElementById('shipFeeDefault');
+      
+      if (updateBtn && shipFeeInput) {
+        updateBtn.addEventListener('click', function() {
+          const newValue = shipFeeInput.value.trim();
+          if (!newValue) {
+            alert('값을 입력해주세요.');
+            return;
+          }
+          
+          // 선박운임 행 찾기 (한 번만 쿼리)
+          const shipFeeRow = Array.from(document.querySelectorAll('.cost-table tbody tr'))
+            .find(row => row.querySelector('td:first-child input')?.value === "선박운임");
+          
+          if (!shipFeeRow) {
+            alert('선박운임 행을 찾을 수 없습니다.');
+            return;
+          }
+          
+          // 필요한 셀들을 한 번에 쿼리
+          const [vatCell, totalCell, supplyPriceCell] = [
+            shipFeeRow.querySelector('td:nth-child(3) input'),
+            shipFeeRow.querySelector('td:nth-child(4) input'),
+            shipFeeRow.querySelector('td:nth-child(2) input')
+          ];
+          
+          if (!vatCell) return;
+          
+          // 숫자 변환 (한 번만)
+          const numericValue = parseFloat(newValue.replace(/,/g, ''));
+          if (isNaN(numericValue)) {
+            alert('올바른 숫자를 입력해주세요.');
+            return;
+          }
+          
+          // 전역 변수 업데이트 및 localStorage에 저장
+          shipFeeDefaultValue = numericValue;
+          localStorage.setItem('shipFeeDefaultValue', shipFeeDefaultValue.toString());
+          
+          // VAT 셀 업데이트
+          vatCell.value = newValue;
+          
+          // 공급가 자동 계산 (총액 - VAT)
+          if (totalCell && supplyPriceCell) {
+            const totalValue = parseFloat(totalCell.value.replace(/,/g, '')) || 0;
+            const supplyValue = totalValue - numericValue;
+            supplyPriceCell.value = supplyValue.toLocaleString();
+          }
+          
+          alert(`선박운임 기본값이 ${newValue}로 변경되었습니다.`);
+        });
+        
+        // 페이지 로드 시 전역 변수 값으로 초기화
+        shipFeeInput.value = shipFeeDefaultValue.toLocaleString();
+      }
+    }
+    
+    // 데이터 설정 함수 (최적화)
+    function setAccountingData(data) {
+      // 신고번호와 신고일자 설정
+      const [declarationNoInput, declarationDateInput] = [
+        document.getElementById('orderDateInput'),
+        document.getElementById('totalAmountInput')
+      ];
+      
+      if (data["신고번호"] && declarationNoInput) {
+        declarationNoInput.value = data["신고번호"];
+      }
+      
+      if (data["신고일자"] && declarationDateInput) {
+        declarationDateInput.value = data["신고일자"];
+      }
+      
+      // 데이터 행들만 필터링 (헤더 행들 제외)
+      const dataRows = Array.from(document.querySelectorAll('.cost-table tbody tr'))
+        .filter((row, index) => index > 1);
+      
+      // 과세금액을 부가세 행의 공급가 셀에 설정
+      if (data["과세금액"]) {
+        const vatRow = dataRows.find(row => 
+          row.querySelector('td:first-child input')?.value === "부가세"
+        );
+        
+        if (vatRow) {
+          const supplyPriceCell = vatRow.querySelector('td:nth-child(2) input');
+          if (supplyPriceCell) {
+            const value = data["과세금액"];
+            const parent = supplyPriceCell.parentElement;
+            
+            if (parent) {
+              // 새로운 input 요소 생성
+              const newInput = document.createElement('input');
+              newInput.type = 'text';
+              newInput.value = value;
+              
+              // 기존 input의 속성 복사 (value 제외)
+              Array.from(supplyPriceCell.attributes).forEach(attr => {
+                if (attr.name !== 'value') {
+                  newInput.setAttribute(attr.name, attr.value);
+                }
+              });
+              
+              // 기존 input을 새 input으로 교체
+              parent.replaceChild(newInput, supplyPriceCell);
+              
+              // 이벤트 발생
+              newInput.dispatchEvent(new Event('input', { bubbles: true }));
+              newInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          }
+        }
+      }
+      
+      // 관세 설정 (4열에서 2열+3열 계산)
+      if (data["관세"]) {
+        const customsRow = dataRows.find(row => 
+          row.querySelector('td:first-child input')?.value === "관세"
+        );
+        
+        if (customsRow) {
+          const [totalCell, supplyPriceCell, vatCell] = [
+            customsRow.querySelector('td:nth-child(4) input'),
+            customsRow.querySelector('td:nth-child(2) input'),
+            customsRow.querySelector('td:nth-child(3) input')
+          ];
+          
+          if (totalCell && supplyPriceCell && vatCell) {
+            const totalValue = data["관세"];
+            if (totalValue) {
+              const numericValue = parseFloat(totalValue.replace(/,/g, ''));
+              
+              // 4열에 값 설정
+              totalCell.value = totalValue;
+              
+              // 2열 = 4열 * 100/110 (공급가)
+              const supplyPrice = Math.round(numericValue * 100 / 110);
+              supplyPriceCell.value = supplyPrice.toLocaleString();
+              
+              // 3열 = 4열 * 10/110 (부가세)
+              const vatAmount = Math.round(numericValue * 10 / 110);
+              vatCell.value = vatAmount.toLocaleString();
+            }
+          }
+        }
+      }
+      
+      // 부가세 설정 (2열+3열=4열 계산)
+      if (data["부가세"]) {
+        const vatRow = dataRows.find(row => 
+          row.querySelector('td:first-child input')?.value === "부가세"
+        );
+        
+        if (vatRow) {
+          const [supplyPriceCell, vatCell, totalCell] = [
+            vatRow.querySelector('td:nth-child(2) input'),
+            vatRow.querySelector('td:nth-child(3) input'),
+            vatRow.querySelector('td:nth-child(4) input')
+          ];
+          
+          if (supplyPriceCell && vatCell && totalCell) {
+            const vatValue = data["부가세"];
+            
+            // 3열에 부가세 값 설정
+            vatCell.value = vatValue;
+            
+            // 2열과 3열의 합을 4열에 계산
+            const supplyPrice = parseFloat(supplyPriceCell.value.replace(/,/g, '')) || 0;
+            const vatAmount = parseFloat(vatValue.replace(/,/g, '')) || 0;
+            const total = supplyPrice + vatAmount;
+            
+            totalCell.value = total.toLocaleString();
+          }
+        }
+      }
+      
+      // 창고료 설정 (4열에서 2열+3열 계산)
+      if (data["창고료"]) {
+        const warehouseRow = dataRows.find(row => 
+          row.querySelector('td:first-child input')?.value === "창고료"
+        );
+        
+        if (warehouseRow) {
+          const [totalCell, supplyPriceCell, vatCell] = [
+            warehouseRow.querySelector('td:nth-child(4) input'),
+            warehouseRow.querySelector('td:nth-child(2) input'),
+            warehouseRow.querySelector('td:nth-child(3) input')
+          ];
+          
+          if (totalCell && supplyPriceCell && vatCell) {
+            const totalValue = data["창고료"];
+            if (totalValue) {
+              const numericValue = parseFloat(totalValue.replace(/,/g, ''));
+              
+              // 4열에 값 설정
+              totalCell.value = totalValue;
+              
+              // 2열 = 4열 * 100/110 (공급가)
+              const supplyPrice = Math.round(numericValue * 100 / 110);
+              supplyPriceCell.value = supplyPrice.toLocaleString();
+              
+              // 3열 = 4열 * 10/110 (부가세)
+              const vatAmount = Math.round(numericValue * 10 / 110);
+              vatCell.value = vatAmount.toLocaleString();
+            }
+          }
+        }
+      }
+      
+      // 선박운임 설정 (3열 고정값 14000, 2열 = 4열 - 3열)
+      if (data["선박운임"]) {
+        const shipFeeRow = dataRows.find(row => 
+          row.querySelector('td:first-child input')?.value === "선박운임"
+        );
+        
+        if (shipFeeRow) {
+          const [totalCell, supplyPriceCell, vatCell] = [
+            shipFeeRow.querySelector('td:nth-child(4) input'),
+            shipFeeRow.querySelector('td:nth-child(2) input'),
+            shipFeeRow.querySelector('td:nth-child(3) input')
+          ];
+          
+          if (totalCell && supplyPriceCell && vatCell) {
+            const totalValue = data["선박운임"];
+            if (totalValue) {
+              const totalAmount = parseFloat(totalValue.replace(/,/g, ''));
+              
+              // 4열에 값 설정
+              totalCell.value = totalValue;
+              
+              // 3열에 전역 변수 기본값 설정
+              vatCell.value = shipFeeDefaultValue.toLocaleString();
+              
+              // 2열 = 4열 - 3열 (공급가)
+              const supplyPrice = totalAmount - shipFeeDefaultValue;
+              supplyPriceCell.value = supplyPrice.toLocaleString();
+            }
+          }
+        }
+      }
+      
+      // 운송료 설정 (4열에서 2열+3열 계산)
+      if (data["운송료"]) {
+        const shippingRow = dataRows.find(row => 
+          row.querySelector('td:first-child input')?.value === "운송료"
+        );
+        
+        if (shippingRow) {
+          const [totalCell, supplyPriceCell, vatCell] = [
+            shippingRow.querySelector('td:nth-child(4) input'),
+            shippingRow.querySelector('td:nth-child(2) input'),
+            shippingRow.querySelector('td:nth-child(3) input')
+          ];
+          
+          if (totalCell && supplyPriceCell && vatCell) {
+            const totalValue = data["운송료"];
+            if (totalValue) {
+              const numericValue = parseFloat(totalValue.replace(/,/g, ''));
+              
+              // 4열에 값 설정
+              totalCell.value = totalValue;
+              
+              // 2열 = 4열 * 100/110 (공급가)
+              const supplyPrice = Math.round(numericValue * 100 / 110);
+              supplyPriceCell.value = supplyPrice.toLocaleString();
+              
+              // 3열 = 4열 * 10/110 (부가세)
+              const vatAmount = Math.round(numericValue * 10 / 110);
+              vatCell.value = vatAmount.toLocaleString();
+            }
+          }
+        }
+      }
+      
+      // 통관수수료 설정 (4열에서 2열+3열 계산)
+      if (data["통관수수료"]) {
+        const customsFeeRow = dataRows.find(row => 
+          row.querySelector('td:first-child input')?.value === "통관수수료"
+        );
+        
+        if (customsFeeRow) {
+          const [totalCell, supplyPriceCell, vatCell] = [
+            customsFeeRow.querySelector('td:nth-child(4) input'),
+            customsFeeRow.querySelector('td:nth-child(2) input'),
+            customsFeeRow.querySelector('td:nth-child(3) input')
+          ];
+          
+          if (totalCell && supplyPriceCell && vatCell) {
+            const totalValue = data["통관수수료"];
+            if (totalValue) {
+              const numericValue = parseFloat(totalValue.replace(/,/g, ''));
+              
+              // 4열에 값 설정
+              totalCell.value = totalValue;
+              
+              // 2열 = 4열 * 100/110 (공급가)
+              const supplyPrice = Math.round(numericValue * 100 / 110);
+              supplyPriceCell.value = supplyPrice.toLocaleString();
+              
+              // 3열 = 4열 * 10/110 (부가세)
+              const vatAmount = Math.round(numericValue * 10 / 110);
+              vatCell.value = vatAmount.toLocaleString();
+            }
+          }
+        }
+      }
+      
+      // NT비용합계 계산 (창고료 + 운송료 + 통관수수료)
+      calculateCostTotal();
+      
+      // 총부대비용합계 계산 (NT비용합계 + TF비용합계)
+      calculateTotalCost();
+    }
+    
+    // 수입원가+부가세+총부대비용 행의 최종 합계 계산
+    function calculateFinalTotal() {
+      // 드롭다운 있는 행의 4열값 (wonAmount)
+      const wonAmount = parseInt(document.getElementById('wonAmount')?.value?.replace(/,/g, '') || '0');
+      
+      // 부가세 행의 3열값 (4번째 행)
+      const vatRow = document.querySelector('.cost-table tbody tr:nth-child(4)'); // 부가세 행
+      const vatValue = parseInt(vatRow?.querySelector('td:nth-child(3) input')?.value?.replace(/,/g, '') || '0');
+      
+      // 총부대비용합계의 2열값
+      const totalCostRow = document.querySelector('.cost-table tbody tr:nth-child(11)'); // 총부대비용합계 행
+      const totalCostValue = parseInt(totalCostRow?.querySelector('td:nth-child(2) input')?.value?.replace(/,/g, '') || '0');
+      
+      // 세 값을 합산
+      const finalTotal = wonAmount + vatValue + totalCostValue;
+      
+      // 수입원가+부가세+총부대비용 행의 3열에 값 설정 (colspan 때문에 3열이 마지막)
+      const finalRow = document.querySelector('.cost-table tbody tr:nth-child(12)'); // 수입원가+부가세+총부대비용 행
+      const finalInput = finalRow?.querySelector('td:nth-child(3) input');
+      if (finalInput) {
+        finalInput.value = finalTotal.toLocaleString();
+      }
+    }
+
+    // 총부대비용합계 자동 계산 함수
+    function calculateTotalCost() {
+      // NT비용합계와 TF비용합계의 각 열 값들을 가져와서 합산
+      const ntRow = document.querySelector('.cost-table tbody tr:nth-child(9)'); // NT비용합계 행
+      const tfRow = document.querySelector('.cost-table tbody tr:nth-child(10)'); // TF비용합계 행
+      const totalRow = document.querySelector('.cost-table tbody tr:nth-child(11)'); // 총부대비용합계 행
+      
+      if (ntRow && tfRow && totalRow) {
+        // 2열(공급가) 계산 - 공란이면 0으로 처리
+        const ntSupply = parseInt(ntRow.querySelector('td:nth-child(2) input')?.value?.replace(/,/g, '') || '0');
+        const tfSupply = parseInt(tfRow.querySelector('td:nth-child(2) input')?.value?.replace(/,/g, '') || '0');
+        const totalSupply = ntSupply + tfSupply;
+        totalRow.querySelector('td:nth-child(2) input').value = totalSupply.toLocaleString();
+        
+        // 3열(부가세) 계산 - 공란이면 0으로 처리
+        const ntVat = parseInt(ntRow.querySelector('td:nth-child(3) input')?.value?.replace(/,/g, '') || '0');
+        const tfVat = parseInt(tfRow.querySelector('td:nth-child(3) input')?.value?.replace(/,/g, '') || '0');
+        const totalVat = ntVat + tfVat;
+        totalRow.querySelector('td:nth-child(3) input').value = totalVat.toLocaleString();
+        
+        // 4열(합계) 계산 - 공란이면 0으로 처리
+        const ntTotal = parseInt(ntRow.querySelector('td:nth-child(4) input')?.value?.replace(/,/g, '') || '0');
+        const tfTotal = parseInt(tfRow.querySelector('td:nth-child(4) input')?.value?.replace(/,/g, '') || '0');
+        const totalAmount = ntTotal + tfTotal;
+        totalRow.querySelector('td:nth-child(4) input').value = totalAmount.toLocaleString();
+      }
+      
+      // 수입원가+부가세+총부대비용 행의 4열 계산
+      calculateFinalTotal();
+    }
+
+    // NT비용합계 계산 함수 (최적화)
+    function calculateCostTotal() {
+      const dataRows = Array.from(document.querySelectorAll('.cost-table tbody tr')).slice(2);
+      
+      const costTotalRow = dataRows.find(row => 
+        row.querySelector('td:first-child input')?.value === "NT비용합계"
+      );
+      
+      if (!costTotalRow) return;
+      
+      const [totalCell, supplyPriceCell, vatCell] = [
+        costTotalRow.querySelector('td:nth-child(4) input'),
+        costTotalRow.querySelector('td:nth-child(2) input'),
+        costTotalRow.querySelector('td:nth-child(3) input')
+      ];
+      
+      if (!totalCell || !supplyPriceCell || !vatCell) return;
+      
+      // 비용 항목들 정의
+      const costItems = ['창고료', '선박운임', '운송료', '통관수수료'];
+      let totalSupplyPrice = 0;
+      let totalVat = 0;
+      let totalAmount = 0;
+      
+      // 각 비용 항목별로 계산
+      costItems.forEach(itemName => {
+        const itemRow = dataRows.find(row => 
+          row.querySelector('td:first-child input')?.value === itemName
+        );
+        
+        if (itemRow) {
+          const [itemTotalCell, itemSupplyCell, itemVatCell] = [
+            itemRow.querySelector('td:nth-child(4) input'),
+            itemRow.querySelector('td:nth-child(2) input'),
+            itemRow.querySelector('td:nth-child(3) input')
+          ];
+          
+          if (itemTotalCell && itemSupplyCell && itemVatCell) {
+            const itemTotal = parseFloat(itemTotalCell.value.replace(/,/g, '')) || 0;
+            const itemSupply = parseFloat(itemSupplyCell.value.replace(/,/g, '')) || 0;
+            const itemVat = parseFloat(itemVatCell.value.replace(/,/g, '')) || 0;
+            
+            totalSupplyPrice += itemSupply;
+            totalVat += itemVat;
+            totalAmount += itemTotal;
+          }
+        }
+      });
+      
+      // NT비용합계에 값 설정
+      supplyPriceCell.value = totalSupplyPrice.toLocaleString();
+      vatCell.value = totalVat.toLocaleString();
+      totalCell.value = totalAmount.toLocaleString();
+    }
+    
+
+    // 페이지 로드 시 초기화 (최적화)
+    window.addEventListener('DOMContentLoaded', () => {
+      // 오늘 날짜를 YYYY-MM-DD 형식으로 신고일자 필드에 자동 입력
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayString = `${year}-${month}-${day}`;
+      
+      const reportDateInput = document.getElementById('totalAmountInput');
+      if (reportDateInput && !reportDateInput.value) {
+        reportDateInput.value = todayString;
+      }
+      
+      // 저장된 데이터 복원
+      const savedData = localStorage.getItem('accounting1SavedData');
+      if (savedData) {
+        try {
+          const data = JSON.parse(savedData);
+          
+          // 선박운임 기본값 복원
+          if (data.shipFeeDefaultValue) {
+            shipFeeDefaultValue = data.shipFeeDefaultValue;
+          }
+          
+          // 테이블 데이터 복원
+          if (data.table1Data) {
+            setTimeout(() => restoreTable1Data(data.table1Data), 500);
+          }
+          if (data.table2Data) {
+            setTimeout(() => restoreTable2Data(data.table2Data), 500);
+          }
+        } catch (error) {
+          // 저장된 데이터 복원 실패 시 조용히 처리
+        }
+      }
+      
+      // Export된 데이터 처리
+      const isNewAccounting = sessionStorage.getItem('isNewAccounting');
+      if (isNewAccounting === 'false') {
+        const exportedData = sessionStorage.getItem("accounting1ExportData");
+        
+        if (exportedData) {
+          try {
+            const exportData = JSON.parse(exportedData);
+            
+            if (exportData.accountingData) {
+              // sessionStorage 정리
+              sessionStorage.removeItem("accounting1ExportData");
+              sessionStorage.removeItem("isNewAccounting");
+              
+              // 데이터 설정 (중복 호출 제거)
+              setTimeout(() => {
+                setAccountingData(exportData.accountingData);
+              }, 100);
+              
+              // 드롭다운 로드 후 테이블1 복원
+              loadDeliveryNumbers().then(() => {
+                if (exportData.table1Data) {
+                  restoreTable1Data(exportData.table1Data);
+                }
+              });
+            }
+          } catch (error) {
+            // 데이터 파싱 오류 시 조용히 처리
+          }
+        }
+      }
+      
+      // 공통 입력 필드 계산 함수
+      function setupCostInputCalculation(rowIndex, onCalculate) {
+        const input = document.querySelector(`.cost-table tbody tr:nth-child(${rowIndex}) td:nth-child(4) input`);
+        if (!input) return;
+        
+        input.addEventListener('input', function(e) {
+          let value = e.target.value.replace(/,/g, '');
+          if (value && !isNaN(value)) {
+            const numericValue = parseInt(value);
+            e.target.value = numericValue.toLocaleString();
+            
+            // 3열(부가세)에 1/11 계산
+            const vatInput = document.querySelector(`.cost-table tbody tr:nth-child(${rowIndex}) td:nth-child(3) input`);
+            if (vatInput) {
+              const vatValue = Math.round(numericValue / 11);
+              vatInput.value = vatValue.toLocaleString();
+            }
+            
+            // 2열(공급가)에 10/11 계산
+            const supplyInput = document.querySelector(`.cost-table tbody tr:nth-child(${rowIndex}) td:nth-child(2) input`);
+            if (supplyInput) {
+              const supplyValue = Math.round(numericValue * 10 / 11);
+              supplyInput.value = supplyValue.toLocaleString();
+            }
+            
+            // 계산 함수 호출
+            if (onCalculate) {
+              setTimeout(onCalculate, rowIndex === 5 ? 50 : 10);
+            }
+          }
+        });
+      }
+      
+      // TF비용합계 입력 필드에 콤마 포맷팅 및 자동 계산 추가
+      setupCostInputCalculation(10, () => calculateTotalCost());
+      
+      // 창고료 입력 필드에 콤마 포맷팅 및 자동 계산 추가
+      setupCostInputCalculation(5, () => {
+        calculateCostTotal();
+        calculateTotalCost();
+      });
+      
+      // NT비용합계와 TF비용합계 값 변경 시 총부대비용합계 자동 계산
+      const ntInputs = document.querySelectorAll('.cost-table tbody tr:nth-child(9) input');
+      const tfInputs = document.querySelectorAll('.cost-table tbody tr:nth-child(10) input');
+      
+      [...ntInputs, ...tfInputs].forEach(input => {
+        input.addEventListener('input', function() {
+          // 실시간으로 총부대비용합계 계산
+          calculateTotalCost();
+        });
+      });
+      
+      // 최종 합계 계산을 위한 이벤트 리스너 추가
+      const wonAmountInput = document.getElementById('wonAmount');
+      if (wonAmountInput) {
+        wonAmountInput.addEventListener('input', calculateFinalTotal);
+        wonAmountInput.addEventListener('change', calculateFinalTotal);
+      }
+      
+      const vatInput = document.querySelector('.cost-table tbody tr:nth-child(4) td:nth-child(3) input');
+      if (vatInput) vatInput.addEventListener('input', calculateFinalTotal);
+      
+      const totalCostInput = document.querySelector('.cost-table tbody tr:nth-child(11) td:nth-child(2) input');
+      if (totalCostInput) totalCostInput.addEventListener('input', calculateFinalTotal);
+      
+      const finalRowInput = document.querySelector('.cost-table tbody tr:nth-child(12) td:nth-child(3) input');
+      if (finalRowInput) finalRowInput.addEventListener('input', calculateFinalTotal);
+      
+      // 환율 입력 시 원화 계산
+      const exchangeRateInput = document.getElementById('exchangeRate');
+      if (exchangeRateInput) {
+        exchangeRateInput.addEventListener('input', calculateWonAmount);
+        exchangeRateInput.addEventListener('change', calculateWonAmount);
+      }
+      
+      // 달러 입력 시 원화 계산
+      const dollarInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input');
+      if (dollarInput) {
+        dollarInput.addEventListener('input', calculateWonAmount);
+        dollarInput.addEventListener('change', calculateWonAmount);
+      }
+      
+      // 공통 초기화
+      loadDeliveryNumbers();
+      setupShipFeeSettings();
+      
+      // 페이지 로드 후 강제로 총부대비용합계 계산 실행
+      setTimeout(() => {
+        calculateTotalCost();
+      }, 500);
+    });
+
+    // 테이블1 데이터 저장 후 update 페이지로 이동 (최적화)
+    function saveTable1DataAndUpdate() {
+      // 테이블1의 값들 수집
+      const table1Data = {};
+      
+      // DOM 쿼리 최적화
+      const [deliveryNoSelect, invoiceInput] = [
+        document.querySelector('.cost-table tbody tr:first-child td:first-child select'),
+        document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input')
+      ];
+      
+      if (deliveryNoSelect) table1Data.deliveryNo = deliveryNoSelect.value;
+      if (invoiceInput) table1Data.invoiceprice = invoiceInput.value;
+      
+      // 원화금액 (4열)
+      const wonAmountInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(4) input');
+      if (wonAmountInput) table1Data.wonAmount = wonAmountInput.value;
+      
+      // sessionStorage에 저장
+      sessionStorage.setItem('table1Data', JSON.stringify(table1Data));
+      
+      // accounting1update.html로 이동
+      location.href = 'accounting1update.html';
+    }
+
+    // 테이블1 데이터 복원 함수 (최적화)
+    function restoreTable1Data(table1Data) {
+      if (!table1Data.deliveryNo) return;
+      
+      const deliveryNoSelect = document.querySelector('.cost-table tbody tr:first-child td:first-child select');
+      if (!deliveryNoSelect) return;
+      
+      // 옵션이 로드될 때까지 기다린 후 선택
+      const checkAndSetDeliveryNo = () => {
+        const options = deliveryNoSelect.querySelectorAll('option');
+        
+        if (options.length > 1) {
+          deliveryNoSelect.value = table1Data.deliveryNo;
+          
+          // deliveryNo 선택 후 invoiceprice도 로드
+          if (table1Data.invoiceprice) {
+            const invoiceInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input');
+            if (invoiceInput) {
+              invoiceInput.value = table1Data.invoiceprice;
+            }
+          }
+        } else {
+          // 옵션이 아직 로드되지 않았으면 다시 시도
+          setTimeout(checkAndSetDeliveryNo, 100);
+        }
+      };
+      checkAndSetDeliveryNo();
+      
+      // 나머지 필드들 복원
+      const wonAmountInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(4) input');
+      
+      if (table1Data.wonAmount && wonAmountInput) {
+        wonAmountInput.value = table1Data.wonAmount;
+      }
+    }
+
+    // 테이블2 데이터 복원 함수 (최적화)
+    function restoreTable2Data(table2Data) {
+      if (!table2Data) return;
+      
+      // 각 행의 데이터 복원
+      const dataRows = Array.from(document.querySelectorAll('.cost-table tbody tr')).slice(2);
+      
+      // 데이터 복원 매핑
+      const rowMappings = [
+        { data: table2Data.customs, row: dataRows[0] },
+        { data: table2Data.vat, row: dataRows[1] },
+        { data: table2Data.warehouse, row: dataRows[2] },
+        { data: table2Data.ship, row: dataRows[3] },
+        { data: table2Data.shipping, row: dataRows[4] },
+        { data: table2Data.customsFee, row: dataRows[5] }
+      ];
+      
+      // 각 행에 대해 데이터 복원
+      rowMappings.forEach(({ data, row }) => {
+        if (data && row) {
+          const inputs = row.querySelectorAll('input');
+          if (inputs[1]) inputs[1].value = data.supply || '';
+          if (inputs[2]) inputs[2].value = data.vat || '';
+          if (inputs[3]) inputs[3].value = data.total || '';
+        }
+      });
+    }
+
+    // PDF 생성 함수 (최적화)
+    async function generatePDF() {
+      // 아래 버튼 박스 숨기기
+      const buttonBox = document.querySelector('.main-button-group');
+      const originalDisplay = buttonBox?.style.display;
+      if (buttonBox) buttonBox.style.display = 'none';
+
+      try {
+        // A4 용지 크기의 흰색 박스 캡처
+        const pageElement = document.querySelector('.page');
+        if (!pageElement) {
+          alert('A4 용지 요소를 찾을 수 없습니다.');
+          return;
+        }
+        
+        // jsPDF 인스턴스 생성
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait'
+        });
+
+        // html2canvas로 페이지 캡처
+        const canvas = await html2canvas(pageElement, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: '#ffffff'
+        });
+
+        // 고품질 PNG로 변환
+        const imgData = canvas.toDataURL('image/png', 0.95);
+        
+        // A4 용지 크기 (210mm x 297mm)
+        const imgWidth = 210;
+        const imgHeight = 297;
+        
+        // PDF에 이미지 추가 (A4 용지 크기 그대로)
+        doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+        // deliveryNo 가져오기 (파일명용)
+        const deliveryNoSelect = document.querySelector('.cost-table tbody tr:first-child td:first-child select');
+        const deliveryNo = deliveryNoSelect?.value || '수입원가명세서';
+        
+        // PDF 저장
+        doc.save(`${deliveryNo}_수입원가명세서.pdf`);
+        
+      } catch (error) {
+        alert('PDF 생성에 실패했습니다: ' + error.message);
+      } finally {
+        // 버튼 박스 다시 보이기
+        if (buttonBox) {
+          buttonBox.style.display = originalDisplay || '';
+        }
+      }
+    }
+  </script>
+
+  <!-- PDF 생성을 위한 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</body>
+</html>
+

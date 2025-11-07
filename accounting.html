@@ -1,0 +1,3362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>입출금내역서</title>
+  <!-- PDF 생성을 위한 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #000;
+      line-height: 1.5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      margin: 0;
+      padding: 0;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+
+    /* 메인 페이지 컨테이너 */
+    .page-container {
+      max-width: 800px;
+      margin: 15px auto;
+      padding: 0;
+    }
+    
+    .page {
+      width: 210mm; /* A4 너비 */
+      height: 297mm; /* A4 높이 고정 */
+      margin: 0 auto 20px auto;
+      padding: 10mm 25mm 25mm 25mm; /* 상단만 10mm로 줄임 */
+      box-sizing: border-box;
+      background: #fff;
+      position: relative;
+      overflow: visible; /* 넘치는 내용 표시 */
+    }
+
+    /* 문서 제목 */
+    .document-title {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    /* 하단 버튼 영역 전체 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 확장 손잡이 (서랍 손잡이처럼 위쪽에 튀어나옴) */
+    .expand-handle {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    /* 확장/축소 버튼 */
+    .expand-btn {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #666;
+      border-radius: 8px 8px 0 0;
+      min-width: 40px;
+      height: 20px;
+      line-height: 1;
+      transition: all 0.2s ease;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    .expand-btn:hover {
+      background: #e8e8e8;
+      border-color: #999;
+      box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    }
+
+    .expand-btn.expanded {
+      transform: rotate(180deg);
+      background: #e0e0e0;
+    }
+
+    /* 기본 버튼 그룹 레이아웃 */
+    .main-button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+    
+    .left-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .right-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .main-button-group button {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+    
+    .main-button-group button:hover {
+      background: #f0f0f0;
+    }
+
+    /* 상세 버튼 영역 */
+    .detail-button-area {
+      margin-top: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      animation: slideDown 0.3s ease;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .detail-button-area button {
+      margin: 0;
+    }
+
+    /* 여백 조정 컨트롤 */
+    .margin-control {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.8rem;
+    }
+
+    .margin-control label {
+      font-size: 0.8rem;
+      color: #666;
+      white-space: nowrap;
+    }
+
+    .margin-control .margin-buttons {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .margin-control .margin-btn {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #333;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .margin-control .margin-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    .margin-control .margin-btn:active {
+      background: #e0e0e0;
+      transform: scale(0.95);
+    }
+
+    .margin-control .margin-value {
+      font-size: 0.8rem;
+      color: #333;
+      min-width: 35px;
+      text-align: center;
+      font-weight: bold;
+      padding: 2px 5px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      border-radius: 3px;
+    }
+
+    /* 폰트 크기 조정 컨트롤 */
+    .font-control {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.8rem;
+    }
+
+    .font-control label {
+      font-size: 0.8rem;
+      color: #666;
+      white-space: nowrap;
+    }
+
+    .font-control .font-buttons {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .font-control .font-btn {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #333;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .font-control .font-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    .font-control .font-btn:active {
+      background: #e0e0e0;
+      transform: scale(0.95);
+    }
+
+    .font-control .font-value {
+      font-size: 0.8rem;
+      color: #333;
+      min-width: 35px;
+      text-align: center;
+      font-weight: bold;
+      padding: 2px 5px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      border-radius: 3px;
+    }
+
+    /* PDF 버튼 - Email 버튼과 동일한 스타일 */
+    #pdfBtn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    #pdfBtn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* Delete 버튼 - PDF 버튼과 동일한 스타일 */
+    #deleteBtn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    #deleteBtn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* 테이블 하단 여백 (고정 버튼과 겹치지 않도록) */
+    .page {
+      margin-bottom: 120px;
+    }
+
+    /* 회계 테이블 스타일 */
+    .accounting-table {
+      width: 504px; /* 6열 × 84px = 504px */
+      border-collapse: collapse;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      background: #fff;
+      border: 1px solid #ddd;
+      table-layout: fixed;
+    }
+
+    .accounting-table th {
+      background-color: #f5f5f5;
+      padding: 8px 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-weight: bold;
+      font-size: 0.7rem;
+      color: #333;
+    }
+
+    .accounting-table td {
+      padding: 5px 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-size: 0.7rem;
+    }
+
+    .accounting-table tr {
+      background-color: #fff;
+    }
+
+    .accounting-table tr:hover {
+      background-color: #fff;
+    }
+
+    /* 컬럼 너비 설정 - 모든 열 동일 (절대값) */
+    .accounting-table th:nth-child(1),
+    .accounting-table td:nth-child(1) {
+      width: 84px;
+      min-width: 84px;
+      max-width: 84px;
+    }
+
+    .accounting-table th:nth-child(2),
+    .accounting-table td:nth-child(2) {
+      width: 84px;
+      min-width: 84px;
+      max-width: 84px;
+    }
+
+    .accounting-table th:nth-child(3),
+    .accounting-table td:nth-child(3) {
+      width: 84px;
+      min-width: 84px;
+      max-width: 84px;
+    }
+
+    .accounting-table th:nth-child(4),
+    .accounting-table td:nth-child(4) {
+      width: 84px;
+      min-width: 84px;
+      max-width: 84px;
+    }
+
+    .accounting-table th:nth-child(5),
+    .accounting-table td:nth-child(5) {
+      width: 84px;
+      min-width: 84px;
+      max-width: 84px;
+      text-align: center;
+    }
+
+    /* 카테고리 2의 모든 열을 기본 스타일로 설정 (6열과 동일) */
+    #category2TableBody td,
+    #category2TableBody td input {
+      text-align: center;
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
+    }
+    
+    /* 카테고리 3의 기본 정렬 (가운데) */
+    #category3TableBody td,
+    #category3TableBody td input {
+      text-align: center;
+    }
+    
+    /* 카테고리 3의 숫자 컬럼들 오른쪽 정렬 (3열, 5열, 6열) */
+    #category3TableBody td:nth-child(3),
+    #category3TableBody td:nth-child(3) input,
+    #category3TableBody td:nth-child(5),
+    #category3TableBody td:nth-child(5) input,
+    #category3TableBody td:nth-child(6),
+    #category3TableBody td:nth-child(6) input {
+      text-align: right;
+    }
+
+    /* 카테고리 4 스타일 */
+    #category4TableBody td,
+    #category4TableBody td input {
+      text-align: center;
+    }
+
+    /* 카테고리 5 스타일 */
+    #category5TableBody td,
+    #category5TableBody td input {
+      text-align: center;
+    }
+
+    .accounting-table th:nth-child(6),
+    .accounting-table td:nth-child(6) {
+      width: 84px;
+      min-width: 84px;
+      max-width: 84px;
+    }
+
+    /* 입력 필드 스타일 */
+    .accounting-table td input,
+    .accounting-table td input[type="text"],
+    .accounting-table td input[type="number"] {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      border-radius: 0;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: auto;
+      line-height: inherit;
+      font-size: inherit;
+      color: inherit;
+      text-align: inherit;
+      box-sizing: border-box;
+    }
+
+    /* 삭제 버튼 스타일 */
+    .delete-account-btn {
+      position: absolute;
+      right: 2px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      color: black;
+      border: none;
+      width: 14px;
+      height: 14px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+
+    .delete-account-btn:hover {
+      color: #666;
+    }
+
+    .delete-account-btn:active {
+      color: #333;
+    }
+
+    /* 숨기기 버튼 스타일 */
+    .hideButton {
+      background-color: #ff6b6b;
+      color: white;
+      border: none;
+      padding: 2px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-left: 5px;
+    }
+    
+    .hidden-row {
+      display: none;
+    }
+
+    /* Transaction 삭제 버튼 스타일 */
+    .delete-transaction-btn {
+      position: absolute;
+      right: 2px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      color: black;
+      border: none;
+      width: 14px;
+      height: 14px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+
+    .delete-transaction-btn:hover {
+      color: #666;
+    }
+
+    .delete-transaction-btn:active {
+      color: #333;
+    }
+
+    .accounting-table td input:focus,
+    .accounting-table td input:active,
+    .accounting-table td input:hover {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+
+    /* 숫자 컬럼들 오른쪽 정렬 */
+    .accounting-table tbody tr td:nth-child(3),
+    .accounting-table tbody tr td:nth-child(4),
+    .accounting-table tbody tr td:nth-child(5),
+    .accounting-table tbody tr td:nth-child(6) {
+      text-align: right;
+    }
+
+    .accounting-table tbody tr td:nth-child(3) input,
+    .accounting-table tbody tr td:nth-child(4) input,
+    .accounting-table tbody tr td:nth-child(5) input,
+    .accounting-table tbody tr td:nth-child(6) input {
+      text-align: right;
+    }
+
+    /* 카테고리 제목 */
+    .category-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin: 20px 0 10px 0;
+      color: #333;
+      border-bottom: 2px solid #333;
+      padding-bottom: 5px;
+    }
+
+    /* 회사 정보 스타일 (ntinvoice.html 참고) */
+    .company-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding: 5px 0;
+    }
+
+    .company-left {
+      font-size: 1rem;
+      color: #333;
+    }
+
+    .company-right {
+      font-size: 1rem;
+      color: #333;
+    }
+
+    /* 구분선 */
+    .divider {
+      border-bottom: 2px solid #000;
+      margin-bottom: 20px;
+    }
+
+    /* 날짜 선택 영역 */
+    .date-selector {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    /* 년도 선택 드롭다운 */
+    .year-dropdown {
+      width: 60px;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 1rem;
+      color: inherit;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      cursor: pointer;
+      padding: 5px 3px;
+      text-align: right;
+    }
+
+    /* 월 선택 드롭다운 */
+    .month-dropdown {
+      width: 45px;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 1rem;
+      color: inherit;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      cursor: pointer;
+      padding: 5px 3px;
+      text-align: right;
+    }
+
+    /* 일 선택 드롭다운 */
+    .day-dropdown {
+      width: 45px;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 1rem;
+      color: inherit;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      cursor: pointer;
+      padding: 5px 3px;
+      text-align: right;
+    }
+
+    .year-dropdown:focus,
+    .month-dropdown:focus,
+    .day-dropdown:focus {
+      outline: none;
+      box-shadow: none;
+    }
+
+    /* 날짜 네비게이션 버튼 */
+    .date-navigation {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      margin-left: 5px;
+    }
+
+    .date-nav-btn {
+      width: 20px;
+      height: 15px;
+      border: none;
+      background: transparent;
+      font-size: 10px;
+      color: #333;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+      transition: color 0.2s ease;
+    }
+
+    .date-nav-btn:hover {
+      color: #666;
+      background: #f0f0f0;
+    }
+
+    .date-nav-btn:active {
+      color: #000;
+      background: #e0e0e0;
+    }
+
+    /* 카테고리 선택 드롭다운 (버튼과 동일한 스타일) */
+    .category-dropdown {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 100px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    .category-dropdown:hover {
+      background: #f0f0f0;
+    }
+
+    .category-dropdown:focus {
+      outline: none;
+      border-color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="page">
+      <!-- 문서 제목 -->
+      <div class="document-title">입출금내역서</div>
+      
+      <!-- 회사 정보 (ntinvoice.html 스타일) -->
+      <div class="company-info">
+        <div class="company-left">회 사 명 : 엘트로코리아(주)</div>
+        <div class="company-right">
+          <div class="date-selector">
+            <select id="yearSelect" class="year-dropdown">
+              <!-- JavaScript로 동적 생성 -->
+            </select>
+            <select id="monthSelect" class="month-dropdown">
+              <!-- JavaScript로 동적 생성 -->
+            </select>
+            <select id="daySelect" class="day-dropdown">
+              <!-- JavaScript로 동적 생성 -->
+            </select>
+            <div class="date-navigation">
+              <button id="nextDayBtn" class="date-nav-btn" type="button" title="다음 날짜">▲</button>
+              <button id="prevDayBtn" class="date-nav-btn" type="button" title="이전 날짜">▼</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 구분선 -->
+      <div class="divider"></div>
+      
+      
+      <table class="accounting-table">
+        <thead>
+          <tr>
+            <th>명칭</th>
+            <th>은행</th>
+            <th>전일잔액</th>
+            <th>금일입금</th>
+            <th>금일출금</th>
+            <th>금일잔액</th>
+          </tr>
+        </thead>
+        <tbody id="category1TableBody">
+          <!-- 데이터가 여기에 동적으로 추가됩니다 -->
+        </tbody>
+      </table>
+      
+      <table class="accounting-table">
+        <thead>
+          <tr>
+            <th>명칭</th>
+            <th>입금내역</th>
+            <th>금액</th>
+            <th>명칭</th>
+            <th>출금내역</th>
+            <th>금액</th>
+          </tr>
+        </thead>
+        <tbody id="category2TableBody">
+          <!-- 데이터가 여기에 동적으로 추가됩니다 -->
+        </tbody>
+      </table>
+
+  <!-- 카테고리 3 테이블 -->
+      <table class="accounting-table">
+        <thead>
+          <tr>
+            <th>회사</th>
+            <th>DeliveryNo</th>
+            <th>전일 매출금액</th>
+            <th>납부기한</th>
+            <th>입금금액</th>
+            <th>금일매출금액</th>
+          </tr>
+        </thead>
+        <tbody id="category3TableBody">
+          <!-- 데이터가 여기에 동적으로 추가됩니다 -->
+        </tbody>
+      </table>
+
+  <!-- 카테고리 4 테이블 -->
+      <table class="accounting-table">
+        <thead>
+          <tr>
+            <th>거래처</th>
+            <th>전일 가지급금</th>
+            <th>만기일</th>
+            <th>이자율</th>
+            <th>입금금액</th>
+            <th>금일가지급금</th>
+          </tr>
+        </thead>
+        <tbody id="category4TableBody">
+          <!-- 데이터가 여기에 동적으로 추가됩니다 -->
+        </tbody>
+      </table>
+
+  <!-- 카테고리 5 테이블 -->
+      <table class="accounting-table">
+        <thead>
+          <tr>
+            <th>거래처</th>
+            <th>전일 가수금</th>
+            <th>만기일</th>
+            <th>이자율</th>
+            <th>송금금액</th>
+            <th>금일가수금</th>
+          </tr>
+        </thead>
+        <tbody id="category5TableBody">
+          <!-- 데이터가 여기에 동적으로 추가됩니다 -->
+        </tbody>
+      </table>
+
+  <!-- 하단 버튼 영역 -->
+  <div class="bottom-buttons">
+    <!-- 확장/축소 버튼 (서랍 손잡이처럼 위쪽에 튀어나옴) -->
+    <div class="expand-handle">
+      <button id="expandButton" type="button" class="expand-btn">▼</button>
+    </div>
+    
+    <!-- 기본 버튼 영역 (항상 보임) -->
+    <div class="main-button-group">
+      <div class="left-buttons">
+        <select id="categorySelect" class="category-dropdown">
+          <option value="1">Balance</option>
+          <option value="2">Transaction</option>
+          <option value="3">Notes</option>
+          <option value="4">LoanTo</option>
+          <option value="5">Debt</option>
+        </select>
+        <button id="addRowBtn">행추가</button>
+        <button id="saveBtn">Save</button>
+        <button id="pdfBtn">PDF</button>
+        <button id="deleteBtn">Delete</button>
+      </div>
+      <div class="right-buttons">
+        <button id="depositBtn">입금내역</button>
+        <button id="homeBtn">Home</button>
+      </div>
+    </div>
+    
+    <!-- 확장 가능한 상세 버튼 영역 (기본적으로 숨김) -->
+    <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+      <div class="margin-control">
+        <label>상단 여백:</label>
+        <div class="margin-buttons">
+          <button id="decreaseMargin" class="margin-btn" type="button">−</button>
+          <span class="margin-value">10mm</span>
+          <button id="increaseMargin" class="margin-btn" type="button">+</button>
+        </div>
+      </div>
+      <div class="margin-control">
+        <label>타이틀 간격:</label>
+        <div class="margin-buttons">
+          <button id="decreaseTitleMargin" class="margin-btn" type="button">−</button>
+          <span class="title-margin-value">10px</span>
+          <button id="increaseTitleMargin" class="margin-btn" type="button">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 페이지 초기화 함수
+    function initializePage() {
+      // DOM 요소들을 미리 캐시
+        const expandBtn = document.getElementById("expandButton");
+      const detailArea = document.getElementById("detailButtonArea");
+        
+      // 확장/축소 버튼 이벤트 리스너
+      expandBtn.addEventListener("click", () => {
+        if (detailArea.style.display === "none") {
+          detailArea.style.display = "flex";
+          expandBtn.classList.add("expanded");
+          expandBtn.textContent = "▲";
+        } else {
+          detailArea.style.display = "none";
+          expandBtn.classList.remove("expanded");
+          expandBtn.textContent = "▼";
+        }
+      });
+
+      // 입금내역 버튼 기능
+      document.getElementById("depositBtn").addEventListener("click", () => {
+        window.location.href = "deposit.html";
+      });
+
+      // Home 버튼 기능
+      document.getElementById("homeBtn").addEventListener("click", () => {
+        window.location.href = "eltrokorea9.html";
+      });
+
+      // 행추가 버튼 기능
+      document.getElementById("addRowBtn").addEventListener("click", () => {
+        const selectedCategory = document.getElementById("categorySelect").value;
+        addCategoryRow(selectedCategory);
+      });
+
+      // Save 버튼 기능
+      document.getElementById("saveBtn").addEventListener("click", () => {
+        saveAllAccountingData();
+      });
+
+      // PDF 버튼 이벤트 리스너
+      document.getElementById("pdfBtn").addEventListener("click", () => {
+        generatePDF();
+      });
+
+      // Delete 버튼 이벤트 리스너
+      document.getElementById("deleteBtn").addEventListener("click", () => {
+        deleteDateData();
+      });
+
+      // 여백 조정 버튼 이벤트 리스너
+      const decreaseBtn = document.getElementById("decreaseMargin");
+      const increaseBtn = document.getElementById("increaseMargin");
+      
+      if (decreaseBtn) {
+        decreaseBtn.addEventListener("click", decreaseMargin);
+      }
+      
+      if (increaseBtn) {
+        increaseBtn.addEventListener("click", increaseMargin);
+      }
+
+      // 타이틀 간격 조정 버튼 이벤트 리스너
+      const decreaseTitleMarginBtn = document.getElementById("decreaseTitleMargin");
+      const increaseTitleMarginBtn = document.getElementById("increaseTitleMargin");
+      
+      if (decreaseTitleMarginBtn) {
+        decreaseTitleMarginBtn.addEventListener("click", decreaseTitleMargin);
+      }
+      
+      if (increaseTitleMarginBtn) {
+        increaseTitleMarginBtn.addEventListener("click", increaseTitleMargin);
+      }
+
+      // 날짜 네비게이션 버튼 이벤트 리스너
+      const prevDayBtn = document.getElementById("prevDayBtn");
+      const nextDayBtn = document.getElementById("nextDayBtn");
+      
+      if (prevDayBtn) {
+        prevDayBtn.addEventListener("click", navigateToPreviousDay);
+      }
+      
+      if (nextDayBtn) {
+        nextDayBtn.addEventListener("click", navigateToNextDay);
+      }
+    }
+
+    // DOM 요소 캐시
+    const page = document.querySelector('.page');
+    const title = document.querySelector('.document-title');
+    const marginValueEl = document.querySelector('.margin-value');
+    const titleMarginValueEl = document.querySelector('.title-margin-value');
+
+    // 공통 유틸리티 함수들
+    function getCurrentDate() {
+      const year = document.getElementById('yearSelect').value;
+      const month = document.getElementById('monthSelect').value;
+      const day = document.getElementById('daySelect').value;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+
+    // 공통 회사명 매핑
+    const companyMapping = {
+      '뉴인텍': 'nuintek',
+      '성문': 'sungmoon'
+    };
+
+    // 여백 조정 함수
+    function adjustTopMargin(value) {
+      const clampedValue = Math.max(1, Math.min(50, parseInt(value)));
+      
+      page.style.setProperty('padding', `${clampedValue}mm 25mm 25mm 25mm`, 'important');
+      marginValueEl.textContent = `${clampedValue}mm`;
+    }
+
+    // 여백 증가 함수
+    function increaseMargin() {
+      const currentValue = parseInt(marginValueEl.textContent) || 10;
+      adjustTopMargin(currentValue + 1);
+    }
+
+    // 여백 감소 함수
+    function decreaseMargin() {
+      const currentValue = parseInt(marginValueEl.textContent) || 10;
+      adjustTopMargin(currentValue - 1);
+    }
+
+    // 타이틀 간격 조정 함수
+    function adjustTitleMargin(value) {
+      const clampedValue = Math.max(0, Math.min(50, parseInt(value)));
+      
+      if (title) {
+        title.style.setProperty('margin-bottom', `${clampedValue}px`, 'important');
+      }
+      
+      titleMarginValueEl.textContent = `${clampedValue}px`;
+    }
+
+    // 타이틀 간격 증가 함수
+    function increaseTitleMargin() {
+      const currentValue = parseInt(titleMarginValueEl.textContent) || 10;
+      adjustTitleMargin(currentValue + 1);
+    }
+
+    // 타이틀 간격 감소 함수
+    function decreaseTitleMargin() {
+      const currentValue = parseInt(titleMarginValueEl.textContent) || 10;
+      adjustTitleMargin(currentValue - 1);
+    }
+
+    // 선택한 날짜의 모든 데이터 삭제
+    async function deleteDateData() {
+      const date = getCurrentDate();
+      
+      if (!confirm(`${date} 날짜의 모든 데이터를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/accounting/delete-by-date', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+          alert(`${date} 날짜의 데이터가 삭제되었습니다.`);
+          loadAccountingData();
+        } else {
+          alert(result.error || '데이터 삭제에 실패했습니다.');
+        }
+      } catch (error) {
+        alert('데이터 삭제 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+
+    // PDF 생성 함수 (transfer.html과 동일한 방식)
+    async function generatePDF() {
+      try {
+        // 파일명 생성 - 오른쪽 상단 날짜 사용
+        const currentDate = getCurrentDate(); // YYYY-MM-DD 형식
+        const dateStr = currentDate.replace(/-/g, ''); // YYYYMMDD 형식으로 변환
+        const fileName = `입출금내역서_${dateStr}.pdf`;
+        
+        // 하단 메뉴 요소 가져오기
+        const bottomMenu = document.querySelector('.bottom-buttons');
+        
+        // 하단 메뉴 숨기기
+        if (bottomMenu) bottomMenu.style.display = 'none';
+        
+        // PDF용 카테고리 2 드롭다운만 텍스트로 변환
+        const category2Dropdowns = document.querySelectorAll('#category2TableBody select');
+        const textElements = [];
+        
+        category2Dropdowns.forEach((dropdown) => {
+          const textElement = document.createElement('span');
+          textElement.textContent = dropdown.value || '';
+          textElement.style.cssText = `
+            display: inline-block;
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            border: none;
+            background: transparent;
+            font-size: inherit;
+            font-family: inherit;
+            color: inherit;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 1;
+          `;
+          
+          dropdown.parentNode.insertBefore(textElement, dropdown);
+          textElements.push({ textElement, dropdown });
+          dropdown.style.display = 'none';
+        });
+        
+        // PDF 생성
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+        
+        // A4 크기에 맞춰서 캡처 (가로: 210mm, 세로: 297mm)
+        const a4WidthPx = page.offsetWidth;
+        const a4HeightPx = (page.offsetWidth * 297) / 210;
+        
+        const canvas = await html2canvas(page, {
+          scale: 1.5,
+          useCORS: true,
+          letterRendering: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          width: a4WidthPx,
+          height: a4HeightPx
+        });
+        
+        // A4 페이지에 이미지 추가
+        doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297);
+        
+        // PDF 저장
+        doc.save(fileName);
+        
+        // 원래 상태로 복원
+        textElements.forEach(({ textElement, dropdown }) => {
+          textElement.remove();
+          dropdown.style.display = '';
+        });
+        
+        if (bottomMenu) bottomMenu.style.display = '';
+        
+      } catch (error) {
+        // 에러 발생 시에도 복원
+        textElements.forEach(({ textElement, dropdown }) => {
+          textElement.remove();
+          dropdown.style.display = '';
+        });
+        
+        if (bottomMenu) bottomMenu.style.display = '';
+        
+        alert('PDF 생성에 실패했습니다: ' + error.message);
+      }
+    }
+
+    // 공통 행 추가 로직
+    function addRowToTable(tableBodyId, categoryId, category, htmlGenerator, postAddCallback) {
+      const tableBody = document.getElementById(tableBodyId);
+      const rowCount = tableBody.children.length;
+      const newId = categoryId + rowCount;
+      
+      const row = document.createElement('tr');
+      row.dataset.categoryId = newId;
+      row.dataset.category = category;
+      row.innerHTML = htmlGenerator({});
+      tableBody.appendChild(row);
+      
+      // 공통 후처리 로직
+      setTimeout(() => {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const firstInput = row.querySelector('input');
+        if (firstInput) {
+          firstInput.focus();
+        }
+        if (postAddCallback) {
+          postAddCallback(row);
+        }
+      }, 100);
+      
+      return row;
+    }
+
+    // 카테고리별 행 추가 함수
+    function addCategoryRow(category) {
+      const categoryMap = {
+        '1': () => addCategory1Row(),
+        '2': () => addCategory2Row(),
+        '3': () => addCategory3Row(),
+        '4': () => addCategory4Row(),
+        '5': () => addCategory5Row()
+      };
+      
+      const addFunction = categoryMap[category];
+      if (addFunction) {
+        addFunction();
+      } else {
+        alert('아직 구현되지 않은 카테고리입니다.');
+      }
+    }
+    
+    // 카테고리 1 행 추가
+    function addCategory1Row() {
+      addRowToTable('category1TableBody', 1000, '1', createCategory1RowHTML, (row) => {
+        calculateTodayBalance(row);
+      });
+    }
+    
+    // 카테고리 2 행 추가
+    function addCategory2Row() {
+      const row = addRowToTable('category2TableBody', 2000, '2', createCategory2RowHTML, (row) => {
+        updateCategory1DepositAndWithdrawal();
+      });
+      
+      // 드롭다운 데이터 로드 (특정 행에만)
+      populateBalanceDropdowns(row);
+      loadDepositsForDropdown(row);
+      loadTransfersForDropdown(row);
+    }
+
+    // 카테고리 3 행 추가
+    function addCategory3Row() {
+      const tableBody = document.getElementById('category3TableBody');
+      const rowCount = tableBody.children.length;
+      const newId = 3000 + rowCount;
+      
+      const row = document.createElement('tr');
+      row.dataset.categoryId = newId;
+      row.dataset.category = '3';
+      
+      // 공통 스타일 정의
+      const inputStyle = "width: 100%; border: none; padding: 0; margin: 0; text-align: inherit; user-select: none;";
+      const buttonStyle = "position: absolute; right: 2px; top: 50%; transform: translateY(-50%); background: none; color: black; border: none; width: 14px; height: 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;";
+      
+      // 뉴인텍 행 HTML 생성
+      const rowHTML = `
+        <td><input type="text" value="뉴인텍" style="${inputStyle}"></td>
+        <td style="position: relative;">
+          <input type="text" value="" style="${inputStyle}">
+          <button type="button" class="delete-account-btn" onclick="deleteCategory3NotesItem(this)" style="${buttonStyle}">×</button>
+        </td>
+        <td><input type="text" value="" style="${inputStyle}" oninput="formatAmountInput(this); calculateTodaySales(this);"></td>
+        <td><input type="text" value="" style="${inputStyle}"></td>
+        <td style="position: relative;">
+          <input type="text" value="" style="${inputStyle}" oninput="formatAmountInput(this); calculateTodaySales(this);">
+          <button type="button" class="check-deposit-btn" onclick="updateCategory2Deposit(this)" style="${buttonStyle}">+</button>
+        </td>
+        <td><input type="text" value="" style="${inputStyle}" oninput="formatAmountInput(this); calculateTodaySales(this);"></td>
+      `;
+      
+      row.innerHTML = rowHTML;
+      
+      // 성문 행을 찾아서 그 위에 삽입
+      const sungmoonRows = Array.from(tableBody.children).filter(existingRow => {
+        const companyInput = existingRow.querySelector('td:nth-child(1) input');
+        return companyInput && companyInput.value === '성문';
+      });
+      
+      if (sungmoonRows.length > 0) {
+        tableBody.insertBefore(row, sungmoonRows[0]);
+      } else {
+        tableBody.appendChild(row);
+      }
+      
+      // 새 행으로 스크롤 (포커스는 편집 가능한 첫 번째 입력 필드로)
+      setTimeout(() => {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const editableInput = row.querySelector('td:nth-child(2) input');
+        if (editableInput) {
+          editableInput.focus();
+        }
+      }, 100);
+    }
+
+    // 카테고리 4 행 추가
+    function addCategory4Row() {
+      const tableBody = document.getElementById('category4TableBody');
+      const rowCount = tableBody.children.length;
+      const newId = 4000 + rowCount;
+      
+      const row = document.createElement('tr');
+      row.dataset.categoryId = newId;
+      row.dataset.category = '4';
+      
+      // 공통 스타일 정의
+      const inputStyle = "width: 100%; border: none; padding: 0; margin: 0;";
+      const buttonStyle = "position: absolute; right: 2px; top: 50%; transform: translateY(-50%); background: none; color: black; border: none; width: 14px; height: 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;";
+      
+      // 카테고리 4 행 HTML 생성
+      const rowHTML = `
+        <td style="position: relative;">
+          <input type="text" value="" style="${inputStyle}">
+          <button type="button" class="delete-account-btn" onclick="hideCategory4Row(this)" style="${buttonStyle}">×</button>
+        </td>
+        <td>
+          <input type="text" value="" style="${inputStyle}" oninput="formatAmountInput(this); calculateCategory4TodayLoan(this);">
+        </td>
+        <td><input type="text" value="" style="${inputStyle}"></td>
+        <td><input type="text" value="" style="${inputStyle}" oninput="formatAmountInput(this);"></td>
+        <td style="position: relative;">
+          <button type="button" class="check-deposit-btn" onclick="updateCategory4Withdrawal(this)" style="position: absolute; left: 2px; top: 50%; transform: translateY(-50%); background: none; color: black; border: none; width: 14px; height: 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+          <input type="text" value="" style="${inputStyle}" oninput="formatAmountInput(this); calculateCategory4TodayLoan(this);">
+          <button type="button" class="check-deposit-btn" onclick="updateCategory4Deposit(this)" style="${buttonStyle}">+</button>
+        </td>
+        <td><input type="text" value="" style="${inputStyle}" oninput="formatAmountInput(this); calculateCategory4TodayLoan(this);"></td>
+      `;
+      
+      row.innerHTML = rowHTML;
+      tableBody.appendChild(row);
+      
+      // 금일가지급금 자동 계산 (입금금액이 공란이므로 0으로 처리)
+      const todayLoanInput = row.querySelector('td:nth-child(6) input');
+      if (todayLoanInput) {
+        const loanAmountInput = row.querySelector('td:nth-child(2) input');
+        if (loanAmountInput && loanAmountInput.value.trim() !== '') {
+          const loanAmount = parseAmount(loanAmountInput.value);
+          todayLoanInput.value = formatAmount(loanAmount); // 입금금액이 공란이므로 가지급금과 동일
+        }
+      }
+      
+      // 새 행으로 스크롤 및 포커스
+      setTimeout(() => {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const firstInput = row.querySelector('td:nth-child(1) input');
+        if (firstInput) {
+          firstInput.focus();
+        }
+      }, 100);
+    }
+
+    // 카테고리 5 행 추가
+    function addCategory5Row() {
+      const tableBody = document.getElementById('category5TableBody');
+      const rowCount = tableBody.children.length;
+      const newId = 5000 + rowCount;
+      
+      const row = document.createElement('tr');
+      row.dataset.categoryId = newId;
+      row.dataset.category = '5';
+      
+      // 공통 스타일 정의
+      const inputStyle = "width: 100%; border: none; padding: 0; margin: 0;";
+      const buttonStyle = "position: absolute; right: 2px; top: 50%; transform: translateY(-50%); background: none; color: black; border: none; width: 14px; height: 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;";
+      
+      // 카테고리 5 행 HTML 생성
+      const rowHTML = `
+        <td style="position: relative;">
+          <input type="text" value="" style="${inputStyle}">
+          <button type="button" class="delete-account-btn" onclick="hideCategory5Row(this)" style="${buttonStyle}">×</button>
+        </td>
+        <td>
+          <input type="text" value="" style="${inputStyle}" oninput="formatAmountInput(this); calculateCategory5TodayLoan(this);">
+        </td>
+        <td><input type="text" value="" style="${inputStyle}"></td>
+        <td><input type="text" value="" style="${inputStyle}" oninput="formatAmountInput(this);"></td>
+        <td style="position: relative;">
+          <button type="button" class="check-deposit-btn" onclick="updateCategory5Withdrawal(this)" style="position: absolute; left: 2px; top: 50%; transform: translateY(-50%); background: none; color: black; border: none; width: 14px; height: 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+          <input type="text" value="" style="${inputStyle}" oninput="formatAmountInput(this); calculateCategory5TodayLoan(this);">
+          <button type="button" class="check-deposit-btn" onclick="updateCategory5Deposit(this)" style="${buttonStyle}">+</button>
+        </td>
+        <td><input type="text" value="" style="${inputStyle}" oninput="formatAmountInput(this); calculateCategory5TodayLoan(this);"></td>
+      `;
+      
+      row.innerHTML = rowHTML;
+      tableBody.appendChild(row);
+      
+      // 금일가수금 자동 계산 (송금금액이 공란이므로 0으로 처리)
+      const todayLoanInput = row.querySelector('td:nth-child(6) input');
+      if (todayLoanInput) {
+        const loanAmountInput = row.querySelector('td:nth-child(2) input');
+        if (loanAmountInput && loanAmountInput.value.trim() !== '') {
+          const loanAmount = parseAmount(loanAmountInput.value);
+          todayLoanInput.value = formatAmount(loanAmount); // 송금금액이 공란이므로 가수금과 동일
+        }
+      }
+      
+      // 새 행으로 스크롤 및 포커스
+      setTimeout(() => {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const firstInput = row.querySelector('td:nth-child(1) input');
+        if (firstInput) {
+          firstInput.focus();
+        }
+      }, 100);
+    }
+
+    // ===== 삭제 관련 함수들 (카테고리 순서) =====
+    
+    // 공통 삭제 API 호출 함수
+    async function callDeleteAPI(data) {
+      try {
+        const response = await fetch('/api/accounting', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: 'by-name', name: data.company || data.name })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            alert(result.message || '삭제되었습니다.');
+            return true;
+          } else {
+            alert(result.message || '삭제에 실패했습니다.');
+            return false;
+          }
+        } else {
+          const error = await response.json();
+          alert('삭제 실패: ' + error.error);
+          return false;
+        }
+      } catch (error) {
+        alert('삭제 중 오류가 발생했습니다.');
+        return false;
+      }
+    }
+
+    // 공통 행 숨기기/보이기 함수
+    function toggleRowVisibility(button, hideFunc, showFunc) {
+      const row = button.closest('tr');
+      const isHidden = row.classList.contains('hidden-row');
+      
+      if (isHidden) {
+        row.classList.remove('hidden-row');
+        button.textContent = '×';
+        button.onclick = () => hideFunc(button);
+      } else {
+        row.classList.add('hidden-row');
+        button.textContent = 'S';
+        button.onclick = () => showFunc(button);
+      }
+    }
+
+    // 카테고리 1 (Balance) 숨기기/보이기
+    function hideAccountRow(button) {
+      toggleRowVisibility(button, hideAccountRow, showAccountRow);
+    }
+
+    function showAccountRow(button) {
+      toggleRowVisibility(button, hideAccountRow, showAccountRow);
+    }
+
+    // 카테고리 4 (LoanTo) 숨기기/보이기
+    function hideCategory4Row(button) {
+      toggleRowVisibility(button, hideCategory4Row, showCategory4Row);
+    }
+
+    function showCategory4Row(button) {
+      toggleRowVisibility(button, hideCategory4Row, showCategory4Row);
+    }
+
+    // 카테고리 5 금일가수금 자동 계산
+    function calculateCategory5TodayLoan(input) {
+      const row = input.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      
+      if (inputs.length < 6) return;
+      
+      const loanAmount = parseAmount(inputs[1].value); // 가수금 (2열)
+      const depositAmountValue = inputs[4].value.trim(); // 송금금액 (5열)
+      const depositAmount = depositAmountValue === '' ? 0 : parseAmount(depositAmountValue); // 공란이면 0으로 처리
+      
+      // 금일가수금 컬럼 (6번째)에 결과 표시
+      const todayLoanInput = inputs[5];
+      if (todayLoanInput) {
+        // 5열이 공백이어도 0으로 간주하여 계산
+        const todayLoanAmount = loanAmount - depositAmount;
+        todayLoanInput.value = formatAmount(todayLoanAmount);
+      }
+    }
+
+    // 카테고리5에서 카테고리2 출금내역 업데이트 (- 버튼 클릭 시)
+    async function updateCategory5Withdrawal(button) {
+      const row = button.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      const companyName = inputs[0].value;
+      const depositAmount = inputs[4].value; // 송금금액 (5번째 컬럼)
+      
+      if (!companyName.trim() || !depositAmount || parseAmount(depositAmount) <= 0) return;
+      
+      const category2TableBody = document.getElementById('category2TableBody');
+      
+      // 빈 행 찾기 또는 새 행 생성
+      let targetRow = findEmptyWithdrawalRow(category2TableBody);
+      if (!targetRow) {
+        // 빈 행이 없으면 새 행 생성
+        targetRow = await createNewCategory2Row(category2TableBody);
+      }
+      
+      if (targetRow) {
+        // 카테고리 2에 데이터 설정
+        const balanceSelect = targetRow.querySelector('td:nth-child(4) select');
+        const withdrawalSelect = targetRow.querySelector('td:nth-child(5) select');
+        const withdrawalInput = targetRow.querySelector('td:nth-child(6) input');
+        
+        if (balanceSelect) balanceSelect.value = companyName;
+        if (withdrawalSelect) {
+          // "가수금상환" 옵션이 없으면 추가
+          const hasOption = Array.from(withdrawalSelect.options).some(option => option.value === '가수금상환');
+          if (!hasOption) {
+            const newOption = document.createElement('option');
+            newOption.value = '가수금상환';
+            newOption.textContent = '가수금상환';
+            withdrawalSelect.appendChild(newOption);
+          }
+          withdrawalSelect.value = '가수금상환';
+        }
+        if (withdrawalInput) {
+          withdrawalInput.value = formatAmount(parseAmount(depositAmount));
+        }
+        
+        updateCategory1DepositAndWithdrawal();
+      }
+    }
+
+    // 카테고리5에서 카테고리2 입금내역 업데이트 (체크 버튼 클릭 시)
+    async function updateCategory5Deposit(button) {
+      const row = button.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      const companyName = inputs[0].value;
+      const depositAmount = inputs[4].value; // 송금금액 (5번째 컬럼)
+      
+      if (!companyName.trim() || !depositAmount) return;
+      
+      const category2TableBody = document.getElementById('category2TableBody');
+      
+      // 빈 행 찾기 또는 새 행 생성
+      let targetRow = findEmptyDepositRow(category2TableBody);
+      if (!targetRow) {
+        targetRow = await createNewCategory2Row(category2TableBody);
+      }
+      
+      if (targetRow) {
+        // 카테고리 2에 데이터 설정
+        const balanceSelect = targetRow.querySelector('td:nth-child(1) select');
+        const depositSelect = targetRow.querySelector('td:nth-child(2) select');
+        const depositInput = targetRow.querySelector('td:nth-child(3) input');
+        
+        if (balanceSelect) balanceSelect.value = companyName;
+        if (depositSelect) {
+          // "가수금" 옵션이 없으면 추가
+          const hasOption = Array.from(depositSelect.options).some(option => option.value === '가수금');
+          if (!hasOption) {
+            const newOption = document.createElement('option');
+            newOption.value = '가수금';
+            newOption.textContent = '가수금';
+            depositSelect.appendChild(newOption);
+          }
+          depositSelect.value = '가수금';
+        }
+        if (depositInput) {
+          // 어떤 숫자든 -1을 곱해서 전달
+          const negativeAmount = parseAmount(depositAmount) * -1;
+          depositInput.value = formatAmount(negativeAmount);
+        }
+        
+        updateCategory1DepositAndWithdrawal();
+      }
+    }
+
+    // 카테고리 5 (Debt) 숨기기/보이기
+    function hideCategory5Row(button) {
+      toggleRowVisibility(button, hideCategory5Row, showCategory5Row);
+    }
+
+    function showCategory5Row(button) {
+      toggleRowVisibility(button, hideCategory5Row, showCategory5Row);
+    }
+
+    // 카테고리 2 (Transaction) 삭제
+    async function deleteTransactionRow(button, type) {
+      const row = button.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      const selects = row.querySelectorAll('select');
+      
+      if (inputs.length < 2 || selects.length < 4) {
+        alert('삭제할 데이터가 없습니다.');
+        return;
+      }
+      
+      let description = '';
+      let amount = 0;
+      
+      if (type === 'deposit') {
+        description = selects[1].value.trim();
+        amount = parseFloat(inputs[0].value.replace(/,/g, '')) || 0;
+      } else if (type === 'withdrawal') {
+        description = selects[3].value.trim();
+        amount = parseFloat(inputs[1].value.replace(/,/g, '')) || 0;
+      }
+      
+      if (!description || amount <= 0) {
+        alert('삭제할 거래 데이터가 없습니다.');
+        return;
+      }
+      
+      if (confirm(`"${description}" 거래를 삭제하시겠습니까?`)) {
+        try {
+          const response = await fetch('/api/accounting', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              category: 'transaction',
+              type: type,
+              date: getCurrentDate(),
+              description: description
+            })
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              alert(result.message || '삭제되었습니다.');
+              location.reload();
+            } else {
+              alert(result.message || '삭제에 실패했습니다.');
+            }
+          } else {
+            const error = await response.json();
+            alert('삭제 실패: ' + error.error);
+          }
+        } catch (error) {
+          alert('삭제 중 오류가 발생했습니다.');
+        }
+      }
+    }
+
+    // 카테고리 3 (Notes) 삭제
+    async function deleteCategory3NotesItem(button) {
+      const row = button.closest('tr');
+      const companyInput = row.querySelector('td:nth-child(1) input');
+      const deliveryNoInput = row.querySelector('td:nth-child(2) input');
+      const dueDateInput = row.querySelector('td:nth-child(4) input');
+      
+      if (!companyInput || !deliveryNoInput || !dueDateInput) {
+        alert('회사명, DeliveryNo 또는 납부기한을 찾을 수 없습니다.');
+        return;
+      }
+      
+      const company = companyInput.value.trim();
+      const deliveryNo = deliveryNoInput.value.trim();
+      const dueDate = dueDateInput.value.trim();
+      
+      if (!company || !deliveryNo || !dueDate) {
+        alert('회사명, DeliveryNo, 납부기한이 필요합니다.');
+        return;
+      }
+      
+      // 불러온 날짜 정보 가져오기
+      const loadedDate = row.dataset.loadedDate;
+      const currentDate = row.dataset.currentDate;
+      
+      if (!loadedDate) {
+        alert('삭제할 데이터의 날짜 정보를 찾을 수 없습니다.');
+        return;
+      }
+      
+      if (confirm(`${company}의 ${deliveryNo} (납부기한: ${dueDate}) 항목을 삭제하시겠습니까?\n(삭제 날짜: ${loadedDate})`)) {
+        try {
+          const response = await fetch('/api/accounting', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              category: 'notes',
+              company: companyMapping[company] || company,
+              date: loadedDate, // 불러온 날짜 사용
+              deliveryNo: deliveryNo,
+              dueDate: dueDate // dueDate 추가
+            })
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              alert(result.message || '삭제되었습니다.');
+              location.reload();
+            } else {
+              alert(result.message || '삭제에 실패했습니다.');
+            }
+          } else {
+            const error = await response.json();
+            alert('삭제 실패: ' + error.error);
+          }
+        } catch (error) {
+          console.error('삭제 오류:', error);
+          alert('삭제 중 오류가 발생했습니다.');
+        }
+      }
+    }
+    
+    // Accounting 데이터 삭제 (명칭 기반) - 최적화
+    async function deleteAccountingByName(name) {
+      try {
+        const response = await fetch('/api/accounting', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: 'by-name', name })
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || '삭제 실패');
+        }
+        
+        return await response.json();
+        } catch (error) {
+        return null;
+      }
+    }
+
+    // ===== HTML 생성 함수들 (카테고리 순서) =====
+    
+    // 공통 스타일 정의
+    const commonStyles = {
+      input: "width: 100%; border: none; padding: 0; margin: 0;",
+      select: "width: 100%; border: none; background: transparent; font-family: inherit; font-size: inherit; color: inherit; outline: none; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer;",
+      button: "position: absolute; right: 2px; top: 50%; transform: translateY(-50%); background: none; color: black; border: none; width: 14px; height: 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;",
+      readonly: "width: 100%; border: none; padding: 0; margin: 0; text-align: inherit; user-select: none; background: transparent; cursor: default;"
+    };
+
+    // 카테고리 1 행 HTML 생성 (Balance)
+    function createCategory1RowHTML(data) {
+      return `
+        <td style="position: relative;">
+          <input type="text" value="${data.name || ''}" style="${commonStyles.input}">
+          <button type="button" class="delete-account-btn" onclick="hideAccountRow(this)" style="${commonStyles.button}">×</button>
+        </td>
+        <td><input type="text" value="${data.bank || ''}" style="${commonStyles.input}"></td>
+        <td><input type="text" value="${formatNumber(data.previousBalance || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
+        <td><input type="text" value="${formatNumber(data.todayDeposit || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
+        <td><input type="text" value="${formatNumber(data.todayWithdrawal || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
+        <td><input type="text" value="${formatNumber(data.todayBalance || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateCategory4TodayLoan(this);"></td>
+      `;
+    }
+
+    // 카테고리 2 행 HTML 생성 (Transaction)
+    function createCategory2RowHTML(data) {
+      const isDisabled = data.disabled || false;
+      const checkmarkText = isDisabled ? '✗' : '✓';
+      const checkmarkColor = isDisabled ? '#999' : 'black';
+      const inputStyle = isDisabled ? 
+        `${commonStyles.input} color: #999; background: #f5f5f5;` : 
+        commonStyles.input;
+      
+      return `
+        <td>
+          <select class="balanceNameSelect" style="${commonStyles.select}" onchange="updateCategory1DepositAndWithdrawal();">
+            <option value="${data.depositName || ''}">${data.depositName || ''}</option>
+          </select>
+        </td>
+        <td style="position: relative;">
+          <select class="depositDescriptionSelect" style="${commonStyles.select}" onchange="updateCategory1DepositAndWithdrawal();">
+            <option value="${data.depositDescription || ''}">${data.depositDescription || ''}</option>
+          </select>
+          <button type="button" class="delete-transaction-btn" onclick="deleteTransactionRow(this, 'deposit')" style="${commonStyles.button}">×</button>
+        </td>
+        <td><input type="text" value="${data.depositAmount ? formatNumber(data.depositAmount) : ''}" style="${commonStyles.input}" oninput="formatAmountInput(this); updateCategory1DepositAndWithdrawal();"></td>
+        <td>
+          <select class="balanceNameSelect" style="${commonStyles.select}" onchange="propagateSelection(this, 4); updateCategory1DepositAndWithdrawal();">
+            <option value="${data.withdrawalName || ''}">${data.withdrawalName || ''}</option>
+          </select>
+        </td>
+        <td style="position: relative;">
+          <select class="withdrawalDescriptionSelect" style="${commonStyles.select}" onchange="updateCategory1DepositAndWithdrawal();">
+            <option value="${data.withdrawalDescription || ''}">${data.withdrawalDescription || ''}</option>
+          </select>
+          <button type="button" class="delete-transaction-btn" onclick="deleteTransactionRow(this, 'withdrawal')" style="${commonStyles.button}">×</button>
+        </td>
+        <td style="position: relative;" ${isDisabled ? 'class="disabled-cell"' : ''}>
+          <span onclick="toggleWithdrawalCell(this)" style="position: absolute; left: 2px; top: 50%; transform: translateY(-50%); font-size: 16px; color: ${checkmarkColor}; cursor: pointer; user-select: none;">${checkmarkText}</span>
+          <input type="text" value="${formatNumber(data.withdrawalAmount || 0)}" style="${inputStyle}" placeholder="금액" oninput="formatAmountInput(this); updateCategory1DepositAndWithdrawal();" ${isDisabled ? 'disabled' : ''}>
+        </td>
+      `;
+    }
+
+
+    // ===== 드롭다운 관련 함수들 (최적화) =====
+    
+    // 공통 드롭다운 채우기 함수
+    function populateDropdown(selects, options, currentValue) {
+      selects.forEach(select => {
+        const value = select.value || currentValue || '';
+        const displayValue = (value && value !== 'undefined' && value.trim() !== '') ? value : '';
+        
+        select.innerHTML = `<option value="${displayValue}">${displayValue}</option>`;
+        
+        options.forEach(option => {
+          if (option && option.trim() !== '' && option !== value) {
+            const optionElement = document.createElement('option');
+            optionElement.value = option;
+            optionElement.textContent = option;
+            select.appendChild(optionElement);
+          }
+        });
+      });
+    }
+    
+    // 공통 API 호출 함수
+    async function fetchDropdownData(endpoint, dataExtractor) {
+      try {
+        const response = await fetch(endpoint);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return dataExtractor(data);
+      } catch (error) {
+        return [];
+      }
+    }
+
+    // Deposits 데이터 로드하여 드롭다운 채우기
+    async function loadDepositsForDropdown(targetRow = null) {
+      const descriptions = await fetchDropdownData(
+        '/api/transfers?section=deposits',
+        data => data.map(deposit => deposit.description).filter(desc => desc && desc.trim() !== '')
+      );
+      
+      const selects = targetRow ? 
+        targetRow.querySelectorAll('.depositDescriptionSelect') : 
+        document.querySelectorAll('.depositDescriptionSelect');
+        
+      populateDropdown(selects, descriptions);
+    }
+
+    // Transfers 데이터 로드하여 출금내역 드롭다운 채우기 (역순)
+    async function loadTransfersForDropdown(targetRow = null) {
+      const descriptions = await fetchDropdownData(
+        '/api/transfers?section=transfers',
+        data => data.map(transfer => transfer.description).filter(desc => desc && desc.trim() !== '').reverse()
+      );
+      
+      const selects = targetRow ? 
+        targetRow.querySelectorAll('.withdrawalDescriptionSelect') : 
+        document.querySelectorAll('.withdrawalDescriptionSelect');
+        
+      populateDropdown(selects, descriptions);
+    }
+
+    // Balance 데이터를 드롭다운에 채우기
+    async function populateBalanceDropdowns(row) {
+      const balanceNames = await fetchDropdownData(
+        '/api/accounting',
+        data => {
+        if (data.balance && Array.isArray(data.balance)) {
+            return [...new Set(data.balance.map(item => item.name).filter(name => name))];
+            }
+          return [];
+        }
+      );
+        
+        const balanceSelects = row.querySelectorAll('.balanceNameSelect');
+      balanceSelects.forEach(select => {
+          const currentValue = select.value;
+          
+        // 기존 옵션 제거 (첫 번째 옵션 제외)
+          while (select.children.length > 1) {
+            select.removeChild(select.lastChild);
+          }
+          
+          // Balance 이름들 추가
+        balanceNames.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+          });
+          
+        // 기존 값 복원
+          if (currentValue && currentValue.trim() !== '') {
+            select.value = currentValue;
+          }
+        });
+    }
+
+    // 드롭다운 선택 시 아래 행들에 자동 전파
+    function propagateSelection(selectedSelect, columnIndex) {
+      const selectedValue = selectedSelect.value;
+      const currentRow = selectedSelect.closest('tr');
+      const tableBody = currentRow.closest('tbody');
+      const allRows = Array.from(tableBody.querySelectorAll('tr'));
+      const currentRowIndex = allRows.indexOf(currentRow);
+      
+      // 현재 행부터 아래 행들에 같은 값 설정
+      for (let i = currentRowIndex; i < allRows.length; i++) {
+        const row = allRows[i];
+        const targetSelect = row.querySelector(`td:nth-child(${columnIndex}) select`);
+        if (targetSelect) {
+          targetSelect.value = selectedValue;
+        }
+      }
+    }
+
+    // 카테고리 2의 입금/출금 데이터 변경 시 카테고리 1의 금일입금/금일출금 업데이트 (최적화)
+    function updateCategory1DepositAndWithdrawal() {
+      const category1TableBody = document.getElementById('category1TableBody');
+      const category2TableBody = document.getElementById('category2TableBody');
+      
+      if (!category1TableBody || !category2TableBody) {
+        return;
+      }
+      
+      
+      // 카테고리 1 계좌 정보 수집 (한 번만)
+      const accountMap = new Map();
+      const category1Rows = category1TableBody.querySelectorAll('tr');
+      
+      category1Rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        if (inputs.length >= 6) {
+          const name = inputs[0].value.trim();
+          const bank = inputs[1].value.trim();
+          if (name && bank) {
+            accountMap.set(`${name}_${bank}`, {
+              row,
+              name,
+              bank,
+              depositInput: inputs[3],
+              withdrawalInput: inputs[4]
+            });
+          }
+        }
+      });
+      
+      // 카테고리 2 데이터 한 번에 수집 (비활성화된 셀 제외)
+      const category2Data = [];
+        const category2Rows = category2TableBody.querySelectorAll('tr');
+      
+        category2Rows.forEach(row => {
+          const inputs = row.querySelectorAll('input');
+          const selects = row.querySelectorAll('select');
+          if (inputs.length >= 2 && selects.length >= 4) {
+          // 출금 셀이 비활성화되어 있는지 확인
+          const withdrawalCell = row.querySelector('td:nth-child(6)');
+          const isWithdrawalDisabled = withdrawalCell && withdrawalCell.classList.contains('disabled-cell');
+          
+          const data = {
+            depositName: selects[0].value.trim(),
+            depositAmount: parseFloat(inputs[0].value.replace(/,/g, '')) || 0,
+            withdrawalName: selects[2].value.trim(),
+            withdrawalAmount: isWithdrawalDisabled ? 0 : (parseFloat(inputs[1].value.replace(/,/g, '')) || 0) // 비활성화된 경우 0으로 처리
+          };
+          category2Data.push(data);
+        }
+      });
+      
+      
+      // 각 계좌별 합계 계산 및 업데이트
+      accountMap.forEach(account => {
+        let totalDeposit = 0;
+        let totalWithdrawal = 0;
+        
+        // 수집된 데이터로 합산 (중복 DOM 쿼리 제거)
+        category2Data.forEach(data => {
+          // 입금: 카테고리2의 입금 계좌명이 카테고리1의 계좌명과 일치하는 경우
+          if (data.depositName === account.name && data.depositAmount > 0) {
+            totalDeposit += data.depositAmount;
+          }
+          // 출금: 카테고리2의 출금 계좌명이 카테고리1의 계좌명과 일치하는 경우
+          if (data.withdrawalName === account.name && data.withdrawalAmount > 0) {
+            totalWithdrawal += data.withdrawalAmount;
+          }
+        });
+        
+        
+        // 값 업데이트
+        account.depositInput.value = formatNumber(totalDeposit);
+        account.withdrawalInput.value = formatNumber(totalWithdrawal);
+        calculateTodayBalance(account.row);
+      });
+      
+    }
+
+    // 출금 셀 비활성화/활성화 토글 함수
+    function toggleWithdrawalCell(checkmark) {
+      const cell = checkmark.parentElement;
+      const input = cell.querySelector('input');
+      
+      if (input.disabled) {
+        input.disabled = false;
+        input.style.color = 'black';
+        input.style.backgroundColor = 'white';
+        checkmark.style.color = 'black';
+        checkmark.textContent = '✓';
+        cell.classList.remove('disabled-cell');
+      } else {
+        input.disabled = true;
+        input.style.color = '#999';
+        input.style.backgroundColor = '#f5f5f5';
+        checkmark.style.color = '#999';
+        checkmark.textContent = '✗';
+        cell.classList.add('disabled-cell');
+      }
+      
+      // 카테고리1 계산 업데이트
+      updateCategory1DepositAndWithdrawal();
+    }
+    
+    // 공통 숫자 파싱 함수 (음수 지원)
+    function parseAmount(value) {
+      const cleaned = (value || '').replace(/,/g, '');
+      const parsed = parseFloat(cleaned);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    
+    // 공통 금액 포맷팅 함수 (음수 지원)
+    function formatAmount(amount) {
+      if (amount === null || amount === undefined || amount === '') return '0';
+      const num = Number(amount);
+      
+      // 음수인 경우 음수 기호를 유지하면서 포맷팅
+      if (num < 0) {
+        const absNum = Math.abs(num);
+        return '-' + (absNum.toString().includes('.') ? absNum.toString() : absNum.toLocaleString());
+      }
+      
+      return num.toString().includes('.') ? num.toString() : num.toLocaleString();
+    }
+
+    // 금일잔액 자동 계산 (전일잔액 + 금일입금 - 금일출금) - 최적화
+    function calculateTodayBalance(row) {
+      const inputs = row.querySelectorAll('input');
+      if (inputs.length < 6) return;
+      
+      const [nameInput, bankInput, previousBalanceInput, todayDepositInput, todayWithdrawalInput, todayBalanceInput] = inputs;
+      
+      const previousBalance = parseAmount(previousBalanceInput.value);
+      const todayDeposit = parseAmount(todayDepositInput.value);
+      const todayWithdrawal = parseAmount(todayWithdrawalInput.value);
+      
+      // 금일잔액 = 전일잔액 + 금일입금 - 금일출금
+      const calculatedBalance = previousBalance + todayDeposit - todayWithdrawal;
+      todayBalanceInput.value = formatAmount(calculatedBalance);
+      
+    }
+
+    // 숫자 포맷팅 함수 (콤마 추가) - 기존 호환성 유지
+    function formatNumber(num) {
+      return formatAmount(num);
+    }
+
+    // 금액 입력 필드 포맷팅 - 최적화 (음수 허용)
+    function formatAmountInput(input) {
+      // 커서 위치 저장
+      const cursorPosition = input.selectionStart;
+      const originalValue = input.value;
+      const originalLength = originalValue.length;
+      
+      // 숫자와 마이너스, 소수점만 추출
+      const cleanValue = input.value.replace(/[^0-9.-]/g, '');
+      
+      if (cleanValue === '') {
+        input.value = '';
+        input.setSelectionRange(0, 0);
+      } else {
+        // 포맷팅 전 숫자 문자열에서의 커서 위치 계산
+        // 콤마를 제거한 문자열에서의 위치를 찾기
+        let numBeforeCursor = 0;
+        for (let i = 0; i < Math.min(cursorPosition, originalLength); i++) {
+          const char = originalValue[i];
+          if ((char >= '0' && char <= '9') || char === '.' || char === '-') {
+            numBeforeCursor++;
+          }
+        }
+        
+        // 포맷팅된 값 설정
+        const formattedValue = formatAmount(cleanValue);
+        input.value = formattedValue;
+        
+        // 포맷팅된 문자열에서 적절한 커서 위치 계산
+        let newPosition = 0;
+        let numCount = 0;
+        for (let i = 0; i < formattedValue.length && numCount < numBeforeCursor; i++) {
+          const char = formattedValue[i];
+          if ((char >= '0' && char <= '9') || char === '.' || char === '-') {
+            numCount++;
+          }
+          newPosition = i + 1;
+        }
+        
+        // 커서 위치 복원
+        input.setSelectionRange(newPosition, newPosition);
+      }
+    }
+
+    // ===== 카테고리 3 관련 함수들 (최적화) =====
+
+    // 성문에서 카테고리2 입금내역 업데이트 (체크 버튼 클릭 시)
+    async function updateSungmoonDeposit(button) {
+      const row = button.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      const companyName = inputs[0].value;
+      const depositAmount = inputs[4].value;
+      
+      // 성문인 경우에만 처리
+      if (companyName !== '성문' || !depositAmount || parseAmount(depositAmount) <= 0) return;
+      
+      const category2TableBody = document.getElementById('category2TableBody');
+      
+      // 빈 행 찾기 또는 새 행 생성
+      let targetRow = findEmptyDepositRow(category2TableBody);
+      if (!targetRow) {
+        targetRow = await createNewCategory2Row(category2TableBody);
+      }
+      
+      if (targetRow) {
+        // 카테고리 2에 데이터 설정
+        const balanceSelect = targetRow.querySelector('td:nth-child(1) select');
+        const depositSelect = targetRow.querySelector('td:nth-child(2) select');
+        const depositInput = targetRow.querySelector('td:nth-child(3) input');
+        
+        if (balanceSelect) balanceSelect.value = companyName;
+        if (depositSelect) {
+          // "성문매출금" 옵션이 없으면 추가
+          const hasOption = Array.from(depositSelect.options).some(option => option.value === '성문매출금');
+          if (!hasOption) {
+            const newOption = document.createElement('option');
+            newOption.value = '성문매출금';
+            newOption.textContent = '성문매출금';
+            depositSelect.appendChild(newOption);
+          }
+          depositSelect.value = '성문매출금';
+        }
+        if (depositInput) {
+          depositInput.value = formatAmount(parseAmount(depositAmount));
+        }
+        
+        updateCategory1DepositAndWithdrawal();
+      }
+    }
+    
+    // 뉴인텍에서 카테고리2 입금내역 업데이트 (체크 버튼 클릭 시)
+    async function updateCategory2Deposit(button) {
+      const row = button.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      const companyName = inputs[0].value;
+      const depositAmount = inputs[4].value;
+      
+      if (companyName !== '뉴인텍' || !depositAmount || parseAmount(depositAmount) <= 0) return;
+      
+      const category2TableBody = document.getElementById('category2TableBody');
+      
+      // 빈 행 찾기 또는 새 행 생성
+      let targetRow = findEmptyDepositRow(category2TableBody);
+      if (!targetRow) {
+        targetRow = await createNewCategory2Row(category2TableBody);
+      }
+      
+      if (targetRow) {
+        await setupDepositRow(targetRow, depositAmount);
+        updateCategory1DepositAndWithdrawal();
+      }
+    }
+    
+    // 카테고리4에서 카테고리2 출금내역 업데이트 (- 버튼 클릭 시)
+    async function updateCategory4Withdrawal(button) {
+      const row = button.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      const companyName = inputs[0].value;
+      const depositAmount = inputs[4].value; // 송금금액 (5번째 컬럼)
+      
+      if (!companyName.trim() || !depositAmount) return;
+      
+      const category2TableBody = document.getElementById('category2TableBody');
+      
+      // 빈 행 찾기 또는 새 행 생성
+      let targetRow = findEmptyWithdrawalRow(category2TableBody);
+      if (!targetRow) {
+        // 빈 행이 없으면 새 행 생성
+        targetRow = await createNewCategory2Row(category2TableBody);
+      }
+      
+      if (targetRow) {
+        // 카테고리 2에 데이터 설정
+        const balanceSelect = targetRow.querySelector('td:nth-child(4) select');
+        const withdrawalSelect = targetRow.querySelector('td:nth-child(5) select');
+        const withdrawalInput = targetRow.querySelector('td:nth-child(6) input');
+        
+        if (balanceSelect) balanceSelect.value = companyName;
+        if (withdrawalSelect) {
+          // "가지급" 옵션이 없으면 추가
+          const hasOption = Array.from(withdrawalSelect.options).some(option => option.value === '가지급');
+          if (!hasOption) {
+            const newOption = document.createElement('option');
+            newOption.value = '가지급';
+            newOption.textContent = '가지급';
+            withdrawalSelect.appendChild(newOption);
+          }
+          withdrawalSelect.value = '가지급';
+        }
+        if (withdrawalInput) {
+          // 어떤 숫자든 -1을 곱해서 전달
+          const negativeAmount = parseAmount(depositAmount) * -1;
+          withdrawalInput.value = formatAmount(negativeAmount);
+        }
+        
+        updateCategory1DepositAndWithdrawal();
+      }
+    }
+
+    // 카테고리4에서 카테고리2 입금내역 업데이트 (체크 버튼 클릭 시)
+    async function updateCategory4Deposit(button) {
+      const row = button.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      const companyName = inputs[0].value;
+      const depositAmount = inputs[4].value; // 입금금액 (5번째 컬럼)
+      
+      if (!companyName.trim() || !depositAmount || parseAmount(depositAmount) <= 0) return;
+      
+      const category2TableBody = document.getElementById('category2TableBody');
+      
+      // 빈 행 찾기 또는 새 행 생성
+      let targetRow = findEmptyDepositRow(category2TableBody);
+      if (!targetRow) {
+        targetRow = await createNewCategory2Row(category2TableBody);
+      }
+      
+      if (targetRow) {
+        // 카테고리 2에 데이터 설정
+        const balanceSelect = targetRow.querySelector('td:nth-child(1) select');
+        const depositSelect = targetRow.querySelector('td:nth-child(2) select');
+        const depositInput = targetRow.querySelector('td:nth-child(3) input');
+        
+        if (balanceSelect) balanceSelect.value = companyName;
+        if (depositSelect) {
+          // "가지급금회수" 옵션이 없으면 추가
+          const hasOption = Array.from(depositSelect.options).some(option => option.value === '가지급금회수');
+          if (!hasOption) {
+            const newOption = document.createElement('option');
+            newOption.value = '가지급금회수';
+            newOption.textContent = '가지급금회수';
+            depositSelect.appendChild(newOption);
+          }
+          depositSelect.value = '가지급금회수';
+        }
+        if (depositInput) {
+          depositInput.value = formatAmount(parseAmount(depositAmount));
+        }
+        
+        updateCategory1DepositAndWithdrawal();
+      }
+    }
+    
+    // 카테고리 4 금일가지급금 자동 계산
+    function calculateCategory4TodayLoan(input) {
+      const row = input.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      
+      if (inputs.length < 6) return;
+      
+      const loanAmount = parseAmount(inputs[1].value); // 가지급금 (2열)
+      const depositAmountValue = inputs[4].value.trim(); // 입금금액 (5열)
+      const depositAmount = depositAmountValue === '' ? 0 : parseAmount(depositAmountValue); // 공란이면 0으로 처리
+      
+      // 금일가지급금 컬럼 (6번째)에 결과 표시
+      const todayLoanInput = inputs[5];
+      if (todayLoanInput) {
+        // 5열이 공백이어도 0으로 간주하여 계산
+        const todayLoanAmount = loanAmount - depositAmount;
+        todayLoanInput.value = formatAmount(todayLoanAmount);
+      }
+    }
+    
+    // 빈 입금 행 찾기
+    function findEmptyDepositRow(tableBody) {
+      const rows = tableBody.querySelectorAll('tr');
+      for (const row of rows) {
+        const depositInput = row.querySelector('td:nth-child(3) input');
+        if (depositInput && depositInput.value.trim() === '') {
+          return row;
+        }
+      }
+      return null;
+    }
+    
+    // 빈 출금 행 찾기
+    function findEmptyWithdrawalRow(tableBody) {
+      const rows = tableBody.querySelectorAll('tr');
+      for (const row of rows) {
+        const balanceSelect = row.querySelector('td:nth-child(4) select');
+        const withdrawalSelect = row.querySelector('td:nth-child(5) select');
+        const withdrawalInput = row.querySelector('td:nth-child(6) input');
+        
+        // 4열(계좌명), 5열(출금내역), 6열(출금금액)이 모두 비어있는 행 찾기
+        if (balanceSelect && withdrawalSelect && withdrawalInput) {
+          const balanceValue = balanceSelect.value.trim();
+          const withdrawalValue = withdrawalSelect.value.trim();
+          const withdrawalAmount = withdrawalInput.value.trim();
+          
+          if (balanceValue === '' && withdrawalValue === '' && withdrawalAmount === '') {
+            return row;
+          }
+        }
+      }
+      return null;
+    }
+    
+    // 새 카테고리 2 행 생성
+    async function createNewCategory2Row(tableBody) {
+      const newRow = document.createElement('tr');
+      newRow.dataset.categoryId = Date.now() + Math.random();
+      newRow.dataset.category = '2';
+      newRow.innerHTML = createCategory2RowHTML({});
+      tableBody.appendChild(newRow);
+      
+      await populateBalanceDropdowns(newRow);
+      await loadDepositsForDropdown(newRow);
+      await loadTransfersForDropdown(newRow);
+      
+      return newRow;
+    }
+    
+    // 입금 행 설정
+    async function setupDepositRow(row, depositAmount) {
+      // 드롭다운 로드
+      await populateBalanceDropdowns(row);
+      await loadDepositsForDropdown(row);
+      await loadTransfersForDropdown(row);
+      
+      // 뉴인텍 매출금 설정
+      const balanceSelect = row.querySelector('td:nth-child(1) select');
+      const depositSelect = row.querySelector('td:nth-child(2) select');
+      const depositInput = row.querySelector('td:nth-child(3) input');
+      
+      if (balanceSelect) balanceSelect.value = '뉴인텍';
+      if (depositSelect) {
+        depositSelect.innerHTML = '<option value="뉴인텍 매출금">뉴인텍 매출금</option>';
+        depositSelect.value = '뉴인텍 매출금';
+      }
+      if (depositInput) depositInput.value = depositAmount;
+    }
+
+    // 금일매출금액 자동 계산 (매출금액 - 입금금액) - 최적화
+    function calculateTodaySales(input) {
+      const row = input.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      
+      if (inputs.length < 6) return;
+      
+      const salesAmount = parseAmount(inputs[2].value);
+      const depositAmount = parseAmount(inputs[4].value) || 0;
+      
+      const todaySales = salesAmount - depositAmount;
+      inputs[5].value = formatAmount(Math.max(0, todaySales));
+    }
+    
+    // 모든 행의 금일매출금액 계산 (최적화)
+    function calculateAllTodaySales(tableBody) {
+      const depositInputs = tableBody.querySelectorAll('td:nth-child(5) input');
+      depositInputs.forEach(input => calculateTodaySales(input));
+    }
+
+    // 날짜 옵션 생성 함수들
+    function updateYearOptions() {
+      const yearSelect = document.getElementById('yearSelect');
+      const currentYear = new Date().getFullYear();
+      yearSelect.innerHTML = '';
+      
+      for (let i = 0; i < 3; i++) {
+        const year = currentYear + i;
+        yearSelect.innerHTML += `<option value="${year}">${year}년</option>`;
+      }
+      yearSelect.value = currentYear;
+    }
+
+    function updateMonthOptions() {
+      const monthSelect = document.getElementById('monthSelect');
+      const currentMonth = new Date().getMonth() + 1;
+      monthSelect.innerHTML = '';
+      
+      for (let month = 1; month <= 12; month++) {
+        monthSelect.innerHTML += `<option value="${month}">${month}월</option>`;
+      }
+      monthSelect.value = currentMonth;
+    }
+
+    function updateDayOptions() {
+      const year = parseInt(document.getElementById('yearSelect').value);
+      const month = parseInt(document.getElementById('monthSelect').value);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const daySelect = document.getElementById('daySelect');
+      const currentDay = new Date().getDate();
+      
+      daySelect.innerHTML = '';
+      for (let day = 1; day <= daysInMonth; day++) {
+        daySelect.innerHTML += `<option value="${day}">${day}일</option>`;
+      }
+      daySelect.value = currentDay;
+    }
+
+    // balance 데이터에서 사용 가능한 날짜들을 가져오는 함수
+    function getAvailableDates() {
+      const dates = new Set();
+      
+      // balance 데이터에서 모든 날짜 수집
+      if (window.accountingData && window.accountingData.balance) {
+        window.accountingData.balance.forEach(account => {
+          if (account.balances) {
+            Object.keys(account.balances).forEach(date => {
+              dates.add(date);
+            });
+          }
+        });
+      }
+      
+      // 날짜를 정렬하여 반환
+      return Array.from(dates).sort();
+    }
+
+    // 날짜 이동 함수들
+    function navigateToPreviousDay() {
+      const availableDates = getAvailableDates();
+      if (availableDates.length === 0) return;
+      
+      const yearSelect = document.getElementById('yearSelect');
+      const monthSelect = document.getElementById('monthSelect');
+      const daySelect = document.getElementById('daySelect');
+      
+      const currentDate = `${yearSelect.value}-${monthSelect.value.toString().padStart(2, '0')}-${daySelect.value.toString().padStart(2, '0')}`;
+      
+      let currentIndex = availableDates.indexOf(currentDate);
+      if (currentIndex === -1) {
+        currentIndex = availableDates.findIndex(date => date < currentDate);
+        if (currentIndex === -1) {
+          currentIndex = availableDates.length - 1;
+        }
+      }
+      
+      const targetDate = currentIndex > 0 ? availableDates[currentIndex - 1] : availableDates[availableDates.length - 1];
+      
+      const [year, month, day] = targetDate.split('-');
+      yearSelect.value = year;
+      monthSelect.value = parseInt(month);
+      updateDayOptions();
+      daySelect.value = parseInt(day);
+      loadAccountingData();
+    }
+
+    function navigateToNextDay() {
+      const availableDates = getAvailableDates();
+      if (availableDates.length === 0) return;
+      
+      const yearSelect = document.getElementById('yearSelect');
+      const monthSelect = document.getElementById('monthSelect');
+      const daySelect = document.getElementById('daySelect');
+      
+      const currentDate = `${yearSelect.value}-${monthSelect.value.toString().padStart(2, '0')}-${daySelect.value.toString().padStart(2, '0')}`;
+      
+      let currentIndex = availableDates.indexOf(currentDate);
+      if (currentIndex === -1) {
+        currentIndex = availableDates.findIndex(date => date > currentDate);
+        if (currentIndex === -1) {
+          currentIndex = 0;
+        } else {
+          currentIndex = currentIndex - 1;
+        }
+      }
+      
+      const targetDate = currentIndex < availableDates.length - 1 ? availableDates[currentIndex + 1] : availableDates[0];
+      
+      const [year, month, day] = targetDate.split('-');
+      yearSelect.value = year;
+      monthSelect.value = parseInt(month);
+      updateDayOptions();
+      daySelect.value = parseInt(day);
+      loadAccountingData();
+    }
+
+    // Transaction 테이블 렌더링
+    function renderTransactionTable(allData) {
+      const tableBody = document.getElementById('category2TableBody');
+      const year = document.getElementById('yearSelect').value;
+      const month = document.getElementById('monthSelect').value.padStart(2, '0');
+      const day = document.getElementById('daySelect').value.padStart(2, '0');
+      const date = `${year}-${month}-${day}`;
+      
+      const depositData = allData?.transaction?.deposit?.[date] || [];
+      const withdrawalData = allData?.transaction?.withdrawal?.[date] || [];
+      const maxRows = Math.max(depositData.length, withdrawalData.length);
+      
+      tableBody.innerHTML = '';
+      
+      for (let i = 0; i < maxRows; i++) {
+        const row = document.createElement('tr');
+        row.dataset.categoryId = Date.now() + Math.random();
+        row.innerHTML = createCategory2RowHTML({
+          depositName: depositData[i]?.name || '',
+          depositDescription: depositData[i]?.description || '',
+          depositAmount: depositData[i]?.amount || '',
+          withdrawalName: withdrawalData[i]?.name || '',
+          withdrawalDescription: withdrawalData[i]?.description || '',
+          withdrawalAmount: withdrawalData[i]?.amount || 0,
+          disabled: withdrawalData[i]?.disabled || false // 비활성화 상태 전달
+        });
+        tableBody.appendChild(row);
+        populateBalanceDropdowns(row);
+        loadDepositsForDropdown(row);
+        loadTransfersForDropdown(row);
+      }
+    }
+
+    // 카테고리 3 테이블 렌더링
+    async function renderCategory3Table(allData) {
+      const tableBody = document.getElementById('category3TableBody');
+      tableBody.innerHTML = '';
+      
+      // 현재 날짜 확인
+      const currentDate = getCurrentDate();
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // 시간 부분 제거하여 날짜만 비교
+      const selectedDate = new Date(currentDate);
+      selectedDate.setHours(0, 0, 0, 0); // 시간 부분 제거하여 날짜만 비교
+      const isPastDate = selectedDate < today;
+      
+      // 데이터 로드
+      const incompleteDeliveries = await fetchIncompleteDeliveries();
+      
+      // 뉴인텍 행들 생성
+      let rowsHTML = '';
+      
+      // 뉴인텍 1행 로직
+      if (!isPastDate) {
+        // 오늘 포함 미래 날짜: orderData.json에서 complete true가 아닌 데이터 로드
+        incompleteDeliveries.forEach(item => {
+          rowsHTML += createNuintekRowHTML(item, null, false, currentDate, '', currentDate);
+        });
+      } else {
+        // 과거 날짜: accounting.json에서 현재 날짜보다 과거 날짜 중 최신 데이터 로드
+        const latestPreviousDate = findLatestPreviousNuintekDate(allData, currentDate);
+        if (latestPreviousDate) {
+          const latestData = allData?.notes?.nuintek?.[latestPreviousDate];
+          if (latestData && latestData.length > 0) {
+            latestData.forEach(accountingItem => {
+              const currentDateData = allData?.notes?.nuintek?.[currentDate];
+              const currentDeliveryData = currentDateData?.find(data => data.deliveryNo === accountingItem.deliveryNo);
+              const depositAmount = currentDeliveryData?.depositAmount || '';
+              
+              rowsHTML += createNuintekRowHTML(
+                {
+                  deliveryNo: accountingItem.deliveryNo,
+                  ntinvoiceprice: accountingItem.todaySalesAmount,
+                  ntinvoicedue: accountingItem.dueDate
+                },
+                accountingItem,
+                true,
+                currentDate,
+                depositAmount,
+                latestPreviousDate
+              );
+            });
+          }
+        }
+      }
+      
+      // 뉴인텍 2행: 오늘 포함 미래 날짜일 때 accounting.json에서 데이터 로드 (뉴인텍 1행과 중복 제외)
+      // 현재 날짜 데이터를 먼저 확인하고, 없으면 과거 날짜 데이터 사용
+      if (!isPastDate) {
+        const currentDateData = allData?.notes?.nuintek?.[currentDate];
+        let dataToProcess = [];
+        let dataDate = currentDate;
+        
+        if (currentDateData && currentDateData.length > 0) {
+          // 현재 날짜에 데이터가 있으면 현재 날짜 데이터 사용
+          dataToProcess = currentDateData;
+          dataDate = currentDate;
+        } else {
+          // 현재 날짜에 데이터가 없으면 과거 날짜 데이터 찾기
+          const latestPreviousDate = findLatestPreviousNuintekDate(allData, currentDate);
+          if (latestPreviousDate) {
+            const latestData = allData?.notes?.nuintek?.[latestPreviousDate];
+            if (latestData && latestData.length > 0) {
+              dataToProcess = latestData;
+              dataDate = latestPreviousDate;
+            }
+          }
+        }
+        
+        if (dataToProcess.length > 0) {
+          dataToProcess.forEach(accountingItem => {
+            // deliveryNo와 dueDate 둘 다 같아야 중복으로 인식
+            const isDuplicate = incompleteDeliveries.some(item => 
+              item.deliveryNo === accountingItem.deliveryNo && 
+              item.ntinvoicedue === accountingItem.dueDate
+            );
+            if (!isDuplicate) {
+              const currentDeliveryData = currentDateData?.find(data => data.deliveryNo === accountingItem.deliveryNo);
+              const depositAmount = currentDeliveryData?.depositAmount || '';
+              
+              rowsHTML += createNuintekRowHTML(
+                {
+                  deliveryNo: accountingItem.deliveryNo,
+                  ntinvoiceprice: accountingItem.todaySalesAmount,
+                  ntinvoicedue: accountingItem.dueDate
+                },
+                accountingItem,
+                true,
+                currentDate,
+                depositAmount,
+                dataDate
+              );
+            }
+          });
+        }
+      }
+      
+      // 성문 행 추가
+      rowsHTML += createSungmoonRowHTML(allData, currentDate);
+      
+      tableBody.innerHTML = rowsHTML;
+      
+      // 금일매출금액 계산
+      setTimeout(() => calculateAllTodaySales(tableBody), 100);
+      
+      // 성문 행의 6열 계산 (로드된 데이터 기반)
+      setTimeout(() => {
+        const sungmoonRow = Array.from(tableBody.children).find(row => {
+          const companyInput = row.querySelector('td:nth-child(1) input');
+          return companyInput && companyInput.value === '성문';
+        });
+        
+        if (sungmoonRow) {
+          const depositInput = sungmoonRow.querySelector('td:nth-child(5) input');
+          if (depositInput) {
+            calculateTodaySales(depositInput);
+          }
+        }
+      }, 200);
+    }
+    
+    // 미완료 배송 데이터 가져오기
+    async function fetchIncompleteDeliveries() {
+      try {
+        const response = await fetch('/api/orders');
+        if (!response.ok) return [];
+        
+          const orderData = await response.json();
+        const deliveryNoSet = new Set();
+        const incompleteDeliveries = [];
+          
+          orderData.forEach(order => {
+          order.items?.forEach(item => {
+            if (item.deliveryNo && item.complete !== true && !deliveryNoSet.has(item.deliveryNo) && 
+                item.ntinvoiceprice && item.ntinvoicedue) {
+                    deliveryNoSet.add(item.deliveryNo);
+                    incompleteDeliveries.push({
+                      deliveryNo: item.deliveryNo,
+                      ntinvoiceprice: item.ntinvoiceprice,
+                      ntinvoicedue: item.ntinvoicedue
+                    });
+                }
+              });
+          });
+        return incompleteDeliveries;
+      } catch (error) {
+        return [];
+      }
+    }
+    
+    
+    // 카테고리 3 행 HTML 생성 (통합)
+    function createCategory3RowHTML(company, deliveryNo = '', salesAmount = '', dueDate = '', depositAmount = '', todaySalesAmount = '') {
+      const salesValue = salesAmount ? formatAmount(salesAmount) : '';
+      const depositValue = depositAmount ? formatAmount(depositAmount) : '';
+      const todayValue = todaySalesAmount ? formatAmount(todaySalesAmount) : '';
+      
+      return `
+        <tr>
+          <td><input type="text" value="${company}" style="${commonStyles.input} text-align: inherit;"></td>
+          <td style="position: relative;"><input type="text" value="${deliveryNo}" style="${commonStyles.input}"><button type="button" class="delete-account-btn" onclick="deleteCategory3NotesItem(this)" style="${commonStyles.button}">×</button></td>
+          <td><input type="text" value="${salesValue}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodaySales(this);"></td>
+          <td><input type="text" value="${dueDate}" style="${commonStyles.input}"></td>
+          <td style="position: relative;"><input type="text" value="${depositValue}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodaySales(this);"><button type="button" class="check-deposit-btn" onclick="${company === '성문' ? 'updateSungmoonDeposit' : 'updateCategory2Deposit'}(this)" style="${commonStyles.button}">+</button></td>
+          <td><input type="text" value="${todayValue}" style="${commonStyles.input}" oninput="formatAmountInput(this);"></td>
+        </tr>
+      `;
+    }
+    
+    // 뉴인텍 행 HTML 생성
+    function createNuintekRowHTML(item, existingData, isPastDate = false, currentDate = '', currentDepositAmount = '', actualDataDate = '') {
+      let salesAmount = '';
+      let dueDate = '';
+      let depositAmount = '';
+      
+      if (isPastDate) {
+        // 과거 날짜인 경우: 이전 데이터의 값들 사용
+        salesAmount = existingData ? existingData.todaySalesAmount : '';
+        dueDate = existingData ? existingData.dueDate : '';
+        depositAmount = ''; // 5열은 현재 날짜 데이터로 덮어씌워질 예정
+      } else {
+        // 오늘/미래 날짜인 경우: OrderData의 값들 사용
+        salesAmount = item.ntinvoiceprice;
+        dueDate = item.ntinvoicedue;
+        depositAmount = ''; // 5열은 현재 날짜 데이터로 덮어씌워질 예정
+      }
+      
+      // 5열은 항상 현재 날짜의 depositAmount 사용 (있으면)
+      if (currentDepositAmount !== undefined && currentDepositAmount !== '') {
+        depositAmount = currentDepositAmount;
+      }
+      
+      const rowHTML = createCategory3RowHTML(
+        '뉴인텍',
+        item.deliveryNo,
+        salesAmount,
+        dueDate,
+        depositAmount,
+        '' // 6열은 항상 빈 값으로 시작 (계산용)
+      );
+      
+      // 불러온 날짜 정보를 data 속성으로 추가
+      const loadedDate = actualDataDate || currentDate;
+      
+      return rowHTML.replace('<tr>', `<tr data-loaded-date="${loadedDate}" data-current-date="${currentDate}">`);
+    }
+    
+    // 성문 행 HTML 생성
+    function createSungmoonRowHTML(allData, date) {
+      // 현재 날짜 데이터를 먼저 확인하고, 없으면 과거 날짜 데이터 사용
+      const currentDateData = allData?.notes?.sungmoon?.[date];
+      let salesAmount = '';
+      let dueDate = '';
+      let depositAmount = '';
+      let deliveryNo = '';
+      let dataDate = '';
+      
+      if (currentDateData && currentDateData.length > 0) {
+        // 현재 날짜에 데이터가 있으면 현재 날짜 데이터 사용
+        const currentData = currentDateData[0];
+        salesAmount = currentData.todaySalesAmount || '';
+        dueDate = currentData.dueDate || '';
+        deliveryNo = currentData.deliveryNo || '';
+        depositAmount = currentData.depositAmount || '';
+        dataDate = date;
+      } else {
+        // 현재 날짜에 데이터가 없으면 과거 날짜 데이터 찾기
+        const commonLatestDate = findCommonLatestSungmoonDate(allData, date);
+        if (commonLatestDate) {
+          const sungmoonData = allData?.notes?.sungmoon?.[commonLatestDate];
+          if (sungmoonData && sungmoonData.length > 0) {
+            const latestData = sungmoonData[0];
+            salesAmount = latestData.todaySalesAmount || '';
+            dueDate = latestData.dueDate || '';
+            deliveryNo = latestData.deliveryNo || '';
+            dataDate = commonLatestDate;
+          }
+        }
+      }
+      
+      const rowHTML = createCategory3RowHTML(
+        '성문',
+        deliveryNo, // deliveryNo 전달
+        salesAmount,
+        dueDate,
+        depositAmount,
+        '' // 6열은 계산용
+      );
+      
+      // 불러온 날짜 정보를 data 속성으로 추가
+      return rowHTML.replace('<tr>', `<tr data-loaded-date="${dataDate || ''}" data-current-date="${date}">`);
+    }
+    
+    // 공통: 이전 날짜 중 최신 날짜 찾기 (뉴인텍, 성문 모두 사용)
+    function findLatestPreviousDate(allData, category, currentDate) {
+      const categoryData = allData?.notes?.[category];
+      if (!categoryData) return null;
+      
+      const dates = Object.keys(categoryData).filter(date => {
+        return date < currentDate && categoryData[date] && categoryData[date].length > 0;
+      });
+      
+      if (dates.length === 0) return null;
+      
+      dates.sort((a, b) => new Date(b) - new Date(a));
+      return dates[0];
+    }
+    
+    // 성문 데이터의 공통 최신 날짜 찾기
+    function findCommonLatestSungmoonDate(allData, currentDate) {
+      return findLatestPreviousDate(allData, 'sungmoon', currentDate);
+    }
+    
+    // 뉴인텍 데이터의 최신 이전 날짜 찾기
+    function findLatestPreviousNuintekDate(allData, currentDate) {
+      return findLatestPreviousDate(allData, 'nuintek', currentDate);
+    }
+    
+
+    // Accounting 데이터 불러오기 (전일 잔액 포함)
+    async function loadAccountingData() {
+      try {
+        const date = getCurrentDate();
+        
+        // 전체 데이터, 현재 날짜 데이터, 전날 데이터를 병렬로 가져오기
+        const [allDataResponse, currentResponse, previousResponse] = await Promise.all([
+          fetch('/api/accounting'),
+          fetch(`/api/accounting?date=${date}`),
+          fetch(`/api/accounting?date=${date}&previousDay=true`)
+        ]);
+        
+        if (!allDataResponse.ok || !currentResponse.ok || !previousResponse.ok) {
+          throw new Error(`HTTP error! status: ${currentResponse.status}`);
+        }
+        
+        const allData = await allDataResponse.json();
+        const currentData = await currentResponse.json();
+        const previousData = await previousResponse.json();
+        
+        // 전역 변수에 데이터 저장 (날짜 네비게이션용)
+        window.accountingData = allData;
+        
+        // 테이블 렌더링 (전일 잔액 포함)
+        await renderAccountingTableWithAllData(allData, currentData || [], previousData || []);
+        
+        // LoanTo 데이터 로드
+        await loadLoantoData(allData, date);
+        
+        // Debt 데이터 로드
+        await loadDebtData(allData, date);
+        
+        // 카테고리 1 연동 초기화
+        setTimeout(updateCategory1DepositAndWithdrawal, 100);
+      } catch (error) {
+        alert('Accounting 데이터 로드 오류: ' + error.message);
+        renderAccountingTable([]);
+      }
+    }
+
+
+    // ===== Accounting 데이터 저장 관련 함수들 =====
+    
+    // 통합된 Accounting 데이터 저장 (최적화)
+    async function saveAccountingData(category, data) {
+      try {
+        const response = await fetch('/api/accounting', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category, data })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        return null;
+      }
+    }
+
+    // 모든 Accounting 데이터 저장 (최적화)
+    async function saveAllAccountingData() {
+      try {
+        const date = getCurrentDate();
+        let savedCount = 0;
+        
+        // 카테고리별 데이터 수집 및 저장
+        const balanceCount = await saveBalanceData(date);
+        const transactionCount = await saveTransactionData(date);
+        const notesCount = await saveNotesData(date);
+        const loantoCount = await saveLoantoData(date);
+        const debtCount = await saveDebtData(date);
+        
+        savedCount = balanceCount + transactionCount + notesCount + loantoCount + debtCount;
+        
+        if (savedCount > 0) {
+          alert(`저장 완료! ${date} 날짜에 ${savedCount}개 항목이 저장되었습니다.`);
+        } else {
+          alert('저장할 데이터가 없습니다.');
+        }
+      } catch (error) {
+        alert('데이터 저장 중 오류가 발생했습니다.');
+      }
+    }
+    
+    // Balance 데이터 저장
+    async function saveBalanceData(date) {
+      const rows = document.querySelectorAll('#category1TableBody tr');
+      let count = 0;
+      
+      for (const row of rows) {
+          // 숨겨진 행은 저장하지 않음
+          if (row.classList.contains('hidden-row') || row.style.display === 'none') {
+              continue;
+          }
+          
+          const inputs = row.querySelectorAll('input');
+          if (inputs.length < 6) continue;
+          
+          const name = inputs[0].value.trim();
+          const bank = inputs[1].value.trim();
+        const balance = parseAmount(inputs[5].value);
+          
+          if (name && bank) {
+          const result = await saveAccountingData('balance', { name, bank, date, balance });
+          if (result?.success) count++;
+        }
+      }
+      return count;
+    }
+    
+    // Transaction 데이터 저장
+    async function saveTransactionData(date) {
+      const rows = document.querySelectorAll('#category2TableBody tr');
+        const depositItems = [];
+        const withdrawalItems = [];
+        
+      for (const row of rows) {
+          const inputs = row.querySelectorAll('input');
+            const selects = row.querySelectorAll('select');
+            
+        if (inputs.length < 2 || selects.length < 4) continue;
+          
+        // 입금 데이터
+          const depositName = selects[0].value.trim();
+          const depositDescription = selects[1].value.trim();
+        const depositAmount = parseAmount(inputs[0].value);
+            
+            if (depositName && depositDescription && depositAmount > 0) {
+          depositItems.push({ name: depositName, description: depositDescription, amount: depositAmount });
+        }
+        
+        // 출금 데이터
+          const withdrawalName = selects[2].value.trim();
+          const withdrawalDescription = selects[3].value.trim();
+        const withdrawalAmount = parseAmount(inputs[1].value);
+        
+        // 출금 셀의 비활성화 상태 확인
+        const withdrawalCell = row.querySelector('td:nth-child(6)');
+        const isWithdrawalDisabled = withdrawalCell && withdrawalCell.classList.contains('disabled-cell');
+          
+        if (withdrawalDescription) {
+          withdrawalItems.push({ 
+            name: withdrawalName || '', 
+            description: withdrawalDescription, 
+            amount: withdrawalAmount,
+            disabled: isWithdrawalDisabled // 비활성화 상태 저장
+          });
+        }
+      }
+      
+      let count = 0;
+        if (depositItems.length > 0) {
+        const result = await saveAccountingData('transaction', { type: 'deposit', date, items: depositItems });
+        if (result?.success) count += depositItems.length;
+        }
+        
+        if (withdrawalItems.length > 0) {
+        const result = await saveAccountingData('transaction', { type: 'withdrawal', date, items: withdrawalItems });
+        if (result?.success) count += withdrawalItems.length;
+      }
+      
+      return count;
+    }
+    
+    // Notes 데이터 저장
+    async function saveNotesData(date) {
+      const rows = document.querySelectorAll('#category3TableBody tr');
+        const nuintekData = [];
+        const sungmoonData = [];
+        
+      for (const row of rows) {
+          const inputs = row.querySelectorAll('input');
+        if (inputs.length < 6) continue;
+          
+          const companyName = inputs[0].value.trim();
+          const deliveryNo = inputs[1].value.trim();
+          const dueDate = inputs[3].value.trim();
+        const depositAmount = parseAmount(inputs[4].value);
+        const todaySalesAmount = parseAmount(inputs[5].value);
+          
+          if (companyName && (depositAmount > 0 || todaySalesAmount > 0)) {
+          const rowData = { deliveryNo, dueDate, depositAmount, todaySalesAmount };
+            
+            if (companyName === '뉴인텍') {
+              nuintekData.push(rowData);
+            } else if (companyName === '성문') {
+              sungmoonData.push(rowData);
+            }
+          }
+        }
+        
+      let count = 0;
+        if (nuintekData.length > 0) {
+        const result = await saveAccountingData('notes', { company: 'nuintek', date, data: nuintekData });
+        if (result?.success) count += nuintekData.length;
+      }
+      
+        if (sungmoonData.length > 0) {
+        const result = await saveAccountingData('notes', { company: 'sungmoon', date, data: sungmoonData });
+        if (result?.success) count += sungmoonData.length;
+      }
+      
+      return count;
+    }
+    
+    // 공통: LoanTo/Debt 데이터 수집 헬퍼 함수
+    function collectLoanData(rows) {
+      const data = [];
+      
+      for (const row of rows) {
+        if (row.classList.contains('hidden-row') || row.style.display === 'none') {
+          continue;
+        }
+        
+        const inputs = row.querySelectorAll('input');
+        if (inputs.length < 6) continue;
+        
+        const company = inputs[0].value.trim();
+        const dueDate = inputs[2].value.trim();
+        const interestRate = parseAmount(inputs[3].value);
+        const depositAmountValue = inputs[4].value.trim();
+        const depositAmount = depositAmountValue === '' ? 0 : parseAmount(depositAmountValue);
+        const todayLoanAmountValue = inputs[5].value.trim();
+        const todayLoanAmount = todayLoanAmountValue === '' ? 0 : parseAmount(todayLoanAmountValue);
+        
+        if (company) {
+          data.push({
+            company,
+            dueDate: dueDate || undefined,
+            interestRate: interestRate > 0 ? interestRate : undefined,
+            depositAmount: depositAmount !== 0 ? depositAmount : undefined,
+            todayLoanAmount: todayLoanAmount !== 0 ? todayLoanAmount : undefined
+          });
+        }
+      }
+      
+      return data;
+    }
+    
+    // LoanTo 데이터 저장
+    async function saveLoantoData(date) {
+      const rows = document.querySelectorAll('#category4TableBody tr');
+      const loantoData = collectLoanData(rows);
+      
+      let count = 0;
+      if (loantoData.length > 0) {
+        const result = await saveAccountingData('loanto', { date, data: loantoData });
+        if (result?.success) count = loantoData.length;
+      }
+      
+      return count;
+    }
+    
+    // Debt 데이터 저장
+    async function saveDebtData(date) {
+      const rows = document.querySelectorAll('#category5TableBody tr');
+      const debtData = collectLoanData(rows);
+      
+      let count = 0;
+      if (debtData.length > 0) {
+        const result = await saveAccountingData('debt', { date, data: debtData });
+        if (result?.success) count = debtData.length;
+      }
+      
+      return count;
+    }
+    
+    // 카테고리 4와 5를 위한 공통 최신 날짜 찾기 (loanto와 debt 모두 데이터가 있는 날짜)
+    function findCommonLatestLoantoDate(allData, currentDate) {
+      const loantoData = allData?.loanto;
+      const debtData = allData?.debt;
+      if (!loantoData || !debtData) return null;
+      
+      const loantoDates = Object.keys(loantoData).filter(date => 
+        date < currentDate && loantoData[date] && loantoData[date].length > 0
+      );
+      const debtDates = Object.keys(debtData).filter(date => 
+        date < currentDate && debtData[date] && debtData[date].length > 0
+      );
+      
+      const commonDates = loantoDates.filter(date => debtDates.includes(date));
+      if (commonDates.length === 0) return null;
+      
+      commonDates.sort((a, b) => new Date(b) - new Date(a));
+      return commonDates[0];
+    }
+    
+    // 공통: LoanTo/Debt 데이터 로드 헬퍼 함수
+    function loadLoanData(allData, date, category, tableBodyId, categoryId, hideRowFunc, calculateFunc, updateWithdrawalFunc, updateDepositFunc) {
+      const tableBody = document.getElementById(tableBodyId);
+      tableBody.innerHTML = '';
+      
+      const commonLatestDate = findCommonLatestLoantoDate(allData, date);
+      if (!commonLatestDate) return;
+      
+      const data = allData?.[category]?.[commonLatestDate] || [];
+      const inputStyle = "width: 100%; border: none; padding: 0; margin: 0;";
+      const buttonStyle = "position: absolute; right: 2px; top: 50%; transform: translateY(-50%); background: none; color: black; border: none; width: 14px; height: 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;";
+      const minusButtonStyle = "position: absolute; left: 2px; top: 50%; transform: translateY(-50%); background: none; color: black; border: none; width: 14px; height: 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;";
+      
+      for (const item of data) {
+        const row = document.createElement('tr');
+        row.dataset.categoryId = categoryId + tableBody.children.length;
+        row.dataset.category = categoryId.toString()[0];
+        
+        const currentDateData = allData?.[category]?.[date];
+        const currentCompanyData = currentDateData?.find(data => data.company === item.company);
+        const currentDepositAmount = currentCompanyData?.depositAmount;
+        
+        const rowHTML = `
+          <td style="position: relative;">
+            <input type="text" value="${item.company || ''}" style="${inputStyle}">
+            <button type="button" class="delete-account-btn" onclick="${hideRowFunc}(this)" style="${buttonStyle}">×</button>
+          </td>
+          <td>
+            <input type="text" value="${item.todayLoanAmount !== undefined ? formatAmount(item.todayLoanAmount) : ''}" style="${inputStyle}" oninput="formatAmountInput(this); ${calculateFunc}(this);">
+          </td>
+          <td><input type="text" value="${item.dueDate || ''}" style="${inputStyle}"></td>
+          <td><input type="text" value="${item.interestRate ? formatAmount(item.interestRate) : ''}" style="${inputStyle}" oninput="formatAmountInput(this);"></td>
+          <td style="position: relative;">
+            <button type="button" class="check-deposit-btn" onclick="${updateWithdrawalFunc}(this)" style="${minusButtonStyle}">-</button>
+            <input type="text" value="${currentDepositAmount ? formatAmount(currentDepositAmount) : ''}" style="${inputStyle}" oninput="formatAmountInput(this); ${calculateFunc}(this);">
+            <button type="button" class="check-deposit-btn" onclick="${updateDepositFunc}(this)" style="${buttonStyle}">+</button>
+          </td>
+          <td><input type="text" value="" style="${inputStyle}" oninput="formatAmountInput(this); ${calculateFunc}(this);"></td>
+        `;
+        
+        row.innerHTML = rowHTML;
+        tableBody.appendChild(row);
+        
+        // 금일가지급금/가수금 자동 계산
+        const depositAmountValue = currentDepositAmount ? formatAmount(currentDepositAmount) : '';
+        const todayLoanInput = row.querySelector('td:nth-child(6) input');
+        if (todayLoanInput) {
+          const loanAmountInput = row.querySelector('td:nth-child(2) input');
+          if (loanAmountInput && loanAmountInput.value.trim() !== '') {
+            const loanAmount = parseAmount(loanAmountInput.value);
+            const depositAmount = depositAmountValue === '' ? 0 : parseAmount(depositAmountValue);
+            todayLoanInput.value = formatAmount(loanAmount - depositAmount);
+          }
+        }
+      }
+    }
+    
+    // LoanTo 데이터 로드
+    async function loadLoantoData(allData, date) {
+      loadLoanData(
+        allData,
+        date,
+        'loanto',
+        'category4TableBody',
+        4000,
+        'hideCategory4Row',
+        'calculateCategory4TodayLoan',
+        'updateCategory4Withdrawal',
+        'updateCategory4Deposit'
+      );
+    }
+    
+    // Debt 데이터 로드
+    async function loadDebtData(allData, date) {
+      loadLoanData(
+        allData,
+        date,
+        'debt',
+        'category5TableBody',
+        5000,
+        'hideCategory5Row',
+        'calculateCategory5TodayLoan',
+        'updateCategory5Withdrawal',
+        'updateCategory5Deposit'
+      );
+    }
+
+    // ===== Accounting 테이블 렌더링 함수들 (최적화) =====
+    
+    // 통합된 Accounting 테이블 렌더링 (최적화)
+    async function renderAccountingTableWithAllData(allData, currentData, previousData) {
+      const tableBody = document.getElementById('category1TableBody');
+      tableBody.innerHTML = '';
+      
+      // 모든 데이터를 Map으로 통합 관리
+      const allItems = buildBalanceMap(allData, currentData, previousData);
+      
+      // 테이블 렌더링
+      renderBalanceRows(tableBody, allItems);
+      
+      // 다른 카테고리 렌더링
+      renderTransactionTable(allData);
+      await renderCategory3Table(allData);
+    }
+    
+    // Balance 데이터 Map 생성 (최적화) - 공통 최신 날짜 사용
+    function buildBalanceMap(allData, currentData, previousData) {
+      const allItems = new Map();
+      
+      // 모든 Balance 항목 추가
+      if (allData.balance?.length) {
+        allData.balance.forEach(item => {
+          const key = `${item.name}_${item.bank}`;
+          allItems.set(key, { name: item.name, bank: item.bank, currentBalance: 0, previousBalance: 0 });
+        });
+      }
+      
+      // 현재 데이터 업데이트
+      if (currentData?.length) {
+        currentData.forEach(item => {
+          const key = `${item.name}_${item.bank}`;
+          if (allItems.has(key)) {
+            allItems.get(key).currentBalance = item.balance || 0;
+          }
+        });
+      }
+      
+      // 전날 데이터 업데이트 - 공통 최신 날짜 사용
+      if (previousData?.length) {
+        // 모든 계좌에서 공통된 최신 날짜 찾기
+        const commonLatestDate = findCommonLatestDate(allData, currentData);
+        
+        if (commonLatestDate) {
+          // 해당 날짜의 데이터로 모든 계좌 업데이트
+          allData.balance.forEach(item => {
+            const key = `${item.name}_${item.bank}`;
+            if (allItems.has(key) && item.balances && item.balances[commonLatestDate] !== undefined) {
+              allItems.get(key).previousBalance = item.balances[commonLatestDate];
+            } else if (allItems.has(key)) {
+              // 해당 날짜에 데이터가 없으면 Map에서 제거
+              allItems.delete(key);
+            }
+          });
+        } else {
+          // 기존 방식으로 폴백
+          previousData.forEach(item => {
+            const key = `${item.name}_${item.bank}`;
+            if (allItems.has(key)) {
+              allItems.get(key).previousBalance = item.balance || 0;
+            }
+          });
+        }
+      }
+      
+      return allItems;
+    }
+
+    // 모든 계좌에서 공통된 최신 날짜 찾기 (모든 계좌에 데이터가 있는 날짜)
+    function findCommonLatestDate(allData, currentData) {
+      if (!allData.balance?.length) return null;
+      
+      const currentDate = getCurrentDate();
+      const firstAccountDates = allData.balance[0]?.balances ? 
+        Object.keys(allData.balance[0].balances).filter(date => date < currentDate) : [];
+      
+      if (firstAccountDates.length === 0) return null;
+      
+      const commonDates = firstAccountDates.filter(date => 
+        allData.balance.every(account => account.balances && account.balances[date] !== undefined)
+      );
+      
+      if (commonDates.length === 0) return null;
+      
+      commonDates.sort((a, b) => new Date(b) - new Date(a));
+      return commonDates[0];
+    }
+    
+    // Balance 행 렌더링 (전일 잔액 포함)
+    function renderBalanceRows(tableBody, allItems) {
+      const fragment = document.createDocumentFragment();
+      
+      allItems.forEach(item => {
+        const row = document.createElement('tr');
+        row.dataset.categoryId = Date.now() + Math.random();
+        
+        const previousBalance = item.previousBalance || 0;
+        const todayBalance = item.currentBalance || previousBalance;
+        
+        row.innerHTML = createCategory1RowHTML({
+          name: item.name || '',
+          bank: item.bank || '',
+          previousBalance,
+          todayDeposit: 0,
+          todayWithdrawal: 0,
+          todayBalance
+        });
+        
+        fragment.appendChild(row);
+      });
+      
+      tableBody.appendChild(fragment);
+    }
+    
+    // Accounting 테이블 렌더링 (전날 데이터 포함) - 최적화
+    function renderAccountingTableWithPrevious(currentData, previousData) {
+      const tableBody = document.getElementById('category1TableBody');
+      tableBody.innerHTML = '';
+      
+      const allItems = buildBalanceMap({ balance: [] }, currentData, previousData);
+      renderBalanceRows(tableBody, allItems);
+    }
+    
+    // Accounting 테이블 렌더링 (기본) - 최적화
+    function renderAccountingTable(balanceData) {
+      const tableBody = document.getElementById('category1TableBody');
+      tableBody.innerHTML = '';
+      
+      if (!balanceData?.length) return;
+      
+      const allItems = buildBalanceMap(
+        { balance: balanceData.map(item => ({ name: item.name, bank: item.bank, balances: {} })) },
+        balanceData.map(item => ({ name: item.name, bank: item.bank, balance: item.balance || 0 })),
+        []
+      );
+      
+      renderBalanceRows(tableBody, allItems);
+    }
+
+    // 페이지 로드 시 초기화 (최적화)
+    document.addEventListener('DOMContentLoaded', function() {
+      initializePage();
+      
+      // 날짜 옵션 초기화
+      initializeDateOptions();
+      
+      // 드롭다운 데이터 로드
+      initializeDropdowns();
+      
+      // 이벤트 리스너 설정
+      setupEventListeners();
+      
+      // Accounting 데이터 로드
+      loadAccountingData();
+    });
+    
+    // 날짜 옵션 초기화 (최적화)
+    function initializeDateOptions() {
+      updateYearOptions();
+      updateMonthOptions();
+      updateDayOptions();
+    }
+    
+    // 드롭다운 초기화 (최적화)
+    async function initializeDropdowns() {
+      await Promise.all([
+        loadDepositsForDropdown(),
+        loadTransfersForDropdown()
+      ]);
+    }
+    
+    // 이벤트 리스너 설정 (최적화)
+    function setupEventListeners() {
+      const yearSelect = document.getElementById('yearSelect');
+      const monthSelect = document.getElementById('monthSelect');
+      const daySelect = document.getElementById('daySelect');
+      
+      // 날짜 변경 시 일자 옵션 업데이트
+      yearSelect.addEventListener('change', updateDayOptions);
+      monthSelect.addEventListener('change', updateDayOptions);
+      
+      // 날짜 변경 시 데이터 자동 로드
+      [yearSelect, monthSelect, daySelect].forEach(select => {
+        select.addEventListener('change', loadAccountingData);
+      });
+    }
+  </script>
+</body>
+</html>
+
+
+

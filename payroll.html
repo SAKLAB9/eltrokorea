@@ -1,0 +1,2055 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>급여대장</title>
+  <!-- SortableJS (드래그 정렬) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <!-- PDF 생성을 위한 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #000;
+      line-height: 1.5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      margin: 20px;
+      padding: 0;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+
+    /* 메인 페이지 컨테이너 */
+    .page-container {
+      max-width: 297mm; /* A4 세로 사이즈 (가로로 돌린 것) */
+      margin: 20px auto;
+      padding: 0;
+    }
+
+    .page {
+      width: 297mm; /* A4 세로 사이즈 (가로로 돌린 것) */
+      min-height: 210mm; /* A4 가로 최소 높이 (가로로 돌린 것) */
+      margin: 0 auto 20px auto;
+      padding: 10mm 25mm 25mm 25mm;
+      box-sizing: border-box;
+      background: #fff;
+      position: relative;
+      border: 1px solid #ddd;
+    }
+
+    /* 상단 타이틀 */
+    .document-title {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    /* 헤더 정보 영역 */
+    .header-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 0 10px;
+    }
+
+    .company-name {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .date-selector {
+      display: flex;
+      align-items: center;
+      gap: 0px;
+    }
+
+    /* 년도 선택 드롭다운 */
+    .year-dropdown {
+      width: 60px;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 1rem;
+      color: inherit;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      cursor: pointer;
+      padding: 5px 3px;
+      text-align: right;
+    }
+
+    /* 월 선택 드롭다운 */
+    .month-dropdown {
+      width: 45px;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 1rem;
+      color: inherit;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      cursor: pointer;
+      padding: 5px 3px;
+      text-align: right;
+    }
+
+    /* 일 선택 드롭다운 */
+    .day-dropdown {
+      width: 45px;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 1rem;
+      color: inherit;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      cursor: pointer;
+      padding: 5px 3px;
+      text-align: right;
+    }
+
+    .year-dropdown:focus,
+    .month-dropdown:focus,
+    .day-dropdown:focus {
+      outline: none;
+      box-shadow: none;
+    }
+
+
+    /* 공통 버튼 스타일 */
+    .common-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #333;
+      border-radius: 3px;
+      transition: all 0.2s ease;
+    }
+
+    .common-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    .common-btn:active {
+      background: #e0e0e0;
+      transform: translateY(1px);
+    }
+
+    /* 급여대장 테이블 */
+    .payroll-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 0.8rem;
+      table-layout: fixed; /* 테이블 레이아웃 고정 */
+    }
+
+    .payroll-table th {
+      background-color: #f5f5f5;
+      padding: 8px 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-weight: bold;
+      font-size: 0.7rem;
+      color: #333;
+    }
+
+    .payroll-table td {
+      padding: 5px 8px;
+      border: 1px solid #ddd;
+      font-size: 0.7rem;
+    }
+
+    .payroll-table td input,
+    .payroll-table td input[type="text"],
+    .payroll-table td input[type="number"] {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      border-radius: 0;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      height: auto;
+      line-height: inherit;
+      font-size: inherit;
+      color: inherit;
+      text-align: inherit;
+      box-sizing: border-box;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .payroll-table td input:focus,
+    .payroll-table td input:active,
+    .payroll-table td input:hover {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+
+    /* 드래그 핸들 */
+    .drag-handle {
+      width: 18px;
+      height: 14px;
+      cursor: move;
+      font-size: 0.8rem;
+      display: inline-block;
+      text-align: center;
+      line-height: 14px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 2px;
+      margin-right: 2px;
+    }
+    
+    .drag-handle:hover {
+      background-color: #f0f0f0;
+    }
+
+    /* 숨기기 버튼 스타일 */
+    .hideButton {
+      background: #666666;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 2px 6px;
+      margin-left: 3px;
+      transition: background-color 0.2s;
+    }
+
+    .hideButton:hover {
+      background: #444444;
+    }
+
+    /* 숨겨진 행 스타일 */
+    .payroll-table tbody tr.hidden-row {
+      display: none;
+    }
+    
+    /* 버튼 컨테이너 */
+    .button-container {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    /* 테이블 정렬 - 더 구체적인 선택자 사용 */
+    .payroll-table thead th {
+      text-align: center;
+    }
+
+    /* 직급, 성명 가운데 정렬 */
+    .payroll-table tbody tr:not(.total-row) td:nth-child(2),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(3) {
+      text-align: center;
+    }
+
+    /* 숫자 컬럼들 오른쪽 정렬 */
+    .payroll-table tbody tr:not(.total-row) td:nth-child(4),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(5),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(6),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(7),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(8),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(9),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(10),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(11),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(12) {
+      text-align: right;
+    }
+
+    /* 합계행 정렬 - 4열부터 오른쪽 정렬 */
+    .payroll-table tbody tr.total-row td:nth-child(2),
+    .payroll-table tbody tr.total-row td:nth-child(3),
+    .payroll-table tbody tr.total-row td:nth-child(4),
+    .payroll-table tbody tr.total-row td:nth-child(5),
+    .payroll-table tbody tr.total-row td:nth-child(6),
+    .payroll-table tbody tr.total-row td:nth-child(7),
+    .payroll-table tbody tr.total-row td:nth-child(8),
+    .payroll-table tbody tr.total-row td:nth-child(9),
+    .payroll-table tbody tr.total-row td:nth-child(10),
+    .payroll-table tbody tr.total-row td:nth-child(11),
+    .payroll-table tbody tr.total-row td:nth-child(12) {
+      text-align: right;
+    }
+    .payroll-table tbody tr.total-row td:first-child {
+      text-align: center;
+    }
+
+    /* 입력 필드 내부 정렬 - 더 구체적인 선택자 */
+    .payroll-table tbody tr:not(.total-row) td:nth-child(2) input[type="text"],
+    .payroll-table tbody tr:not(.total-row) td:nth-child(3) input[type="text"] {
+      text-align: center;
+      display: block;
+      width: 100%;
+    }
+
+    .payroll-table tbody tr:not(.total-row) td:nth-child(4) input[type="text"],
+    .payroll-table tbody tr:not(.total-row) td:nth-child(5) input[type="text"],
+    .payroll-table tbody tr:not(.total-row) td:nth-child(6) input[type="text"],
+    .payroll-table tbody tr:not(.total-row) td:nth-child(7) input[type="text"],
+    .payroll-table tbody tr:not(.total-row) td:nth-child(8) input[type="text"],
+    .payroll-table tbody tr:not(.total-row) td:nth-child(9) input[type="text"],
+    .payroll-table tbody tr:not(.total-row) td:nth-child(10) input[type="text"],
+    .payroll-table tbody tr:not(.total-row) td:nth-child(11) input[type="text"],
+    .payroll-table tbody tr:not(.total-row) td:nth-child(12) input[type="text"] {
+      text-align: right;
+      display: block;
+      width: 100%;
+    }
+
+    /* 셀 자체 정렬 */
+    .payroll-table tbody tr:not(.total-row) td:nth-child(2),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(3) {
+      vertical-align: middle;
+    }
+
+    .payroll-table tbody tr:not(.total-row) td:nth-child(4),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(5),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(6),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(7),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(8),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(9),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(10),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(11),
+    .payroll-table tbody tr:not(.total-row) td:nth-child(12) {
+      vertical-align: middle;
+    }
+
+    /* 헤더와 합계행 디자인 통일 */
+    .payroll-table th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+      padding: 12px 8px;
+    }
+    
+    .total-row td {
+      background-color: #f8f9fa;
+      font-weight: bold;
+      padding: 12px 8px;
+    }
+
+    /* 소득세 열 왼쪽 테두리 두껍게 */
+    .payroll-table thead th#incomeTaxHeader,
+    .payroll-table tbody tr td.income-tax-column,
+    .payroll-table tbody tr.total-row td.income-tax-column {
+      border-left: 2px solid #333;
+    }
+
+    /* 차인지급액 열 왼쪽 테두리 두껍게 */
+    .payroll-table thead th#netPayHeader,
+    .payroll-table tbody tr td.net-pay-column,
+    .payroll-table tbody tr.total-row td.net-pay-column {
+      border-left: 2px solid #333;
+    }
+
+    /* 급여 지급 정보 스타일 */
+    .payment-info {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+    }
+
+    .payment-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+
+    .payment-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .employee-name {
+      font-weight: bold;
+      color: #333;
+      min-width: 60px;
+    }
+
+    .separator {
+      color: #666;
+      font-weight: bold;
+    }
+
+    .payment-detail {
+      flex: 1;
+      padding: 5px 10px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      font-size: 0.9rem;
+      background-color: #fff;
+    }
+
+    .payment-detail:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+
+    .payroll-table tbody tr.total-row {
+      background-color: #f8f9fa;
+    }
+
+    .payroll-table tbody tr.total-row td {
+      background-color: #f8f9fa;
+      font-weight: bold;
+    }
+
+
+    /* 하단 버튼 영역 전체 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 확장 손잡이 (서랍 손잡이처럼 위쪽에 튀어나옴) */
+    .expand-handle {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    /* 확장/축소 버튼 */
+    .expand-btn {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #333;
+      border-radius: 3px 3px 0 0;
+      font-weight: bold;
+      line-height: 1;
+      transition: all 0.2s ease;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    .expand-btn:hover {
+      background: #e8e8e8;
+      border-color: #999;
+      box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    }
+
+    .expand-btn.expanded {
+      transform: rotate(180deg);
+      background: #e0e0e0;
+    }
+
+    /* 기본 버튼 그룹 레이아웃 */
+    .main-button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+    
+    .left-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .right-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .main-button-group button {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      transition: all 0.2s ease;
+    }
+    
+    .main-button-group button:hover {
+      background: #f0f0f0;
+    }
+
+    .bonus-mode.selected {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+    }
+
+    .year-end-mode.selected {
+      background: #000;
+      color: #fff;
+      border-color: #000;
+    }
+
+    /* 상세 버튼 영역 */
+    .detail-button-area {
+      margin-top: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    /* 5열 값 입력 영역 스타일 */
+    .column5-input-section {
+      width: 100%;
+    }
+    
+    .column5-input-section h4 {
+      margin: 0 0 10px 0;
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .column5-input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+    
+    .column5-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .column5-input-row input {
+      flex: 1;
+    }
+    
+    .column5-input-row label {
+      min-width: 80px;
+      font-size: 0.85rem;
+      color: #666;
+      white-space: nowrap;
+    }
+    
+    .column5-input-row input {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      font-size: 0.85rem;
+      max-width: 150px;
+    }
+    
+    .column5-input-row input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 3px rgba(0, 123, 255, 0.3);
+    }
+    
+    .column5-save-btn {
+      margin-top: 10px;
+      padding: 8px 15px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+    .column5-save-btn:hover {
+      background: #0056b3;
+    }
+
+    /* 반응형 디자인 */
+    @media (max-width: 768px) {
+      .main-button-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 5px;
+      }
+      
+      .left-buttons, .right-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="page">
+      <!-- 문서 제목 -->
+      <div class="document-title">급여지급명세서</div>
+      
+      <!-- 회사명과 날짜 선택 영역 -->
+      <div class="header-info">
+        <div class="company-name">엘트로코리아(주)</div>
+        <div class="date-selector">
+          <select id="yearSelect" class="year-dropdown">
+            <!-- JavaScript로 동적 생성 -->
+          </select>
+          <select id="monthSelect" class="month-dropdown">
+            <!-- JavaScript로 동적 생성 -->
+          </select>
+          <select id="daySelect" class="day-dropdown">
+            <!-- JavaScript로 동적 생성 -->
+          </select>
+        </div>
+      </div>
+      
+
+      <!-- 급여지급명세서 테이블 -->
+      <table class="payroll-table">
+        <thead>
+          <tr>
+            <th style="width: 60px;">☰</th>
+            <th style="width: 60px;">직급</th>
+            <th style="width: 60px;">성명</th>
+            <th style="width: 60px;">월급여</th>
+            <th id="bonusHeader" style="width: 60px; display: none;">상여금</th>
+            <th id="incomeTaxHeader" style="width: 60px;">소득세</th>
+            <th style="width: 60px;">주민세</th>
+            <th id="yearEndHeader" style="width: 60px; display: none;">연말정산차감징수세액</th>
+            <th style="width: 60px;">연금보험료</th>
+            <th style="width: 60px;">건강보험료</th>
+            <th style="width: 60px;">요양보험료</th>
+            <th id="netPayHeader" style="width: 60px;">차인지급액</th>
+          </tr>
+        </thead>
+        <tbody id="payrollTableBody">
+          <!-- 데이터가 여기에 동적으로 추가됩니다 -->
+        </tbody>
+      </table>
+      
+      <!-- 급여 지급 정보 -->
+      <div class="payment-info" id="paymentInfo">
+        <!-- 동적으로 생성됨 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 하단 버튼 영역 -->
+  <div class="bottom-buttons">
+    <!-- 확장/축소 버튼 (서랍 손잡이처럼 위쪽에 튀어나옴) -->
+    <div class="expand-handle">
+      <button id="expandButton" type="button" class="expand-btn">▼</button>
+    </div>
+    
+    <!-- 기본 버튼 영역 (항상 보임) -->
+    <div class="main-button-group">
+      <div class="left-buttons">
+        <button type="button" onclick="addPayrollRow()" class="common-btn">행추가</button>
+        <button type="button" onclick="updatePayrolls()" class="common-btn">Update</button>
+        <button type="button" onclick="yearEndSettlement()" id="yearEndBtn" class="common-btn year-end-mode">연말정산(2)</button>
+        <button type="button" onclick="bonusPayroll()" id="bonusBtn" class="common-btn bonus-mode">상여금(6,12)</button>
+      </div>
+      <div class="right-buttons">
+        <button type="button" onclick="saveAllPayrolls()" class="common-btn">Save</button>
+        <button type="button" id="pdfBtn" class="common-btn">PDF</button>
+        <button type="button" onclick="location.href='eltrokorea9.html'" class="common-btn">Home</button>
+        <button type="button" onclick="location.href='calendar.html'" class="common-btn">Calendar</button>
+      </div>
+    </div>
+
+    <!-- 확장 가능한 상세 버튼 영역 (기본적으로 숨김) -->
+    <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+      <!-- 5열(소득세) 값 입력 영역 -->
+      <div class="column5-input-section">
+        <div id="column5InputContainer" class="column5-input-container">
+          <!-- 동적으로 생성됨 -->
+        </div>
+        <button type="button" id="column5SaveBtn" class="column5-save-btn">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 이름과 인덱스로 저장된 값 찾기 (공통 헬퍼)
+    function findValueByNameOrIndex(savedValues, name, index, fallbackValue = '') {
+      if (name && savedValues.hasOwnProperty(name)) {
+        return savedValues[name];
+      }
+      if (fallbackValue) {
+        return fallbackValue;
+      }
+      // 인덱스 기반으로 시도
+      const savedKeys = Object.keys(savedValues);
+      if (savedKeys.length > index) {
+        return savedValues[savedKeys[index]] || '';
+      }
+      return '';
+    }
+
+    // 5열 입력 필드 생성/업데이트 함수 (전역 함수로 선언)
+    function updateColumn5Inputs() {
+        const container = document.getElementById('column5InputContainer');
+        if (!container) return;
+        
+        // 화면에 보이는 행들 가져오기 (합계 행 제외)
+        const rows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
+        container.innerHTML = '';
+        
+        if (rows.length === 0) {
+          container.innerHTML = '<p style="text-align: center; color: #666; margin: 0;">행이 없습니다.</p>';
+          return;
+        }
+        
+        // localStorage에서 저장된 값 불러오기
+        const savedData = localStorage.getItem('payrollColumn5Values');
+        const savedValues = savedData ? JSON.parse(savedData) : {};
+        const savedBonusData = localStorage.getItem('payrollColumn5BonusValues');
+        const savedBonusValues = savedBonusData ? JSON.parse(savedBonusData) : {};
+        
+        // 각 행에 대해 입력 필드 생성 (일반 소득세 + 상여금 소득세)
+        rows.forEach((row, index) => {
+          const nameCell = row.querySelector('td:nth-child(3) input');
+          const column5Cell = row.querySelector('td:nth-child(5) input');
+          const name = nameCell ? nameCell.value.trim() : `행 ${index + 1}`;
+          const currentValue = column5Cell ? column5Cell.value.replace(/,/g, '').trim() : '';
+          
+          const displayValue = findValueByNameOrIndex(savedValues, name, index, currentValue);
+          const displayBonusValue = findValueByNameOrIndex(savedBonusValues, name, index);
+          
+          const inputRow = document.createElement('div');
+          inputRow.className = 'column5-input-row';
+          inputRow.innerHTML = `
+            <label>${name || `행 ${index + 1}`}:</label>
+            <input type="text" data-row-index="${index}" data-row-name="${name}" data-input-type="normal" value="${displayValue}" placeholder="소득세 값 입력">
+            <input type="text" data-row-index="${index}" data-row-name="${name}" data-input-type="bonus" value="${displayBonusValue}" placeholder="상여금 소득세 값 입력">
+          `;
+          container.appendChild(inputRow);
+        });
+    }
+    
+    // 값 적용 헬퍼 함수
+    function applyValueToCell(cell, value) {
+      if (!value || value === '') return false;
+      
+      const rawValue = value.toString().replace(/,/g, '').trim();
+      const numValue = parseFloat(rawValue);
+      
+      if (isNaN(numValue)) return false;
+      
+      const formattedValue = formatNumber(numValue);
+      const currentValue = cell.value.replace(/,/g, '').trim();
+      
+      if (currentValue !== rawValue) {
+        cell.value = formattedValue;
+        cell.dispatchEvent(new Event('input', { bubbles: true }));
+        return true;
+      }
+      return false;
+    }
+
+    // 상여금 열 표시 여부 확인 헬퍼 함수
+    function hasBonusColumn() {
+      const bonusHeader = document.getElementById('bonusHeader');
+      return bonusHeader && bonusHeader.style.display !== 'none';
+    }
+
+    // 저장된 5열 값을 테이블에 적용하는 함수 (전역 함수)
+    function applyColumn5Values() {
+      // 상여금 모드 확인
+      const bonusHeader = document.getElementById('bonusHeader');
+      const hasBonusColumn = bonusHeader && bonusHeader.style.display !== 'none';
+      
+      // 소득세 열의 인덱스 계산 (헤더 기준)
+      const incomeTaxHeader = document.getElementById('incomeTaxHeader');
+      if (!incomeTaxHeader) return;
+      
+      const headerRow = incomeTaxHeader.closest('tr');
+      const headerCells = Array.from(headerRow.querySelectorAll('th'));
+      const incomeTaxIndex = headerCells.indexOf(incomeTaxHeader) + 1;
+      
+      // 저장할 데이터 키와 값 결정
+      const storageKey = hasBonusColumn ? 'payrollColumn5BonusValues' : 'payrollColumn5Values';
+      const savedData = localStorage.getItem(storageKey);
+      if (!savedData) return;
+      
+      const savedValues = JSON.parse(savedData);
+      const rows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
+      if (rows.length === 0) return;
+      
+      // 공통 로직으로 값 적용
+      rows.forEach((row, index) => {
+        const nameCell = row.querySelector('td:nth-child(3) input');
+        const incomeTaxCell = row.querySelector(`td:nth-child(${incomeTaxIndex}) input`);
+        
+        if (!nameCell || !incomeTaxCell) return;
+        
+        const name = nameCell.value.trim();
+        const valueToApply = findValueByNameOrIndex(savedValues, name, index);
+        
+        if (valueToApply) {
+          applyValueToCell(incomeTaxCell, valueToApply);
+        }
+      });
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      const expandButton = document.getElementById('expandButton');
+      const detailArea = document.getElementById('detailButtonArea');
+      const yearSelect = document.getElementById('yearSelect');
+      const monthSelect = document.getElementById('monthSelect');
+      const daySelect = document.getElementById('daySelect');
+      
+      // 확장 버튼 이벤트
+      expandButton.addEventListener('click', function() {
+        const isExpanded = detailArea.style.display !== 'none';
+        
+        detailArea.style.display = isExpanded ? 'none' : 'flex';
+        expandButton.classList.toggle('expanded', !isExpanded);
+        expandButton.textContent = isExpanded ? '▼' : '▲';
+        
+        // 확장 시 5열 입력 필드 생성/업데이트
+        if (!isExpanded) {
+          updateColumn5Inputs();
+        }
+      });
+      
+      // 5열 값 저장 함수
+      function saveColumn5Values() {
+        const inputs = document.querySelectorAll('#column5InputContainer input');
+        const values = {};
+        const bonusValues = {};
+        
+        inputs.forEach(input => {
+          const rowName = input.getAttribute('data-row-name');
+          const inputType = input.getAttribute('data-input-type');
+          const value = input.value.trim();
+          if (rowName && value) {
+            // 숫자만 추출하여 저장 (콤마 제거)
+            const numValue = value.replace(/,/g, '');
+            if (inputType === 'bonus') {
+              bonusValues[rowName] = numValue;
+            } else {
+              values[rowName] = numValue;
+            }
+          }
+        });
+        
+        localStorage.setItem('payrollColumn5Values', JSON.stringify(values));
+        localStorage.setItem('payrollColumn5BonusValues', JSON.stringify(bonusValues));
+        alert('5열 값이 저장되었습니다.');
+        
+        // 저장된 값을 실제 테이블에 적용 (저장 버튼은 항상 normal 값만 5열에 적용)
+        setTimeout(() => {
+          // 상여금 모드가 아닐 때만 normal 값 적용 (5열)
+          const bonusHeader = document.getElementById('bonusHeader');
+          const hasBonusColumn = bonusHeader && bonusHeader.style.display !== 'none';
+          
+          if (!hasBonusColumn) {
+            applyColumn5Values();
+          }
+        }, 100);
+      }
+      
+      // 저장 버튼 이벤트
+      const column5SaveBtn = document.getElementById('column5SaveBtn');
+      if (column5SaveBtn) {
+        column5SaveBtn.addEventListener('click', saveColumn5Values);
+      }
+      
+      // PDF 버튼 이벤트
+      document.getElementById('pdfBtn').addEventListener('click', generatePDF);
+      
+      // 년도와 월 옵션 동적 생성
+      updateYearOptions(yearSelect);
+      updateMonthOptions(monthSelect);
+      
+      // 년도/월 변경 시 일자 옵션 업데이트
+      yearSelect.addEventListener('change', () => updateDayOptions(yearSelect, monthSelect, daySelect));
+      monthSelect.addEventListener('change', () => updateDayOptions(yearSelect, monthSelect, daySelect));
+      
+      // 현재 날짜로 초기화
+      const today = new Date();
+      monthSelect.value = today.getMonth() + 1;
+      updateDayOptions(yearSelect, monthSelect, daySelect);
+      daySelect.value = today.getDate();
+      
+      // 서버에서 데이터 로드
+      loadPayrollData();
+    });
+
+    // 일자 옵션 업데이트 함수
+    function updateDayOptions(yearSelect, monthSelect, daySelect) {
+      const year = parseInt(yearSelect.value);
+      const month = parseInt(monthSelect.value);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      
+      // 기존 옵션 제거
+      daySelect.innerHTML = '';
+      
+      // 새 옵션 추가
+      for (let day = 1; day <= daysInMonth; day++) {
+        const option = document.createElement('option');
+        option.value = day;
+        option.textContent = day + '일';
+        daySelect.appendChild(option);
+      }
+    }
+
+    // 년도 옵션 동적 생성 함수
+    function updateYearOptions(yearSelect) {
+      const currentYear = new Date().getFullYear();
+      
+      // 기존 옵션 제거
+      yearSelect.innerHTML = '';
+      
+      // 현재 년도부터 다음 다음해까지 3개 년도 생성
+      for (let i = 0; i < 3; i++) {
+        const year = currentYear + i;
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = `${year}년`;
+        yearSelect.appendChild(option);
+      }
+      
+      // 현재 년도를 기본값으로 설정
+      yearSelect.value = currentYear;
+    }
+
+    // 월 옵션 동적 생성 함수
+    function updateMonthOptions(monthSelect) {
+      const currentMonth = new Date().getMonth() + 1;
+      
+      // 기존 옵션 제거
+      monthSelect.innerHTML = '';
+      
+      // 1월부터 12월까지 옵션 생성
+      for (let month = 1; month <= 12; month++) {
+        const option = document.createElement('option');
+        option.value = month;
+        option.textContent = `${month}월`;
+        monthSelect.appendChild(option);
+      }
+      
+      // 현재 월을 기본값으로 설정
+      monthSelect.value = currentMonth;
+    }
+
+    // 급여 데이터 불러오기
+    async function loadPayrollData() {
+      try {
+        const response = await fetch('/api/transfers');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        // payrolls 섹션에서 데이터 로드
+        const payrollData = data.payrolls || [];
+        renderPayrollTable(payrollData);
+        // renderPayrollTable 내부에서 updatePaymentInfoFromTable()이 호출됨
+        // 하지만 accountNumber가 있는 경우를 위해 renderPaymentInfo도 호출
+        renderPaymentInfo(payrollData);
+        // 테이블 렌더링 후 다시 업데이트하여 모든 이름에 대해 칸이 생성되도록 함
+        setTimeout(() => {
+          updatePaymentInfoFromTable();
+        }, 150);
+      } catch (error) {
+        // 오류 시 빈 테이블로 시작
+        renderPayrollTable([]);
+        renderPaymentInfo([]);
+      }
+    }
+
+    // 급여 지급 정보 렌더링 함수 (accountNumber가 있는 경우 초기값 설정)
+    function renderPaymentInfo(payrolls) {
+      const paymentInfoContainer = document.getElementById('paymentInfo');
+      if (!paymentInfoContainer) return;
+      
+      // 기존 항목들이 있으면 건드리지 않음 (updatePaymentInfoFromTable에서 관리)
+      if (paymentInfoContainer.querySelectorAll('.payment-item').length > 0) {
+        // accountNumber가 있는 경우만 기존 값 업데이트
+        payrolls.forEach(payroll => {
+          if (payroll.name && payroll.accountNumber) {
+            const existingItem = Array.from(paymentInfoContainer.querySelectorAll('.payment-item')).find(item => {
+              const nameSpan = item.querySelector('.employee-name');
+              return nameSpan && nameSpan.textContent.trim() === payroll.name;
+            });
+            if (existingItem) {
+              const accountInput = existingItem.querySelector('.payment-detail');
+              if (accountInput && !accountInput.value.trim()) {
+                accountInput.value = payroll.accountNumber;
+              }
+            }
+          }
+        });
+        return;
+      }
+      
+      // 기존 항목이 없으면 accountNumber가 있는 것만 표시 (초기 로드 시)
+      if (payrolls.length === 0) {
+        paymentInfoContainer.innerHTML = '<p style="text-align: center; color: #666; margin: 0;">급여 정보가 없습니다.</p>';
+        return;
+      }
+      
+      payrolls.forEach(payroll => {
+        if (payroll.name && payroll.accountNumber) {
+          const paymentItem = document.createElement('div');
+          paymentItem.className = 'payment-item';
+          paymentItem.innerHTML = `
+            <span class="employee-name">${payroll.name}</span>
+            <input type="text" class="payment-detail" value="${payroll.accountNumber}" data-employee-name="${payroll.name}">
+          `;
+          paymentInfoContainer.appendChild(paymentItem);
+        }
+      });
+    }
+
+    // 테이블의 모든 행을 기반으로 급여 지급 정보 업데이트
+    function updatePaymentInfoFromTable() {
+      const paymentInfoContainer = document.getElementById('paymentInfo');
+      if (!paymentInfoContainer) return;
+      
+      // 기존 계좌번호 정보를 먼저 저장 (innerHTML을 비우기 전에)
+      const existingAccounts = new Map();
+      const paymentItems = paymentInfoContainer.querySelectorAll('.payment-item');
+      paymentItems.forEach(item => {
+        const nameSpan = item.querySelector('.employee-name');
+        const accountInput = item.querySelector('.payment-detail');
+        if (nameSpan && accountInput) {
+          const name = nameSpan.textContent.trim();
+          const account = accountInput.value.trim();
+          if (name && account) {
+            existingAccounts.set(name, account);
+          }
+        }
+      });
+      
+      const rows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
+      const seenNames = new Set();
+      paymentInfoContainer.innerHTML = '';
+      
+      // 테이블 순서대로 한 번만 순회하여 정보 수집 및 표시
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        if (inputs.length >= 10) {
+          const name = inputs[1].value.trim();
+          if (name && !seenNames.has(name)) {
+            seenNames.add(name);
+            // 기존 계좌번호를 우선 사용, 없으면 빈 문자열
+            const accountNumber = existingAccounts.get(name) || '';
+            
+            const paymentItem = document.createElement('div');
+            paymentItem.className = 'payment-item';
+            paymentItem.innerHTML = `
+              <span class="employee-name">${name}</span>
+              <input type="text" class="payment-detail" value="${accountNumber}" data-employee-name="${name}">
+            `;
+            paymentInfoContainer.appendChild(paymentItem);
+          }
+        }
+      });
+      
+      if (seenNames.size === 0) {
+        paymentInfoContainer.innerHTML = '<p style="text-align: center; color: #666; margin: 0;">급여 정보가 없습니다.</p>';
+      }
+    }
+
+    // 급여 행 추가
+    function addPayrollRow() {
+      const tableBody = document.getElementById('payrollTableBody');
+      const rowCount = tableBody.children.length;
+      const newId = 1000 + rowCount;
+      
+      const row = document.createElement('tr');
+      row.dataset.payrollId = newId;
+      row.innerHTML = createPayrollRowHTML({});
+      tableBody.appendChild(row);
+      
+      // 새 행으로 스크롤
+      setTimeout(() => {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const firstInput = row.querySelector('input');
+        if (firstInput) {
+          firstInput.focus();
+        }
+        initializeSortable();
+        // 합계 행 업데이트
+        updateTotalRow();
+        
+        // 확장 영역이 열려있으면 5열 입력 필드 업데이트
+        const detailArea = document.getElementById('detailButtonArea');
+        if (detailArea && detailArea.style.display !== 'none') {
+          updateColumn5Inputs();
+        }
+        
+        // 상여금 열이 표시되어 있으면 새 행의 상여금 열도 표시
+        if (hasBonusColumn()) {
+          const bonusCell = row.querySelector('td.bonus-column');
+          if (bonusCell) {
+            bonusCell.style.display = 'table-cell';
+            const bonusInput = bonusCell.querySelector('input');
+            const monthlySalaryIndex = getColumnIndex('월급여');
+            const monthlySalaryInput = monthlySalaryIndex ? row.querySelector(`td:nth-child(${monthlySalaryIndex}) input`) : null;
+            if (bonusInput && monthlySalaryInput) {
+              const monthlySalary = parseFloat(monthlySalaryInput.value.replace(/,/g, '')) || 0;
+              bonusInput.value = formatNumber(monthlySalary);
+            }
+          }
+        }
+        
+        // 연말정산 열이 표시되어 있으면 새 행의 연말정산 열도 표시
+        const yearEndHeader = document.getElementById('yearEndHeader');
+        if (yearEndHeader && yearEndHeader.style.display !== 'none') {
+          const yearEndCell = row.querySelector('td.year-end-column');
+          if (yearEndCell) {
+            yearEndCell.style.display = 'table-cell';
+          }
+        }
+        
+        // 급여 지급 정보 업데이트 (새 행 추가 후)
+        updatePaymentInfoFromTable();
+      }, 100);
+    }
+
+    // 상여금 모드 전역 변수
+    let isBonusMode = false;
+    // 연말정산 모드 전역 변수
+    let isYearEndMode = false;
+
+    // 상여금 버튼 (6월, 12월)
+    function bonusPayroll() {
+      isBonusMode = !isBonusMode;
+      const bonusBtn = document.getElementById('bonusBtn');
+      const bonusHeader = document.getElementById('bonusHeader');
+      const rows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
+      
+      if (isBonusMode) {
+        // 상여금 모드 ON - 버튼 블랙
+        bonusBtn.classList.add('selected');
+        
+        // 상여금 열 표시
+        bonusHeader.style.display = 'table-cell';
+        
+        // 각 행에 상여금 열 표시 및 값 설정
+        const monthlySalaryIndex = getColumnIndex('월급여');
+        rows.forEach(row => {
+          const bonusCell = row.querySelector('td.bonus-column');
+          if (bonusCell) {
+            bonusCell.style.display = 'table-cell';
+            const bonusInput = bonusCell.querySelector('input');
+            if (bonusInput && monthlySalaryIndex) {
+              const monthlySalaryInput = row.querySelector(`td:nth-child(${monthlySalaryIndex}) input`);
+              if (monthlySalaryInput) {
+                const monthlySalary = parseFloat(monthlySalaryInput.value.replace(/,/g, '')) || 0;
+                bonusInput.value = formatNumber(monthlySalary);
+              }
+            }
+          }
+        });
+      } else {
+        // 상여금 모드 OFF - 버튼 원래대로
+        bonusBtn.classList.remove('selected');
+        
+        // 상여금 열 숨기기
+        bonusHeader.style.display = 'none';
+        
+        // 각 행에서 상여금 열 숨기기
+        rows.forEach(row => {
+          const bonusCell = row.querySelector('td.bonus-column');
+          if (bonusCell) {
+            bonusCell.style.display = 'none';
+          }
+        });
+      }
+      
+      // 합계 행 업데이트 (공통 로직)
+      const existingTotalRow = document.querySelector('.total-row');
+      if (existingTotalRow) {
+        existingTotalRow.remove();
+      }
+      setTimeout(() => {
+        updateTotalRow();
+        applyColumn5Values();
+      }, 50);
+    }
+
+
+    // 차인지급액 재계산 헬퍼 함수
+    function recalculateAllNetPay() {
+      const rows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
+      rows.forEach(row => {
+        const netPayInput = row.querySelector('td.net-pay-column input');
+        if (netPayInput) {
+          calculateNetPay(netPayInput);
+        }
+      });
+    }
+
+    // 연말정산 버튼 (2월)
+    function yearEndSettlement() {
+      isYearEndMode = !isYearEndMode;
+      const yearEndBtn = document.getElementById('yearEndBtn');
+      const yearEndHeader = document.getElementById('yearEndHeader');
+      const rows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
+      const displayValue = isYearEndMode ? 'table-cell' : 'none';
+      
+      // 버튼 상태 변경
+      if (isYearEndMode) {
+        yearEndBtn.classList.add('selected');
+      } else {
+        yearEndBtn.classList.remove('selected');
+      }
+      
+      // 연말정산 열 표시/숨기기
+      yearEndHeader.style.display = displayValue;
+      
+      // 각 행에 연말정산 열 표시/숨기기
+      rows.forEach(row => {
+        const yearEndCell = row.querySelector('td.year-end-column');
+        if (yearEndCell) {
+          yearEndCell.style.display = displayValue;
+        }
+      });
+      
+      // 합계 행 업데이트 및 차인지급액 재계산 (공통 로직)
+      const existingTotalRow = document.querySelector('.total-row');
+      if (existingTotalRow) {
+        existingTotalRow.remove();
+      }
+      setTimeout(() => {
+        updateTotalRow();
+        recalculateAllNetPay();
+      }, 50);
+    }
+
+    // Update 버튼 - transfer.json의 payrolls에 저장
+    async function updatePayrolls() {
+      try {
+        const rows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
+        const payrollItems = [];
+        
+        // 월급여 열 인덱스는 한 번만 계산 (모든 행에서 동일)
+        const monthlySalaryIndex = getColumnIndex('월급여');
+        const isBonusMode = hasBonusColumn();
+        
+        // 모든 행에서 데이터 수집 (현재 화면 순서대로)
+        rows.forEach((row, index) => {
+          const inputs = row.querySelectorAll('input');
+          if (inputs.length < 10) return;
+          
+          const position = inputs[0].value.trim();
+          const name = inputs[1].value.trim();
+          const accountNumber = getAccountNumberForEmployee(name);
+          
+          // 월급여 값 가져오기
+          const monthlySalaryInput = monthlySalaryIndex ? row.querySelector(`td:nth-child(${monthlySalaryIndex}) input`) : null;
+          const monthlySalary = parseFloat(monthlySalaryInput ? monthlySalaryInput.value.replace(/,/g, '') : inputs[2].value.replace(/,/g, '')) || 0;
+          
+          // 상여금 값 가져오기
+          let bonus = 0;
+          if (isBonusMode) {
+            const bonusInput = row.querySelector('td.bonus-column input');
+            if (bonusInput) {
+              bonus = parseFloat(bonusInput.value.replace(/,/g, '')) || 0;
+            }
+          }
+          
+          payrollItems.push({
+            id: index + 1,
+            position: position,
+            name: name,
+            monthlySalary: monthlySalary,
+            bonus: bonus,
+            accountNumber: accountNumber
+          });
+        });
+        
+        if (payrollItems.length === 0) {
+          alert('저장할 데이터가 없습니다.');
+          return;
+        }
+        
+        // transfer.json의 payrolls에 저장
+        const response = await fetch('/api/transfers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            action: 'reorder',
+            payrolls: payrollItems 
+          })
+        });
+        
+        if (response.ok) {
+          alert('Payroll 데이터가 transfer.json에 저장되었습니다! (순서 및 ID 업데이트)');
+          // 데이터 다시 로드
+          loadPayrollData();
+        } else {
+          alert('데이터 저장에 실패했습니다.');
+        }
+        
+      } catch (error) {
+        alert('데이터 저장 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 직원명으로 계좌번호 찾기
+    function getAccountNumberForEmployee(employeeName) {
+      const paymentItems = document.querySelectorAll('.payment-item');
+      for (const item of paymentItems) {
+        const nameSpan = item.querySelector('.employee-name');
+        const accountInput = item.querySelector('.payment-detail');
+        if (nameSpan && accountInput && nameSpan.textContent.trim() === employeeName) {
+          return accountInput.value.trim();
+        }
+      }
+      return '';
+    }
+
+    // 급여 데이터 저장/업데이트
+    async function savePayroll(payrollData) {
+      try {
+        const response = await fetch('/api/transfers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payrollData)
+        });
+        
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    // 급여 행 삭제
+    async function removePayrollRow(button) {
+      const row = button.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      
+      if (inputs.length >= 10) {
+        const position = inputs[0].value.trim();
+        const name = inputs[1].value.trim();
+        
+        // 삭제 확인
+        const confirmMessage = name 
+          ? `"${name}"의 급여 정보를 삭제하시겠습니까?`
+          : '이 행을 삭제하시겠습니까?';
+        
+        if (!confirm(confirmMessage)) {
+          return;
+        }
+        
+        // position과 name이 있으면 서버에서도 삭제 시도
+        if (position && name) {
+          await deletePayrollByPositionAndName(position, name);
+        }
+      }
+      
+      // 화면에서 행 제거
+      row.remove();
+      
+      // 합계 행 업데이트
+      updateTotalRow();
+      
+      // 확장 영역이 열려있으면 5열 입력 필드 업데이트
+      const detailArea = document.getElementById('detailButtonArea');
+      if (detailArea?.style.display !== 'none') {
+        updateColumn5Inputs();
+      }
+      
+      // 급여 지급 정보 업데이트 (행 삭제 후)
+      updatePaymentInfoFromTable();
+    }
+
+    // 급여 데이터 삭제 (position과 name 기반)
+    async function deletePayrollByPositionAndName(position, name) {
+      try {
+        const response = await fetch('/api/transfers', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            section: 'payrolls',
+            position: position,
+            name: name
+          })
+        });
+        
+        if (response.ok) {
+          return await response.json();
+        } else {
+          const error = await response.json();
+          throw new Error(error.error || '삭제 실패');
+        }
+      } catch (error) {
+        return null;
+      }
+    }
+
+      // 테이블 렌더링
+    function renderPayrollTable(payrolls) {
+      const tableBody = document.getElementById('payrollTableBody');
+      tableBody.innerHTML = '';
+      
+      if (payrolls.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="11" style="text-align: center; padding: 20px; color: #666;">데이터가 없습니다. 행추가 버튼을 클릭하여 급여 정보를 추가하세요.</td>';
+        tableBody.appendChild(row);
+      } else {
+        payrolls.forEach(payroll => {
+          const row = document.createElement('tr');
+          row.dataset.payrollId = payroll.id;
+          row.innerHTML = createPayrollRowHTML(payroll);
+          tableBody.appendChild(row);
+        });
+        
+        // 합계 행 추가
+        addTotalRow();
+      }
+      
+      initializeSortable();
+      
+      // 테이블 렌더링 후 저장된 5열(소득세) 값 적용
+      setTimeout(() => {
+        applyColumn5Values();
+      }, 100);
+      
+      // 테이블 렌더링 후 급여 지급 정보 업데이트
+      updatePaymentInfoFromTable();
+    }
+
+    // 헤더를 기준으로 열 인덱스를 동적으로 찾는 함수
+    function getColumnIndex(headerText) {
+      const headerRow = document.querySelector('thead tr');
+      if (!headerRow) return null;
+      
+      const headers = Array.from(headerRow.querySelectorAll('th'));
+      const header = headers.find(th => {
+        const text = th.textContent.trim();
+        return text.includes(headerText) || th.id === headerText;
+      });
+      
+      if (!header) return null;
+      return headers.indexOf(header) + 1; // nth-child는 1부터 시작
+    }
+    
+    // 합계 행 추가
+    function addTotalRow() {
+      const tableBody = document.getElementById('payrollTableBody');
+      if (!tableBody) return;
+      
+      const rows = tableBody.querySelectorAll('tr:not(.total-row)');
+      
+      // 기존 합계 행 제거
+      const existingTotalRow = tableBody.querySelector('.total-row');
+      if (existingTotalRow) {
+        existingTotalRow.remove();
+      }
+      
+      // 헤더를 기준으로 각 열의 인덱스 계산
+      const monthlySalaryIndex = getColumnIndex('월급여');
+      const bonusHeader = document.getElementById('bonusHeader');
+      const hasBonusColumn = bonusHeader && bonusHeader.style.display !== 'none';
+      const bonusIndex = hasBonusColumn ? getColumnIndex('bonusHeader') : null;
+      const incomeTaxIndex = getColumnIndex('incomeTaxHeader') || getColumnIndex('소득세');
+      const residentTaxIndex = getColumnIndex('주민세');
+      const yearEndHeader = document.getElementById('yearEndHeader');
+      const hasYearEndColumn = yearEndHeader && yearEndHeader.style.display !== 'none';
+      const yearEndIndex = hasYearEndColumn ? getColumnIndex('yearEndHeader') : null;
+      const pensionIndex = getColumnIndex('연금보험료');
+      const healthIndex = getColumnIndex('건강보험료');
+      const nursingIndex = getColumnIndex('요양보험료');
+      const netPayIndex = getColumnIndex('차인지급액');
+      
+      // 합계 계산
+      let totalMonthlySalary = 0;
+      let totalBonus = 0;
+      let totalIncomeTax = 0;
+      let totalResidentTax = 0;
+      let totalYearEndDeduction = 0;
+      let totalPensionInsurance = 0;
+      let totalHealthInsurance = 0;
+      let totalNursingInsurance = 0;
+      let totalNetPay = 0;
+      
+      // 합계 계산 헬퍼 함수
+      const getColumnValue = (row, index) => {
+        if (!index) return 0;
+        const input = row.querySelector(`td:nth-child(${index}) input`);
+        return input ? parseFloat(input.value.replace(/,/g, '')) || 0 : 0;
+      };
+      
+      rows.forEach(row => {
+        totalMonthlySalary += getColumnValue(row, monthlySalaryIndex);
+        if (hasBonusColumn && bonusIndex) {
+          totalBonus += getColumnValue(row, bonusIndex);
+        }
+        totalIncomeTax += getColumnValue(row, incomeTaxIndex);
+        totalResidentTax += getColumnValue(row, residentTaxIndex);
+        if (hasYearEndColumn && yearEndIndex) {
+          totalYearEndDeduction += getColumnValue(row, yearEndIndex);
+        }
+        totalPensionInsurance += getColumnValue(row, pensionIndex);
+        totalHealthInsurance += getColumnValue(row, healthIndex);
+        totalNursingInsurance += getColumnValue(row, nursingIndex);
+        totalNetPay += getColumnValue(row, netPayIndex);
+      });
+      
+      // 합계 행 생성
+      const totalRow = document.createElement('tr');
+      totalRow.className = 'total-row';
+      
+      // 합계 행 HTML 생성 (헤더 순서대로)
+      const headerRow = document.querySelector('thead tr');
+      if (!headerRow) return;
+      
+      const headers = Array.from(headerRow.querySelectorAll('th'));
+      let totalRowHTML = '<td style="text-align: center;">합계</td>'; // 첫 번째 열: 합계
+      
+      // 헤더 순서대로 각 열의 합계 값을 추가
+      headers.forEach((header, index) => {
+        if (index === 0) return; // 첫 번째 열은 이미 추가됨
+        
+        const headerText = header.textContent.trim();
+        const headerId = header.id;
+        
+        if (headerText === '직급' || headerText === '성명') {
+          totalRowHTML += '<td></td>';
+        } else if (headerText === '월급여' || headerId === 'monthlySalaryHeader') {
+          totalRowHTML += `<td style="text-align: right;">${formatNumber(totalMonthlySalary)}</td>`;
+        } else if (headerId === 'bonusHeader' || headerText === '상여금') {
+          if (hasBonusColumn) {
+            totalRowHTML += `<td style="text-align: right;">${formatNumber(totalBonus)}</td>`;
+          }
+        } else if (headerId === 'incomeTaxHeader' || headerText === '소득세') {
+          totalRowHTML += `<td class="income-tax-column" style="text-align: right;">${formatNumber(totalIncomeTax)}</td>`;
+        } else if (headerText === '주민세') {
+          totalRowHTML += `<td style="text-align: right;">${formatNumber(totalResidentTax)}</td>`;
+        } else if (headerId === 'yearEndHeader' || headerText === '연말정산차감징수세액') {
+          if (hasYearEndColumn) {
+            totalRowHTML += `<td style="text-align: right;">${formatNumber(totalYearEndDeduction)}</td>`;
+          }
+        } else if (headerText === '연금보험료') {
+          totalRowHTML += `<td style="text-align: right;">${formatNumber(totalPensionInsurance)}</td>`;
+        } else if (headerText === '건강보험료') {
+          totalRowHTML += `<td style="text-align: right;">${formatNumber(totalHealthInsurance)}</td>`;
+        } else if (headerText === '요양보험료') {
+          totalRowHTML += `<td style="text-align: right;">${formatNumber(totalNursingInsurance)}</td>`;
+        } else if (headerText === '차인지급액' || headerId === 'netPayHeader') {
+          totalRowHTML += `<td class="net-pay-column" style="text-align: right;">${formatNumber(totalNetPay)}</td>`;
+        } else {
+          totalRowHTML += '<td></td>';
+        }
+      });
+      
+      totalRow.innerHTML = totalRowHTML;
+      
+      // 합계 행이 제대로 추가되는지 확인
+      if (rows.length === 0) {
+        // 데이터가 없으면 합계 행을 추가하지 않음
+        return;
+      }
+      
+      tableBody.appendChild(totalRow);
+    }
+
+    // 합계 행 업데이트 (입력 필드 변경 시)
+    function updateTotalRow() {
+      // 기존 합계 행 제거
+      const existingTotalRow = document.querySelector('.total-row');
+      if (existingTotalRow) {
+        existingTotalRow.remove();
+      }
+      
+      // 새로운 합계 행 추가
+      addTotalRow();
+    }
+
+    // 급여 행 HTML 생성
+    function createPayrollRowHTML(payroll) {
+      const inputStyle = "width: 100%; border: none; padding: 0; margin: 0; text-align: inherit;";
+      const buttonStyle = "font-size: 0.7rem; padding: 1px 2px; cursor: pointer; margin: 0; display: inline-block; width: 18px; height: 14px; border: 1px solid #ccc; background: #fff; color: #000; border-radius: 2px;";
+      
+      return `
+        <td>
+          <div class="button-container">
+            <div class="drag-handle">☰</div>
+            <button type="button" onclick="removePayrollRow(this)" class="deleteButton" style="${buttonStyle}">X</button>
+            <button type="button" onclick="hidePayrollRow(this)" class="hideButton" style="${buttonStyle}">H</button>
+          </div>
+        </td>
+        <td style="text-align: center;"><input type="text" value="${payroll.position || ''}" style="${inputStyle}" onkeydown="handleEnterKey(event, this)"></td>
+        <td style="text-align: center;"><input type="text" value="${payroll.name || ''}" style="${inputStyle}" onkeydown="handleEnterKey(event, this)" oninput="updatePaymentInfoFromTable()"></td>
+        <td style="text-align: right;"><input type="text" value="${formatNumber(payroll.monthlySalary || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow(); updateBonusColumn(this);" onkeydown="handleEnterKey(event, this)"></td>
+        <td class="bonus-column" style="text-align: right; display: none;"><input type="text" value="${formatNumber(payroll.bonus || payroll.monthlySalary || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
+        <td class="income-tax-column" style="text-align: right;"><input type="text" value="${formatNumber(payroll.incomeTax || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateResidentTax(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
+        <td style="text-align: right;"><input type="text" value="${formatNumber(payroll.residentTax || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
+        <td class="year-end-column" style="text-align: right; display: none;"><input type="text" value="${formatNumber(payroll.yearEndDeduction || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
+        <td style="text-align: right;"><input type="text" value="${formatNumber(payroll.pensionInsurance || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
+        <td style="text-align: right;"><input type="text" value="${formatNumber(payroll.healthInsurance || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
+        <td style="text-align: right;"><input type="text" value="${formatNumber(payroll.nursingInsurance || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
+        <td class="net-pay-column" style="text-align: right;"><input type="text" value="${formatNumber(payroll.netPay || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
+      `;
+    }
+
+    // 숫자 포맷팅 함수 (콤마 추가)
+    function formatNumber(num) {
+      if (num === null || num === undefined || num === '') return '0';
+      return Number(num).toLocaleString();
+    }
+
+    // 금액 입력 필드 포맷팅
+    function formatAmountInput(input) {
+      let value = input.value.replace(/[^0-9]/g, ''); // 숫자만 추출
+      if (value === '') {
+        input.value = '0';
+      } else {
+        input.value = formatNumber(value);
+      }
+    }
+
+    // 지방소득세 계산 (소득세의 10%, 1의 자리 버림)
+    function calculateResidentTax(incomeTaxInput) {
+      const row = incomeTaxInput.closest('tr');
+      const incomeTax = parseFloat(incomeTaxInput.value.replace(/,/g, '')) || 0;
+      
+      // 지방소득세 = 소득세의 10%, 1의 자리 버림 (10의 단위로 내림)
+      const residentTaxRaw = incomeTax * 0.1;
+      const residentTax = Math.floor(residentTaxRaw / 10) * 10;
+      
+      // 소득세 입력이 있는 셀의 인덱스 찾기
+      const incomeTaxCell = incomeTaxInput.closest('td');
+      const incomeTaxCellIndex = incomeTaxCell.cellIndex + 1; // nth-child는 1부터 시작
+      
+      // 소득세 셀의 다음 셀이 주민세 셀
+      const residentTaxIndex = incomeTaxCellIndex + 1;
+      const residentTaxInput = row.querySelector(`td:nth-child(${residentTaxIndex}) input`);
+      if (residentTaxInput) {
+        residentTaxInput.value = formatNumber(residentTax);
+      }
+    }
+
+    // 상여금 열 업데이트 (월급여 변경 시)
+    function updateBonusColumn(monthlySalaryInput) {
+      const bonusHeader = document.getElementById('bonusHeader');
+      if (bonusHeader && bonusHeader.style.display === 'none') return;
+      
+      const row = monthlySalaryInput.closest('tr');
+      const bonusCell = row.querySelector('td.bonus-column');
+      if (bonusCell) {
+        const bonusInput = bonusCell.querySelector('input');
+        if (bonusInput) {
+          const monthlySalary = parseFloat(monthlySalaryInput.value.replace(/,/g, '')) || 0;
+          bonusInput.value = formatNumber(monthlySalary);
+        }
+      }
+    }
+
+    // 차인지급액 계산
+    function calculateNetPay(input) {
+      const row = input.closest('tr');
+      
+      // 상여금 모드 확인
+      const bonusHeader = document.getElementById('bonusHeader');
+      const hasBonusColumn = bonusHeader && bonusHeader.style.display !== 'none';
+      
+      // 연말정산 모드 확인
+      const yearEndHeader = document.getElementById('yearEndHeader');
+      const hasYearEndColumn = yearEndHeader && yearEndHeader.style.display !== 'none';
+      
+      // 헤더를 기준으로 각 열의 인덱스 계산
+      const monthlySalaryIndex = getColumnIndex('월급여');
+      const bonusIndex = hasBonusColumn ? getColumnIndex('bonusHeader') : null;
+      const incomeTaxIndex = getColumnIndex('incomeTaxHeader') || getColumnIndex('소득세');
+      const residentTaxIndex = getColumnIndex('주민세');
+      const yearEndIndex = hasYearEndColumn ? getColumnIndex('yearEndHeader') : null;
+      const pensionIndex = getColumnIndex('연금보험료');
+      const healthIndex = getColumnIndex('건강보험료');
+      const nursingIndex = getColumnIndex('요양보험료');
+      const netPayIndex = getColumnIndex('차인지급액');
+      
+      if (!monthlySalaryIndex || !incomeTaxIndex || !residentTaxIndex || !pensionIndex || !healthIndex || !nursingIndex || !netPayIndex) {
+        return; // 필요한 열을 찾을 수 없으면 종료
+      }
+      
+      const monthlySalary = parseFloat(row.querySelector(`td:nth-child(${monthlySalaryIndex}) input`)?.value.replace(/,/g, '') || '0') || 0;
+      const bonus = (hasBonusColumn && bonusIndex) ? parseFloat(row.querySelector(`td:nth-child(${bonusIndex}) input`)?.value.replace(/,/g, '') || '0') || 0 : 0;
+      const incomeTax = parseFloat(row.querySelector(`td:nth-child(${incomeTaxIndex}) input`)?.value.replace(/,/g, '') || '0') || 0;
+      const residentTax = parseFloat(row.querySelector(`td:nth-child(${residentTaxIndex}) input`)?.value.replace(/,/g, '') || '0') || 0;
+      const yearEndDeduction = (hasYearEndColumn && yearEndIndex) ? parseFloat(row.querySelector(`td:nth-child(${yearEndIndex}) input`)?.value.replace(/,/g, '') || '0') || 0 : 0;
+      const pensionInsurance = parseFloat(row.querySelector(`td:nth-child(${pensionIndex}) input`)?.value.replace(/,/g, '') || '0') || 0;
+      const healthInsurance = parseFloat(row.querySelector(`td:nth-child(${healthIndex}) input`)?.value.replace(/,/g, '') || '0') || 0;
+      const nursingInsurance = parseFloat(row.querySelector(`td:nth-child(${nursingIndex}) input`)?.value.replace(/,/g, '') || '0') || 0;
+      
+      // 평소: 차인지급액 = 월급여 - 소득세 - 주민세 - 연금보험료 - 건강보험료 - 요양보험료
+      // 상여금 모드: 차인지급액 = (월급여 + 상여금) - 소득세 - 주민세 - 연금보험료 - 건강보험료 - 요양보험료
+      // 연말정산 모드: 차인지급액 = 월급여(또는 월급여+상여금) - 소득세 - 주민세 - 연말정산차감징수세액 - 연금보험료 - 건강보험료 - 요양보험료
+      const totalIncome = monthlySalary + bonus;
+      const netPay = totalIncome - incomeTax - residentTax - yearEndDeduction - pensionInsurance - healthInsurance - nursingInsurance;
+      const netPayInput = row.querySelector(`td:nth-child(${netPayIndex}) input`);
+      if (netPayInput) {
+        netPayInput.value = formatNumber(netPay);
+      }
+    }
+
+    // 드래그 정렬 초기화
+    function initializeSortable() {
+      const tbody = document.getElementById('payrollTableBody');
+      if (tbody && typeof Sortable !== 'undefined') {
+        Sortable.create(tbody, {
+          animation: 150,
+          handle: '.drag-handle'
+          // 드래그 후 자동 저장 제거 - Update 버튼을 눌러야 저장됨
+        });
+      }
+    }
+
+    // 드래그 후 ID 업데이트
+    function updatePayrollIds() {
+      const rows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
+      const payrolls = [];
+      
+      // 동적 열 인덱스 계산 (한 번만)
+      const positionIndex = getColumnIndex('직급');
+      const nameIndex = getColumnIndex('성명');
+      const monthlySalaryIndex = getColumnIndex('월급여');
+      const incomeTaxIndex = getColumnIndex('incomeTaxHeader') || getColumnIndex('소득세');
+      const residentTaxIndex = getColumnIndex('주민세');
+      const pensionIndex = getColumnIndex('연금보험료');
+      const healthIndex = getColumnIndex('건강보험료');
+      const nursingIndex = getColumnIndex('요양보험료');
+      const netPayIndex = getColumnIndex('차인지급액');
+      
+      // 열 헬퍼 함수
+      const getColumnValue = (row, index) => {
+        if (!index) return '';
+        const input = row.querySelector(`td:nth-child(${index}) input`);
+        return input ? input.value.trim() : '';
+      };
+      
+      const getColumnNumber = (row, index) => {
+        if (!index) return 0;
+        const input = row.querySelector(`td:nth-child(${index}) input`);
+        return input ? parseFloat(input.value.replace(/,/g, '')) || 0 : 0;
+      };
+      
+      rows.forEach(row => {
+        // 숨겨진 행은 건너뛰기
+        if (row.classList.contains('hidden-row') || row.style.display === 'none') return;
+        
+        // 현재 순서대로 ID 할당 (숨겨진 행을 건너뛰더라도 순차적으로)
+        payrolls.push({
+          id: payrolls.length + 1,
+          position: getColumnValue(row, positionIndex),
+          name: getColumnValue(row, nameIndex),
+          monthlySalary: getColumnNumber(row, monthlySalaryIndex),
+          incomeTax: getColumnNumber(row, incomeTaxIndex),
+          residentTax: getColumnNumber(row, residentTaxIndex),
+          pensionInsurance: getColumnNumber(row, pensionIndex),
+          healthInsurance: getColumnNumber(row, healthIndex),
+          nursingInsurance: getColumnNumber(row, nursingIndex),
+          netPay: getColumnNumber(row, netPayIndex)
+        });
+      });
+      
+      // 서버에 새로운 순서로 저장
+      savePayrollOrder(payrolls);
+    }
+    
+    // 순서 변경을 서버에 저장
+    async function savePayrollOrder(payrolls) {
+      try {
+        const response = await fetch('/api/transfers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            action: 'reorder',
+            payrolls: payrolls 
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('순서 저장 실패');
+        }
+      } catch (error) {
+        // 에러는 조용히 처리 (드래그 정렬 중에는 사용자에게 알릴 필요 없음)
+      }
+    }
+
+
+    // PDF 생성 함수
+    async function generatePDF() {
+      try {
+        // 파일명 생성
+        const today = new Date();
+        const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+        const fileName = `급여대장_${dateStr}.pdf`;
+        
+        // 페이지 요소와 하단 메뉴 가져오기
+        const page = document.querySelector('.page');
+        const bottomMenu = document.querySelector('.bottom-buttons');
+        const originalDisplay = bottomMenu?.style.display;
+        
+        // 하단 메뉴 숨기기
+        if (bottomMenu) bottomMenu.style.display = 'none';
+        
+        // PDF 생성 (A4 가로)
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+        
+        // A4 가로 크기에 맞춰서 캡처 (297mm x 210mm)
+        const a4WidthPx = page.offsetWidth; // 가로는 그대로
+        const a4HeightPx = (page.offsetWidth * 210) / 297; // A4 가로 비율에 맞춘 세로 길이
+        
+        const canvas = await html2canvas(page, {
+          scale: 1.5,
+          useCORS: true,
+          letterRendering: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          width: a4WidthPx,
+          height: a4HeightPx // A4 가로 세로 길이에 맞춰서 캡처
+        });
+        
+        // A4 가로 페이지에 이미지 추가 (정확한 A4 가로 크기)
+        doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 297, 210);
+        
+        // 하단 메뉴 다시 표시
+        if (bottomMenu) bottomMenu.style.display = originalDisplay;
+        
+        // PDF 저장
+        doc.save(fileName);
+        
+      } catch (error) {
+        alert('PDF 생성에 실패했습니다: ' + error.message);
+      }
+    }
+
+    // Save 함수 - Payroll 데이터를 accounting.json에 저장 (날짜별 그룹화)
+    async function savePayrollData() {
+      try {
+        const year = document.getElementById('yearSelect').value;
+        const month = document.getElementById('monthSelect').value;
+        const day = document.getElementById('daySelect').value;
+        const date = `${year}-${month}-${day}`;
+        
+        // 열 인덱스는 한 번만 계산 (모든 행에서 동일)
+        const positionIndex = getColumnIndex('직급');
+        const netPayIndex = getColumnIndex('차인지급액');
+        
+        if (!positionIndex || !netPayIndex) {
+          alert('필수 열을 찾을 수 없습니다.');
+          return;
+        }
+        
+        const rows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
+        const payrollItems = [];
+        
+        // 모든 행에서 데이터 수집 (숨겨진 행 제외)
+        rows.forEach(row => {
+          // 숨겨진 행은 건너뛰기
+          if (row.classList.contains('hidden-row') || row.style.display === 'none') return;
+          
+          // 각 셀에서 직접 input을 찾기
+          const positionCell = row.querySelector(`td:nth-child(${positionIndex}) input`);
+          const netPayCell = row.querySelector(`td:nth-child(${netPayIndex}) input`);
+          
+          if (!positionCell || !netPayCell) return;
+          
+          const position = positionCell.value.trim();
+          const netPay = parseInt(netPayCell.value.replace(/,/g, '')) || 0;
+          
+          // 직급이 있거나 차인지급액이 있으면 저장
+          if (position || netPay > 0) {
+            payrollItems.push({
+              name: '',
+              description: position,
+              amount: netPay
+            });
+          }
+        });
+
+        if (payrollItems.length === 0) {
+          alert('저장할 데이터가 없습니다.');
+          return;
+        }
+
+        // 서버에 데이터 전송
+        const response = await fetch('/api/accounting', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            category: 'transaction',
+            data: {
+              type: 'withdrawal',
+              date: date,
+              items: payrollItems
+            }
+          })
+        });
+
+        if (response.ok) {
+          alert('급여 데이터가 성공적으로 저장되었습니다.');
+        } else {
+          const errorText = await response.text();
+          alert('저장 실패: ' + errorText);
+        }
+
+      } catch (error) {
+        alert('저장 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+
+    // 기존 saveAllPayrolls 함수를 savePayrollData로 변경 (호환성 유지)
+    function saveAllPayrolls() {
+      savePayrollData();
+    }
+
+    // 버튼 상태 변경 헬퍼 함수
+    function toggleRowVisibilityButton(button, isHidden) {
+      button.textContent = isHidden ? 'S' : 'H';
+      button.onclick = isHidden ? function() { showPayrollRow(this); } : function() { hidePayrollRow(this); };
+    }
+
+    // 행 숨기기 함수
+    function hidePayrollRow(button) {
+      const row = button.closest('tr');
+      const nameIndex = getColumnIndex('성명');
+      if (!nameIndex) return;
+      
+      const nameInput = row.querySelector(`td:nth-child(${nameIndex}) input`);
+      const name = nameInput ? nameInput.value.trim() : '';
+      
+      if (name) {
+        if (!confirm(`"${name}" 항목을 숨기시겠습니까?`)) {
+          return;
+        }
+        
+        row.classList.add('hidden-row');
+        toggleRowVisibilityButton(button, true);
+      }
+    }
+    
+    // 행 다시 보이기 함수
+    function showPayrollRow(button) {
+      const row = button.closest('tr');
+      row.classList.remove('hidden-row');
+      toggleRowVisibilityButton(button, false);
+    }
+
+    // 입력 필드 포커스 헬퍼 함수
+    function focusInput(input) {
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }
+
+    // 엔터키 처리 함수 - 같은 열의 아래 행으로 이동 (숨겨진 행 제외)
+    function handleEnterKey(event, currentInput) {
+      if (event.key !== 'Enter') return;
+      
+      event.preventDefault();
+      
+      const currentRow = currentInput.closest('tr');
+      const currentCell = currentInput.closest('td');
+      const currentCellIndex = currentCell.cellIndex;
+      
+      // 현재 보이는 행들만 가져오기
+      const allRows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
+      const visibleRows = Array.from(allRows).filter(row => 
+        !row.classList.contains('hidden-row') && row.style.display !== 'none'
+      );
+      
+      // 다음 보이는 행 찾기
+      const currentRowIndex = visibleRows.indexOf(currentRow);
+      if (currentRowIndex !== -1 && currentRowIndex < visibleRows.length - 1) {
+        const nextVisibleRow = visibleRows[currentRowIndex + 1];
+        const sameColumnInput = nextVisibleRow.cells[currentCellIndex]?.querySelector('input');
+        if (sameColumnInput) {
+          focusInput(sameColumnInput);
+          return;
+        }
+      }
+      
+      // 마지막 행이면 새 행 추가
+      addPayrollRow();
+      
+      // 새로 추가된 행의 같은 열로 포커스 이동
+      setTimeout(() => {
+        const newRow = document.querySelector('#payrollTableBody tr:last-child:not(.total-row)');
+        if (newRow) {
+          const sameColumnInput = newRow.cells[currentCellIndex]?.querySelector('input');
+          focusInput(sameColumnInput);
+        }
+      }, 100);
+    }
+
+  </script>
+</body>
+</html>

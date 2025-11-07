@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Price Update</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      color: #000;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+    .page {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    h1 {
+      text-align: center;
+      margin: 0;
+      padding-bottom: 10px;
+    }
+    .top-menu {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .left-menu {
+      display: flex;
+      gap: 3px;
+    }
+    .right-menu {
+      display: flex;
+      gap: 3px;
+    }
+    .top-menu-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+    }
+    .top-menu-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    .top-menu-btn.mode-btn.selected {
+      background: black;
+      color: white;
+      border-color: black;
+    }
+    
+    /* 년도 표시 스타일 */
+    .year-display {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #000;
+      min-width: 50px;
+      text-align: center;
+      padding: 0 5px;
+      margin: 0 3px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 30px;
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 3px;
+    }
+    
+    /* 년도 버튼 특별 스타일 */
+    .year-btn {
+      min-width: 30px;
+      width: 30px;
+      padding: 5px;
+    }
+    
+    /* 월 선택 드롭다운 특별 스타일 */
+    .month-select {
+      min-width: 70px;
+      padding: 5px 8px;
+    }
+    .flex-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      box-sizing: border-box;
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 15px;
+      margin-bottom: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      resize: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+      white-space: pre;
+      word-wrap: break-word;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 2px 12px rgba(0,123,255,0.2);
+    }
+    .button-area {
+      text-align: center;
+      margin-top: 10px;
+    }
+    button {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+    button:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    
+    .rate-input {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+      text-align: center;
+      -webkit-appearance: none;
+      -moz-appearance: textfield;
+      appearance: none;
+      box-sizing: border-box;
+    }
+    
+    .rate-input::-webkit-outer-spin-button,
+    .rate-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    
+    .rate-input:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    
+    .rate-input:focus {
+      outline: none;
+      border-color: #007bff;
+      background: #fff;
+    }
+
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1>Price Update</h1>
+
+  <div class="top-menu">
+    <!-- 왼쪽: History, Year, Month -->
+    <div class="left-menu">
+                      <button type="button" onclick="location.href='price.html'" class="top-menu-btn">History</button>
+      
+      <!-- 년도 선택 버튼 -->
+      <button type="button" id="yearDownBtn" class="top-menu-btn year-btn">▼</button>
+      <span id="yearDisplay" class="year-display">2024</span>
+      <button type="button" id="yearUpBtn" class="top-menu-btn year-btn">▲</button>
+      
+      <!-- 월 선택 드롭다운 -->
+      <select id="monthSelect" class="top-menu-btn month-select">
+        <option value="1">1월</option>
+        <option value="2">2월</option>
+        <option value="3">3월</option>
+        <option value="4">4월</option>
+        <option value="5">5월</option>
+        <option value="6">6월</option>
+        <option value="7">7월</option>
+        <option value="8">8월</option>
+        <option value="9">9월</option>
+        <option value="10">10월</option>
+        <option value="11">11월</option>
+        <option value="12">12월</option>
+      </select>
+    </div>
+    <!-- 오른쪽: EK, NT, SM -->
+    <div class="right-menu">
+      <button id="ekBtn" class="top-menu-btn mode-btn">EK</button>
+      <button id="ntBtn" class="top-menu-btn mode-btn">NT</button>
+      <button id="smBtn" class="top-menu-btn mode-btn">SM</button>
+    </div>
+  </div>
+
+  <div class="flex-container">
+    <div class="box">
+      <textarea id="inputArea" placeholder="가격 데이터를 입력하세요"></textarea>
+    </div>
+    <div class="box">
+      <textarea id="outputArea" readonly></textarea>
+    </div>
+  </div>
+
+  <div class="button-area">
+    <input type="number" id="rateInput" class="rate-input" value="0.12" step="0.01" min="0" max="1" style="-webkit-appearance: none; -moz-appearance: textfield; appearance: none;">
+    <button id="convertBtn" onclick="convertData()">Convert</button>
+    <button id="exportBtn" onclick="exportToPriceHistory()">Export</button>
+  </div>
+</div>
+
+<script>
+
+// EK/NT/SM 모드 선택 기능
+let selectedMode = null; // 기본값 없음
+
+const ekBtn = document.getElementById("ekBtn");
+const ntBtn = document.getElementById("ntBtn");
+const smBtn = document.getElementById("smBtn");
+
+// 년도와 월 선택 기능
+let currentYear = new Date().getFullYear(); // 현재 년도
+let currentMonth = new Date().getMonth() + 1; // 현재 월 (1-12)
+
+const yearDisplay = document.getElementById("yearDisplay");
+const yearUpBtn = document.getElementById("yearUpBtn");
+const yearDownBtn = document.getElementById("yearDownBtn");
+const monthSelect = document.getElementById("monthSelect");
+
+// 초기값 설정
+yearDisplay.textContent = currentYear;
+monthSelect.value = currentMonth;
+
+// 년도 증가 버튼
+yearUpBtn.addEventListener("click", () => {
+  currentYear++;
+  yearDisplay.textContent = currentYear;
+});
+
+// 년도 감소 버튼
+yearDownBtn.addEventListener("click", () => {
+  if (currentYear > 2020) { // 최소 년도 제한
+    currentYear--;
+    yearDisplay.textContent = currentYear;
+  }
+});
+
+// 월 선택 변경
+monthSelect.addEventListener("change", () => {
+  currentMonth = parseInt(monthSelect.value);
+});
+
+// Convert 버튼 기능
+function convertData() {
+  const inputArea = document.getElementById('inputArea');
+  const outputArea = document.getElementById('outputArea');
+  const rateInput = document.getElementById('rateInput');
+  
+  if (!inputArea || !outputArea || !rateInput) {
+    return;
+  }
+  
+  const inputText = inputArea.value.trim();
+  // Convert 버튼을 누르는 시점의 입력 필드 현재 값을 가져옴
+  const rate = parseFloat(rateInput.value) || 0;
+  
+  if (inputText === '') {
+    alert('왼쪽 박스에 텍스트를 입력해주세요.');
+    return;
+  }
+  
+  // 텍스트를 줄 단위로 분리
+  const lines = inputText.split('\n');
+  
+  const convertedLines = [];
+  
+  lines.forEach((line, index) => {
+    if (line.trim() === '') return;
+    
+    // 띄어쓰기로 분리하여 데이터 추출
+    const parts = line.trim().split(/\s+/);
+    
+    // PHD 값과 USD/kg 값 추출
+    const phdIndex = parts.findIndex(part => part === 'PHD');
+    
+    if (phdIndex !== -1 && phdIndex + 1 < parts.length) {
+      const phd = parts[phdIndex + 1]; // PHD 다음 값
+      
+      // PHD 다음부터 끝까지의 모든 부분을 숫자로 처리 (쉼표나 점이 포함되어도 상관없음)
+      const numbers = parts.slice(phdIndex + 2);
+      
+      if (numbers.length >= 3) {
+        const usd = numbers[2]; // 세 번째 숫자
+        const usdValue = parseFloat(usd.replace(',', '.'));
+        const adjustedUsd = (usdValue - rate).toFixed(2); // 입력된 값만큼 빼고 소수점 둘째 자리까지
+        
+        // PHD와 USD/kg을 각각 별도 줄로 표시
+        convertedLines.push(`PHD - ${phd}`);
+        convertedLines.push(`USD/kg - ${adjustedUsd}`);
+        convertedLines.push(''); // 빈 줄 추가
+      }
+    }
+  });
+  
+  if (convertedLines.length > 0) {
+    try {
+      outputArea.value = convertedLines.join('\n');
+    } catch (error) {
+      // 에러 처리 (필요시 추가)
+    }
+  } else {
+    outputArea.value = 'PHD 값과 USD/kg 값을 찾을 수 없습니다.';
+  }
+}
+
+// Export 버튼 기능 - 서버에 저장
+async function exportToPriceHistory() {
+  const inputArea = document.getElementById('inputArea');
+  const rateInput = document.getElementById('rateInput');
+  const inputText = inputArea.value.trim();
+  
+  if (inputText === '') {
+    alert('가격 데이터를 입력해주세요.');
+    return;
+  }
+  
+  // 모드 선택 확인
+  if (!selectedMode) {
+    alert('EK, NT, SM 중 하나를 선택해주세요.');
+    return;
+  }
+  
+  // 현재 선택된 모드, 년도, 월 정보
+  const mode = selectedMode;
+  const year = currentYear;
+  const month = currentMonth;
+  
+  // 입력 필드의 현재 값 가져오기
+  const rate = parseFloat(rateInput.value) || 0;
+  
+  // 입력된 텍스트를 줄 단위로 분리하여 PHD와 USD/kg 값 추출
+  const lines = inputText.split('\n');
+  const priceData = [];
+  
+  lines.forEach(line => {
+    if (line.trim() === '') return;
+    
+    // 띄어쓰기로 분리하여 데이터 추출
+    const parts = line.trim().split(/\s+/);
+    
+    // PHD 값과 USD/kg 값 추출
+    const phdIndex = parts.findIndex(part => part === 'PHD');
+    
+    if (phdIndex !== -1 && phdIndex + 1 < parts.length) {
+      const phd = parseFloat(parts[phdIndex + 1]); // PHD 다음 값
+      
+      // PHD 다음부터 끝까지의 모든 부분을 숫자로 처리 (쉼표나 점이 포함되어도 상관없음)
+      const numbers = parts.slice(phdIndex + 2);
+      
+      if (numbers.length >= 3) {
+        const usd = parseFloat(numbers[2].replace(',', '.')); // 세 번째 숫자
+        const adjustedUsd = (usd - rate).toFixed(2); // 입력된 값만큼 빼고 소수점 둘째 자리까지 (문자열로 유지)
+        
+        priceData.push({
+          phd: phd,
+          price: adjustedUsd
+        });
+      }
+    }
+  });
+  
+  if (priceData.length === 0) {
+    alert('PHD 값과 USD/kg 값을 찾을 수 없습니다.');
+    return;
+  }
+  
+  try {
+    // 서버 API로 데이터 저장
+    const response = await fetch('/api/price', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        mode: mode,
+        year: year,
+        month: month.toString(),
+        data: priceData
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    
+    // price.html로 바로 이동
+    window.location.href = `price.html`;
+    
+  } catch (error) {
+    alert("데이터 저장에 실패했습니다. 서버 연결을 확인해주세요.");
+  }
+}
+
+ekBtn.addEventListener("click", () => {
+  selectedMode = "EK";
+  currentMode = "EK";
+  ekBtn.classList.add("selected");
+  ntBtn.classList.remove("selected");
+  smBtn.classList.remove("selected");
+});
+
+ntBtn.addEventListener("click", () => {
+  selectedMode = "NT";
+  currentMode = "NT";
+  ntBtn.classList.add("selected");
+  ekBtn.classList.remove("selected");
+  smBtn.classList.remove("selected");
+});
+
+smBtn.addEventListener("click", () => {
+  selectedMode = "SM";
+  currentMode = "SM";
+  smBtn.classList.add("selected");
+  ekBtn.classList.remove("selected");
+  ntBtn.classList.remove("selected");
+});
+
+
+// 현재 모드 (초기: EK)
+let currentMode = selectedMode;
+
+
+</script>
+</body>
+</html>

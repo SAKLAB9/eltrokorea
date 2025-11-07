@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>비밀번호 확인</title>
+  <style>
+    /* 전체 페이지 스타일 */
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      position: relative;
+      padding-top: 16.67vh;
+    }
+
+    /* 배경 오버레이 (텍스트 가독성을 위해) */
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+
+    /* 메인 컨테이너 */
+    .main-container {
+      width: 70%;
+      max-width: 900px;
+      padding: 20px;
+    }
+
+    /* 그리드 래퍼 (흰색 컨테이너 박스) */
+    .grid-wrapper {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e0e0e0;
+    }
+
+    /* 그리드 컨테이너 */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 25px;
+      width: 100%;
+    }
+
+    /* 직사각형 스타일 버튼 */
+    .cube-button {
+      aspect-ratio: 2.2;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-decoration: none;
+      color: #333;
+      font-size: 1.1rem;
+      font-weight: 500;
+      position: relative;
+      overflow: hidden;
+      transform: translateY(0);
+    }
+
+    /* 버튼 호버 효과 */
+    .cube-button:hover {
+      background: #f8f9fa;
+      border-color: #bbb;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* 버튼 클릭 효과 */
+    .cube-button:active {
+      background: #e9ecef;
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 텍스트 스타일 */
+    .cube-text {
+      font-size: 1.2rem;
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.4;
+      letter-spacing: 0.8px;
+      padding: 0 10px;
+    }
+
+    /* 반응형 디자인 */
+    @media (max-width: 768px) {
+      .main-container {
+        width: 85%;
+        max-width: 1000px;
+      }
+      
+      .grid-wrapper {
+        padding: 24px;
+      }
+      
+      .grid-container {
+        gap: 20px;
+      }
+      
+      .cube-button {
+        font-size: 1.0rem;
+      }
+      
+      .cube-text {
+        font-size: 1.1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main-container {
+        width: 95%;
+        max-width: 800px;
+      }
+      
+      .grid-wrapper {
+        padding: 20px;
+      }
+      
+      .grid-container {
+        gap: 18px;
+      }
+      
+      .cube-button {
+        font-size: 0.95rem;
+      }
+      
+      .cube-text {
+        font-size: 1.0rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="grid-wrapper">
+      <div class="grid-container">
+        <!-- 첫 번째 줄 -->
+        <div class="cube-button" onclick="checkPassword('EK')">
+          <div class="cube-text">ELTRO KOREA</div>
+        </div>
+        
+        <div class="cube-button" onclick="checkPassword('TF')">
+          <div class="cube-text">TREOFAN</div>
+        </div>
+        
+        <!-- 두 번째 줄 -->
+        <div class="cube-button" onclick="checkPassword('SM')">
+          <div class="cube-text">SUNGMOON</div>
+        </div>
+        
+        <div class="cube-button" onclick="checkPassword('NT')">
+          <div class="cube-text">NUINTEK</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 섹션별 페이지 매핑
+    const sectionPages = {
+      "EK": "eltrokorea9.html",
+      "SM": "sungmoon.html",
+      "NT": "nuintek.html",
+      "TF": "treofan.html"
+    };
+
+    async function checkPassword(section) {
+      const userInput = prompt("비밀번호를 입력하세요.");
+      if (userInput === null) return; // 취소 시 아무 동작 없음
+      
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            section: section,
+            password: userInput
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // 비밀번호 일치 시 페이지 이동
+          const targetPage = sectionPages[section] || section + ".html";
+          window.location.href = targetPage;
+        } else {
+          alert(result.message || "비밀번호가 틀렸습니다.");
+        }
+      } catch (error) {
+        alert("로그인 중 오류가 발생했습니다.");
+      }
+    }
+  </script>
+  
+</body>
+</html>

@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Price History</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      color: #000;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+    
+    .page {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    
+    h1 {
+      text-align: center;
+      margin: 0;
+      padding-bottom: 10px;
+    }
+    
+    .top-menu {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .left-menu {
+      display: flex;
+      gap: 3px;
+    }
+    
+    .right-menu {
+      display: flex;
+      gap: 3px;
+    }
+    
+    .top-menu-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+    }
+    
+    .top-menu-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    
+    .top-menu-btn.mode-btn.selected {
+      background: black;
+      color: white;
+      border-color: black;
+    }
+    
+    /* 년도 표시 스타일 */
+    .year-display {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #000;
+      min-width: 50px;
+      text-align: center;
+      padding: 0 5px;
+      margin: 0 3px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 30px;
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 3px;
+    }
+    
+    /* 년도 버튼 특별 스타일 */
+    .year-btn {
+      min-width: 30px;
+      width: 30px;
+      padding: 5px;
+    }
+    
+    
+    .price-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 0.9rem;
+    }
+    
+    .price-table th,
+    .price-table td {
+      border: 1px solid #ddd;
+      padding: 6px;
+      text-align: center;
+      min-width: 60px;
+    }
+    
+    .price-table th {
+      background-color: #f0f0f0;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    .price-table th:first-child {
+      background-color: #e0e0e0;
+      position: sticky;
+      left: 0;
+      z-index: 11;
+    }
+    
+    .price-table td:first-child {
+      background-color: #f8f8f8;
+      position: sticky;
+      left: 0;
+      z-index: 10;
+      font-weight: bold;
+    }
+    
+    .price-table input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-size: inherit;
+      padding: 2px;
+    }
+    
+    .price-table input:focus {
+      outline: 1px solid #ccc;
+      background: #fff;
+    }
+    
+    .editable-cell {
+      background-color: #fff !important;
+    }
+    
+    .price-table tr:nth-child(even) td:not(:first-child) {
+      background-color: #fff;
+    }
+    
+    .price-table tr:hover td:not(:first-child) {
+      background-color: #fff;
+    }
+    
+    .price-table td:not(:first-child) {
+      background-color: #fff;
+    }
+    
+    .table-container {
+      max-height: 70vh;
+      overflow: auto;
+    }
+    
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      font-style: italic;
+    }
+    
+    /* 하단 버튼 영역 전체 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 확장 손잡이 (서랍 손잡이처럼 위쪽에 튀어나옴) */
+    .expand-handle {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    /* 확장/축소 버튼 */
+    .expand-btn {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #666;
+      border-radius: 8px 8px 0 0;
+      min-width: 40px;
+      height: 20px;
+      line-height: 1;
+      transition: all 0.2s ease;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    .expand-btn:hover {
+      background: #e8e8e8;
+      border-color: #999;
+      box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    }
+
+    .expand-btn.expanded {
+      transform: rotate(180deg);
+      background: #e0e0e0;
+    }
+
+    /* 기본 버튼 그룹 레이아웃 */
+    .main-button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+    
+    .left-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .right-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .main-button-group button {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+    
+    .main-button-group button:hover {
+      background: #f0f0f0;
+    }
+    
+    .month-select-bottom {
+      font-size: 0.9rem;
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 70px;
+      height: 30px;
+      line-height: 1.2;
+      cursor: pointer;
+    }
+    
+    .month-select-bottom:hover {
+      border-color: #999;
+    }
+    
+    .month-select-bottom:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+
+    /* 상세 버튼 영역 */
+    .detail-button-area {
+      margin-top: 10px;
+      padding: 12px;
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    /* 테이블 하단 여백 (고정 버튼과 겹치지 않도록) */
+    .page {
+      margin-bottom: 120px;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1>Price History</h1>
+
+  <div class="top-menu">
+    <!-- 왼쪽: Home, 년도, Add -->
+    <div class="left-menu">
+      <button type="button" onclick="location.href='eltrokorea9.html'" class="top-menu-btn">Home</button>
+      
+      <!-- 년도 선택 버튼 -->
+      <button type="button" id="yearDownBtn" class="top-menu-btn year-btn">▼</button>
+      <span id="yearDisplay" class="year-display">2025</span>
+      <button type="button" id="yearUpBtn" class="top-menu-btn year-btn">▲</button>
+      
+      <button type="button" id="addBtn" class="top-menu-btn">Add</button>
+      
+    </div>
+    <!-- 오른쪽: EK, NT, SM -->
+    <div class="right-menu">
+      <button id="ekBtn" class="top-menu-btn mode-btn selected">EK</button>
+      <button id="ntBtn" class="top-menu-btn mode-btn">NT</button>
+      <button id="smBtn" class="top-menu-btn mode-btn">SM</button>
+    </div>
+  </div>
+
+  <div id="priceTableContainer">
+    <div class="loading">데이터를 불러오는 중...</div>
+  </div>
+</div>
+
+<!-- 하단 버튼 영역 -->
+<div class="bottom-buttons">
+  <!-- 확장/축소 버튼 (서랍 손잡이처럼 위쪽에 튀어나옴) -->
+  <div class="expand-handle">
+    <button id="expandButton" type="button" class="expand-btn">▼</button>
+  </div>
+  
+  <!-- 기본 버튼 영역 (항상 보임) -->
+  <div class="main-button-group">
+    <div class="left-buttons">
+      <select id="monthSelectBottom" class="month-select-bottom">
+        <option value="1">1월</option>
+        <option value="2">2월</option>
+        <option value="3">3월</option>
+        <option value="4">4월</option>
+        <option value="5">5월</option>
+        <option value="6">6월</option>
+        <option value="7">7월</option>
+        <option value="8">8월</option>
+        <option value="9">9월</option>
+        <option value="10">10월</option>
+        <option value="11">11월</option>
+        <option value="12">12월</option>
+      </select>
+      <button id="pdfBtn">PDF</button>
+      <button id="emailBtn">Email</button>
+    </div>
+    <div class="right-buttons">
+      <button id="updateBtn" onclick="location.href='priceupdate.html'">Update</button>
+    </div>
+  </div>
+  
+  <!-- 확장 가능한 상세 버튼 영역 (기본적으로 숨김) -->
+  <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+    <!-- 확장 메뉴 내용이 비어있음 -->
+  </div>
+</div>
+
+<!-- PDF 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+// EK/NT/SM 모드 선택 기능
+let selectedMode = "EK"; // 기본 모드
+let currentYear = new Date().getFullYear(); // 현재 년도
+let currentMonth = new Date().getMonth() + 1; // 현재 월 (1-12)
+let lastAverageRate = "0.00"; // 마지막 PDF 생성 시 평균 인상률 저장
+
+const ekBtn = document.getElementById("ekBtn");
+const ntBtn = document.getElementById("ntBtn");
+const smBtn = document.getElementById("smBtn");
+
+const yearDisplay = document.getElementById("yearDisplay");
+const yearUpBtn = document.getElementById("yearUpBtn");
+const yearDownBtn = document.getElementById("yearDownBtn");
+
+// 초기값 설정
+yearDisplay.textContent = currentYear;
+
+// 월 드롭다운 기본값 설정 (현재 월)
+document.getElementById('monthSelectBottom').value = currentMonth;
+
+// 기본값 설정 - 항상 EK 모드로 시작
+selectedMode = "EK";
+updateModeButtons();
+
+// 년도 증가 버튼
+yearUpBtn.addEventListener("click", () => {
+  currentYear++;
+  yearDisplay.textContent = currentYear;
+  loadPriceData();
+});
+
+// 년도 감소 버튼
+yearDownBtn.addEventListener("click", () => {
+  if (currentYear > 2020) { // 최소 년도 제한
+    currentYear--;
+    yearDisplay.textContent = currentYear;
+    loadPriceData();
+  }
+});
+
+
+// 모드 버튼 이벤트
+ekBtn.addEventListener("click", () => {
+  selectedMode = "EK";
+  updateModeButtons();
+  loadPriceData();
+});
+
+ntBtn.addEventListener("click", () => {
+  selectedMode = "NT";
+  updateModeButtons();
+  loadPriceData();
+});
+
+smBtn.addEventListener("click", () => {
+  selectedMode = "SM";
+  updateModeButtons();
+  loadPriceData();
+});
+
+// 모드 버튼 상태 업데이트
+function updateModeButtons() {
+  ekBtn.classList.remove("selected");
+  ntBtn.classList.remove("selected");
+  smBtn.classList.remove("selected");
+  
+  if (selectedMode === "EK") ekBtn.classList.add("selected");
+  else if (selectedMode === "NT") ntBtn.classList.add("selected");
+  else if (selectedMode === "SM") smBtn.classList.add("selected");
+}
+
+// 가격 데이터 로드
+async function loadPriceData() {
+  const container = document.getElementById("priceTableContainer");
+  container.innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
+  
+  try {
+    const response = await fetch('/api/price');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const priceData = await response.json();
+    
+    // 선택된 모드와 년도의 모든 월 데이터 가져오기
+    const yearData = priceData[selectedMode]?.[currentYear];
+    
+    if (!yearData) {
+      container.innerHTML = '<div class="no-data">해당 년도의 가격 데이터가 없습니다.</div>';
+      return;
+    }
+    
+    // 하드코딩된 PHD 값들 (고정)
+    const sortedPhds = [3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 12, 15];
+    
+    if (sortedPhds.length === 0) {
+      container.innerHTML = '<div class="no-data">해당 년도의 가격 데이터가 없습니다.</div>';
+      return;
+    }
+    
+    // 테이블 생성
+    let tableHTML = `
+      <div class="table-container">
+        <table class="price-table">
+          <thead>
+            <tr>
+              <th>PHD</th>
+              <th>1월</th>
+              <th>2월</th>
+              <th>3월</th>
+              <th>4월</th>
+              <th>5월</th>
+              <th>6월</th>
+              <th>7월</th>
+              <th>8월</th>
+              <th>9월</th>
+              <th>10월</th>
+              <th>11월</th>
+              <th>12월</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    // 각 PHD에 대해 월별 가격 표시
+    sortedPhds.forEach(phd => {
+      const isEditable = phd === 3 || phd === 8.5 || phd === 15;
+      tableHTML += `<tr><td>${phd}</td>`;
+      
+      for (let month = 1; month <= 12; month++) {
+        const monthData = yearData[month.toString()];
+        let price = '';
+        
+        if (monthData) {
+          const priceItem = monthData.find(item => item.phd === phd);
+          if (priceItem) {
+            price = priceItem.price;
+          }
+        }
+        
+        if (isEditable) {
+          tableHTML += `<td class="editable-cell"><input type="text" value="${price}" data-phd="${phd}" data-month="${month}" /></td>`;
+        } else {
+          tableHTML += `<td>${price}</td>`;
+        }
+      }
+      
+      tableHTML += `</tr>`;
+    });
+    
+    tableHTML += `
+          </tbody>
+        </table>
+      </div>
+    `;
+    
+    container.innerHTML = tableHTML;
+    
+    // 입력 필드는 단순 표시용으로만 사용
+    
+  } catch (error) {
+    console.error('Error loading price data:', error);
+    container.innerHTML = '<div class="no-data">데이터를 불러오는 중 오류가 발생했습니다.</div>';
+  }
+}
+
+
+// 페이지 로드 시 데이터 로드
+document.addEventListener('DOMContentLoaded', () => {
+  loadPriceData();
+  
+  const addBtn = document.getElementById('addBtn');
+  addBtn.addEventListener('click', async () => {
+    await saveAllChanges();
+  });
+  
+  // 확장/축소 버튼 이벤트 리스너
+  document.getElementById("expandButton").addEventListener("click", () => {
+    const detailArea = document.getElementById("detailButtonArea");
+    const expandBtn = document.getElementById("expandButton");
+    
+    if (detailArea.style.display === "none") {
+      detailArea.style.display = "flex";
+      expandBtn.classList.add("expanded");
+      expandBtn.textContent = "▲";
+    } else {
+      detailArea.style.display = "none";
+      expandBtn.classList.remove("expanded");
+      expandBtn.textContent = "▼";
+    }
+  });
+  
+  // 하단 월 선택 드롭다운 이벤트 리스너
+  document.getElementById("monthSelectBottom").addEventListener("change", () => {
+    const selectedMonth = parseInt(document.getElementById("monthSelectBottom").value);
+    // 선택된 월에 따라 테이블 필터링 (필요시 구현)
+    console.log(`선택된 월: ${selectedMonth}월`);
+  });
+  
+  // 하단 메뉴 버튼 이벤트 리스너
+  document.getElementById("pdfBtn").addEventListener("click", () => {
+    generatePDF();
+  });
+  
+  document.getElementById("emailBtn").addEventListener("click", async () => {
+    try {
+      // 현재 선택된 월 정보
+      const selectedMonth = parseInt(document.getElementById('monthSelectBottom').value);
+      
+      // Email 내용 생성
+      const emailContent = `안녕하세요.
+
+Treofan 원단의 ${selectedMonth}월 가격표 첨부합니다.
+${selectedMonth}월 단가는 ${selectedMonth === 1 ? 12 : selectedMonth - 1}월 단가와 비교하여 ${lastAverageRate}% 의 가격변동이 있었습니다.
+
+감사합니다.`;
+
+      // 클립보드에 복사
+      await navigator.clipboard.writeText(emailContent);
+      
+      // 성공 알림
+      alert('Email 내용이 클립보드에 복사되었습니다.\n바로 붙여넣기(Ctrl+V)를 사용할 수 있습니다.');
+      
+    } catch (error) {
+      console.error('클립보드 복사 오류:', error);
+      alert('클립보드 복사에 실패했습니다. 브라우저 권한을 확인해주세요.');
+    }
+  });
+  
+  // Update 버튼은 onclick으로 처리되므로 별도 이벤트 리스너 불필요
+  
+});
+
+// 모든 변경사항 저장 함수
+async function saveAllChanges() {
+  const inputs = document.querySelectorAll('input[data-phd]');
+  const updates = [];
+  
+  // 모든 입력 필드의 변경사항 수집
+  inputs.forEach(input => {
+    const phd = parseFloat(input.dataset.phd);
+    const month = parseInt(input.dataset.month);
+    const newPrice = input.value.trim();
+    
+    if (newPrice !== '') {
+      updates.push({
+        phd: phd,
+        month: month,
+        price: parseFloat(newPrice)
+      });
+    }
+  });
+  
+  if (updates.length === 0) {
+    alert('입력된 값이 없습니다.');
+    return;
+  }
+  
+  // 각 업데이트를 순차적으로 처리
+  for (const update of updates) {
+    try {
+      const response = await fetch('/api/price', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode: selectedMode,
+          year: currentYear,
+          month: update.month.toString(),
+          phd: update.phd,
+          price: update.price
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      console.log(`가격 업데이트 완료: ${selectedMode} ${currentYear}년 ${update.month}월 PHD ${update.phd} = ${update.price}`);
+      
+    } catch (error) {
+      console.error('Error updating price data:', error);
+      alert(`PHD ${update.phd} ${update.month}월 데이터 저장에 실패했습니다.`);
+      return;
+    }
+  }
+  
+  alert('모든 변경사항이 저장되었습니다.');
+  // 데이터 다시 로드
+  loadPriceData();
+}
+
+// PDF 생성 함수
+async function generatePDF() {
+  try {
+    // 현재 선택된 모드, 년도, 월 정보
+    const currentMonth = parseInt(document.getElementById('monthSelectBottom').value);
+    const previousMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+    const previousYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+    
+    // 데이터 로드
+    const response = await fetch('/api/price');
+    const allData = await response.json();
+    
+    if (!allData[selectedMode] || !allData[selectedMode][currentYear]) {
+      alert('현재 선택된 모드와 년도의 데이터가 없습니다.');
+      return;
+    }
+    
+    const currentMonthData = allData[selectedMode][currentYear][currentMonth.toString()] || [];
+    const previousMonthData = allData[selectedMode][previousYear][previousMonth.toString()] || [];
+    
+    // 실제 데이터가 있는 PHD 값들만 수집
+    const allPhds = new Set();
+    
+    // 현재 월과 이전 월 데이터에서 PHD 수집
+    currentMonthData.forEach(item => allPhds.add(item.phd));
+    previousMonthData.forEach(item => allPhds.add(item.phd));
+    
+    // PHD 값들을 숫자 순으로 정렬
+    const sortedPhds = Array.from(allPhds).sort((a, b) => a - b);
+    
+    // 테이블 데이터 생성
+    const tableData = [];
+    
+    sortedPhds.forEach(phd => {
+      const currentPrice = currentMonthData.find(item => item.phd === phd);
+      const previousPrice = previousMonthData.find(item => item.phd === phd);
+      
+      const currentPriceValue = currentPrice ? parseFloat(currentPrice.price) : null;
+      const previousPriceValue = previousPrice ? parseFloat(previousPrice.price) : null;
+      
+      // 인상률 계산
+      let increaseRate = '';
+      if (currentPriceValue && previousPriceValue) {
+        const rate = ((currentPriceValue - previousPriceValue) / previousPriceValue) * 100;
+        increaseRate = rate.toFixed(2) + '%';
+      }
+      
+      tableData.push([
+        phd.toString(), // 숫자만 표시
+        previousPriceValue ? previousPriceValue.toFixed(2) : '',
+        currentPriceValue ? currentPriceValue.toFixed(2) : '',
+        increaseRate
+      ]);
+    });
+    
+    // PDF 생성
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // 폰트 설정
+    doc.setFont('helvetica');
+    
+    // 제목
+    doc.setFontSize(16);
+    doc.text(`Treofan Price for ${currentYear}.${currentMonth.toString().padStart(2, '0')}`, 20, 20);
+    
+    // 평균 인상률 계산
+    let totalRate = 0;
+    let validRates = 0;
+    tableData.forEach(row => {
+      if (row[3] && row[3] !== '') {
+        const rate = parseFloat(row[3].replace('%', ''));
+        if (!isNaN(rate)) {
+          totalRate += rate;
+          validRates++;
+        }
+      }
+    });
+    const averageRate = validRates > 0 ? (totalRate / validRates).toFixed(2) : '0.00';
+    
+    // 평균 인상률을 전역 변수에 저장 (Email 기능에서 사용)
+    lastAverageRate = averageRate;
+    
+    // 헤더 생성
+    const header = [
+      'PHD', 
+      `${previousMonth.toString().padStart(2, '0')}`, 
+      `${currentMonth.toString().padStart(2, '0')}`, 
+      `Avg (${averageRate}%)`
+    ];
+    
+    // 테이블 생성
+    doc.autoTable({
+      startY: 30,
+      head: [header],
+      body: tableData,
+      theme: 'grid', // 깔끔한 격자 테마
+      styles: {
+        fontSize: 11,
+        cellPadding: 4,
+        fillColor: [255, 255, 255], // 흰색 배경
+        textColor: [0, 0, 0], // 검은색 글씨
+        halign: 'center',
+        valign: 'middle',
+        lineColor: [0, 0, 0], // 검은색 테두리
+        lineWidth: 0.3 // 얇고 일관된 테두리
+      },
+      headStyles: {
+        fillColor: [240, 240, 240], // 연한 회색 배경
+        textColor: [0, 0, 0], // 검은색 글씨
+        fontStyle: 'bold',
+        lineColor: [0, 0, 0], // 검은색 테두리
+        lineWidth: 0.3
+      },
+      columnStyles: {
+        0: { 
+          halign: 'left', // PHD 열만 왼쪽 정렬
+          lineColor: [0, 0, 0],
+          lineWidth: 0.3
+        }
+      },
+      tableWidth: 'wrap',
+      margin: { top: 25, left: 20 },
+    });
+    
+    // 파일명 생성
+    const fileName = `Treofan_${selectedMode}_${currentMonth}월가격표.pdf`;
+    
+    // PDF 다운로드
+    doc.save(fileName);
+    
+  } catch (error) {
+    console.error('PDF 생성 오류:', error);
+    alert('PDF 생성 중 오류가 발생했습니다.');
+  }
+}
+</script>
+</body>
+</html>

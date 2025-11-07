@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            color: #000;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: -1;
+        }
+        
+        .page {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        
+        h1 {
+            text-align: center;
+            margin: 0;
+            padding-bottom: 10px;
+        }
+        
+        .top-menu {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .left-menu {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .right-menu {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .top-menu-btn {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            margin: 0 3px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #000;
+            border-radius: 3px;
+            min-width: 80px;
+            height: 30px;
+            line-height: 1.2;
+        }
+        
+        .top-menu-btn:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+        
+        .top-menu-btn.mode-btn.selected {
+            background: black;
+            color: white;
+            border-color: black;
+        }
+        
+        .split-btn {
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            padding: 0;
+            border: 1px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        
+        .split-btn:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+        
+        .split-btn.split-active {
+            background: black;
+            color: white;
+            border-color: black;
+        }
+        
+        .split-btn.split-inactive {
+            background: #fff;
+            color: black;
+            border-color: #ccc;
+        }
+        
+        .year-display {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #000;
+            min-width: 50px;
+            text-align: center;
+            padding: 0 5px;
+            margin: 0 3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 30px;
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            border-radius: 3px;
+        }
+        
+        .week-display {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #000;
+            min-width: 50px;
+            text-align: center;
+            padding: 0 5px;
+            margin: 0 3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 30px;
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            border-radius: 3px;
+            cursor: help;
+        }
+        
+        .week-display:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
+        .year-btn {
+            min-width: 30px;
+            width: 30px;
+            padding: 5px;
+        }
+
+        .order-table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+            width: 100%;
+            max-width: 100%;
+            position: relative;
+        }
+        
+        #orderTable {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            border: 1px solid #ccc;
+            font-size: 0.9rem;
+        }
+        
+        #orderTable th,
+        #orderTable td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        #orderTable thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f5f5f5;
+            z-index: 10;
+        }
+        
+        #orderTable th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        
+        .delivery-checkbox {
+            transform: scale(1.2);
+            cursor: pointer;
+            accent-color: white;
+        }
+        
+        .delivery-checkbox:checked {
+            background-color: white;
+            color: black;
+        }
+        
+        #orderTable td {
+            font-size: 0.9rem;
+        }
+        
+        .bottom-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-top: 1px solid #e0e0e0;
+            padding: 15px;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .expand-handle {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            z-index: 10;
+        }
+
+        .expand-btn {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background: #f8f8f8;
+            color: #666;
+            border-radius: 8px 8px 0 0;
+            min-width: 40px;
+            height: 20px;
+            line-height: 1;
+            transition: all 0.2s ease;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+        }
+
+        .expand-btn:hover {
+            background: #e8e8e8;
+            border-color: #999;
+            box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+        }
+
+        .expand-btn.expanded {
+            transform: rotate(180deg);
+            background: #e0e0e0;
+        }
+
+        .main-button-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+
+        .detail-button-area {
+            margin-top: 10px;
+            padding: 12px;
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            animation: slideDown 0.3s ease;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .detail-button-area button {
+            margin: 0;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        .order-table-container {
+            margin-bottom: 120px;
+        }
+
+        .deleteButton {
+            font-size: 0.75rem;
+            padding: 1px 3px;
+            cursor: pointer;
+            margin: 0;
+            display: inline-block;
+            width: 22px;
+            height: 18px;
+            min-width: 22px;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #000;
+            border-radius: 3px;
+            line-height: 1.2;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .deleteButton:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+
+        
+        /* 열 폭 설정 - 13개 열 (불량 열 추가) */
+        #orderTable th:nth-child(1), #orderTable td:nth-child(1) { width: 90px; max-width: 90px; min-width: 90px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(2), #orderTable td:nth-child(2) { width: 100px; max-width: 100px; min-width: 100px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(3), #orderTable td:nth-child(3) { width: 50px; max-width: 50px; min-width: 50px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(4), #orderTable td:nth-child(4) { width: 100px; max-width: 100px; min-width: 100px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(5), #orderTable td:nth-child(5) { width: 30px; max-width: 30px; min-width: 30px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(6), #orderTable td:nth-child(6) { width: 30px; max-width: 30px; min-width: 30px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(7), #orderTable td:nth-child(7) { width: 30px; max-width: 30px; min-width: 30px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(8), #orderTable td:nth-child(8) { width: 30px; max-width: 30px; min-width: 30px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(9), #orderTable td:nth-child(9) { width: 30px; max-width: 30px; min-width: 30px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(10) { width: 70px; max-width: 70px; min-width: 70px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable td:nth-child(10) { width: 70px; max-width: 70px; min-width: 70px; text-align: right; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(11) { width: 30px; max-width: 30px; min-width: 30px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable td:nth-child(11) { width: 30px; max-width: 30px; min-width: 30px; text-align: right; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(12) { width: 70px; max-width: 70px; min-width: 70px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable td:nth-child(12) { width: 70px; max-width: 70px; min-width: 70px; text-align: right; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(13), #orderTable td:nth-child(13) { width: 30px; max-width: 30px; min-width: 30px; text-align: center; white-space: nowrap; overflow: hidden; }
+        
+        /* 체크박스 스타일 - 체크되지 않으면 흰색, 체크되면 파란색 */
+        .row-checkbox {
+          transform: scale(1.2);
+          cursor: pointer;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          width: 12px;
+          height: 12px;
+          border: 1px solid #ccc;
+          border-radius: 2px;
+          background-color: white; /* 기본 상태: 흰색 */
+          position: relative;
+        }
+        
+        /* 체크된 상태: 파란색 */
+        .row-checkbox:checked {
+          background-color: #007bff;
+          border-color: #007bff;
+        }
+        
+        /* 체크마크 표시 */
+        .row-checkbox:checked::after {
+          content: '✓';
+          position: absolute;
+          top: -1px;
+          left: 1px;
+          color: white;
+          font-size: 10px;
+          font-weight: bold;
+        }
+        
+        /* 호버 효과 */
+        .row-checkbox:hover {
+          border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <h1>Shipment</h1>
+
+    <div class="top-menu">
+        <div class="left-menu">
+            <button type="button" onclick="location.href='eltrokorea9.html'" class="top-menu-btn">Home</button>
+            
+            <button type="button" id="yearDownBtn" class="top-menu-btn year-btn">▼</button>
+            <span id="yearDisplay" class="year-display">2025</span>
+            <button type="button" id="yearUpBtn" class="top-menu-btn year-btn">▲</button>
+            
+            <div class="week-display" id="weekDisplay" title="">
+                <span id="weekNumber">W</span>
+            </div>
+        </div>
+        
+        <div class="right-menu">
+            <button id="allBtn" class="top-menu-btn mode-btn selected">All</button>
+            <button id="ntBtn" class="top-menu-btn mode-btn">NT</button>
+            <button id="smBtn" class="top-menu-btn mode-btn">SM</button>
+        </div>
+    </div>
+
+    <div class="order-table-container">
+        <table id="orderTable">
+            <thead>
+                <tr>
+                    <th>Delivery No</th>
+                    <th>Order No</th>
+                    <th>Item No</th>
+                    <th>Item</th>
+                    <th>주문R</th>
+                <th>선적R</th>
+                <th>남은R</th>
+                    <th>완료</th>
+                <th>Split</th>
+                    <th>DeliveredKG</th>
+                    <th>U/P</th>
+                    <th>Price</th>
+                    <th>불량</th>
+                </tr>
+            </thead>
+            <tbody id="orderTableBody">
+                <!-- 빈 테이블 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 하단 버튼 영역 -->
+<div class="bottom-buttons">
+    <div class="expand-handle">
+        <button id="expandButton" type="button" class="expand-btn">▼</button>
+    </div>
+    
+    <div class="main-button-group">
+        <button id="emailBtn2" class="top-menu-btn">Email</button>
+        <button type="button" onclick="location.href='shipmentupdate.html'" class="top-menu-btn">Update</button>
+    </div>
+
+    <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+        <!-- 필요시 추가 버튼들 -->
+    </div>
+</div>
+
+<script>
+    // ========================================
+    // 년도 선택 관련 기능들
+    // ========================================
+    
+    // 년도 선택 초기화
+    let currentYear = new Date().getFullYear();
+
+    // DOM 요소 캐싱
+    const yearDisplay = document.getElementById("yearDisplay");
+    const yearUpBtn = document.getElementById("yearUpBtn");
+    const yearDownBtn = document.getElementById("yearDownBtn");
+
+    yearDisplay.textContent = currentYear;
+
+    // 년도 변경 공통 함수
+    function changeYear(delta) {
+        const newYear = currentYear + delta;
+        if (newYear >= 2020) {
+            currentYear = newYear;
+        yearDisplay.textContent = currentYear;
+            loadOrderDataAndFillTable();
+        }
+    }
+
+    // 년도 증가 버튼
+    yearUpBtn.addEventListener("click", () => {
+        changeYear(1);
+    });
+
+    // 년도 감소 버튼
+    yearDownBtn.addEventListener("click", () => {
+        changeYear(-1);
+    });
+
+    // ========================================
+    // 주차 계산 관련 기능들
+    // ========================================
+
+    // ISO 8601 표준에 따른 주차 계산 함수
+    function getWeekNumber(date) {
+        const targetDate = new Date(date.valueOf());
+        const dayNumber = (date.getUTCDay() + 6) % 7;
+        targetDate.setUTCDate(targetDate.getUTCDate() - dayNumber + 3);
+        const firstThursday = targetDate.valueOf();
+        targetDate.setUTCMonth(0, 1);
+        if (targetDate.getUTCDay() !== 4) {
+            targetDate.setUTCMonth(0, 1 + ((4 - targetDate.getUTCDay()) + 7) % 7);
+        }
+        return 1 + Math.ceil((firstThursday - targetDate) / 604800000);
+    }
+    
+    // 주차 표시 업데이트 함수 (DOM 요소 캐싱)
+    function updateWeekDisplay() {
+        const now = new Date();
+        const weekNumber = getWeekNumber(now);
+        const year = now.getFullYear();
+        const dateStr = now.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        });
+        
+        // DOM 요소 캐싱 (한 번만 쿼리)
+        if (!updateWeekDisplay.weekDisplay) {
+            updateWeekDisplay.weekDisplay = document.getElementById('weekDisplay');
+            updateWeekDisplay.weekNumberSpan = document.getElementById('weekNumber');
+        }
+        
+        updateWeekDisplay.weekNumberSpan.textContent = `W${weekNumber}`;
+        updateWeekDisplay.weekDisplay.title = `${dateStr} (${year}년 ${weekNumber}주차)`;
+    }
+
+    // ========================================
+    // Email 버튼 관련 기능들
+    // ========================================
+    
+    // 체크된 deliveryNo들을 효율적으로 수집하는 함수
+    function getCheckedDeliveryNos() {
+        const checkboxes = document.querySelectorAll('.delivery-checkbox:checked');
+        return Array.from(checkboxes).map(checkbox => 
+            checkbox.getAttribute('data-deliveryNo')
+        );
+    }
+
+    // 클립보드에 텍스트 복사
+    async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (err) {
+            // fallback for older browsers
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                const result = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                return result;
+            } catch (err) {
+                document.body.removeChild(textArea);
+                return false;
+            }
+        }
+    }
+
+    // 이메일 텍스트 생성
+    function generateEmailText() {
+        const checkedDeliveryNos = getCheckedDeliveryNos();
+        
+        if (checkedDeliveryNos.length === 0) {
+            return { success: false, message: "선택된 아이템이 없습니다." };
+        }
+        
+        // Set을 사용하여 중복 제거 및 빠른 검색
+        const deliveryNoSet = new Set(checkedDeliveryNos);
+        const invoiceInfo = [];
+        
+        if (window.allOrdersData) {
+            for (const order of window.allOrdersData) {
+                if (order.items) {
+                    for (const item of order.items) {
+                        if (deliveryNoSet.has(item.deliveryNo)) {
+                            const pino = item['p/ino'] || '';
+                            const invoiceno = item['invoiceno'] || '';
+                            
+                            if (pino) {
+                                invoiceInfo.push(`Proforma Invoice No. ${pino}`);
+                            } else if (invoiceno) {
+                                invoiceInfo.push(`Invoice No. ${invoiceno}`);
+                            }
+                        }
+                }
+                }
+            }
+        }
+        
+        if (invoiceInfo.length === 0) {
+            return { success: false, message: "선택된 아이템의 정보를 찾을 수 없습니다." };
+        }
+        
+        // 중복 제거
+        const uniqueInvoiceInfo = [...new Set(invoiceInfo)];
+        
+        // 이메일 텍스트 생성
+        let emailText = "Good morning.\n\nPlease send us the shipment detail for ";
+        
+        if (uniqueInvoiceInfo.length === 1) {
+            emailText += uniqueInvoiceInfo[0];
+        } else {
+            emailText += uniqueInvoiceInfo.join(" and ");
+        }
+        
+        emailText += "\n\nBest Regards,";
+        
+        return { success: true, text: emailText };
+    }
+        
+        // Email 버튼 이벤트 리스너
+    function setupEmailButton() {
+        document.getElementById("emailBtn2").addEventListener("click", async () => {
+            try {
+                const result = generateEmailText();
+                
+                if (!result.success) {
+                    alert(result.message + (result.message.includes("선택된 아이템이 없습니다") ? "\n\n체크박스를 선택한 후 다시 시도해주세요." : ""));
+                    return;
+                }
+                
+                const success = await copyToClipboard(result.text);
+                
+                if (success) {
+                    alert('Email 내용이 클립보드에 복사되었습니다.\n바로 붙여넣기(Ctrl+V)를 사용할 수 있습니다.');
+                } else {
+                    alert('클립보드 복사에 실패했습니다. 브라우저 권한을 확인해주세요.');
+                }
+            } catch (error) {
+                console.error("이메일 텍스트 생성 중 오류:", error);
+                alert("이메일 텍스트 생성 중 오류가 발생했습니다.");
+            }
+        });
+    }
+
+    // ========================================
+    // 모드 버튼 관련 기능들
+    // ========================================
+    
+    // 현재 선택된 모드 (All, NT, SM)
+    let currentMode = 'All';
+
+    // DOM 요소 캐싱
+    const modeButtons = {
+        all: document.getElementById('allBtn'),
+        nt: document.getElementById('ntBtn'),
+        sm: document.getElementById('smBtn')
+    };
+
+    // 모드 변경 공통 함수
+    function changeMode(newMode) {
+        if (currentMode === newMode) return; // 같은 모드면 변경하지 않음
+        
+        // 이전 모드 버튼에서 selected 클래스 제거
+        const prevButton = modeButtons[currentMode.toLowerCase()];
+        if (prevButton) {
+            prevButton.classList.remove('selected');
+        }
+        
+        // 새 모드 설정
+        currentMode = newMode;
+        
+        // 새 모드 버튼에 selected 클래스 추가
+        const newButton = modeButtons[newMode.toLowerCase()];
+        if (newButton) {
+            newButton.classList.add('selected');
+        }
+        
+        // 데이터 다시 로드
+        loadOrderDataAndFillTable();
+    }
+
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+        // 주차 표시 업데이트 및 데이터 로드
+        updateWeekDisplay();
+        loadOrderDataAndFillTable();
+        setupExpandButton();
+        
+        // 초기 모드 버튼 상태 설정
+        modeButtons.all.classList.add('selected');
+        
+        // 모드 버튼 이벤트 리스너
+        modeButtons.all.addEventListener('click', () => changeMode('All'));
+        modeButtons.nt.addEventListener('click', () => changeMode('NT'));
+        modeButtons.sm.addEventListener('click', () => changeMode('SM'));
+        
+        // Email 버튼 설정
+        setupEmailButton();
+    });
+    
+    // ========================================
+    // 데이터 로드 및 테이블 채우기 관련 기능들
+    // ========================================
+    
+    // 모드 매칭 함수
+    function isModeMatch(order) {
+        if (currentMode === 'All') return true;
+        if (currentMode === 'NT') return order.mode === 'NT';
+        if (currentMode === 'SM') return order.mode === 'SM-B' || order.mode === 'SM-C';
+        return false;
+    }
+    
+    // 아이템 데이터 변환 함수
+    function createItemData(order, item) {
+        const orderR = parseFloat(item.adjustment || item.quantity || '0');
+        const completedR = parseFloat(item.deliveredR || '0');
+        const leftoverR = orderR - completedR;
+        
+        // 같은 orderNo의 모든 아이템 번호 수집
+        const allItemNos = order.items.map(i => i.itemNo);
+        
+        // 현재 아이템 번호에 .1이 붙은 아이템이 있는지 확인
+        const hasSplitItem = allItemNos.includes(item.itemNo + '.1');
+        
+        return {
+                            orderNo: order.orderNo,
+                            itemNo: item.itemNo,
+                            item: `PHD-${item.phd}(${item.width})${item.x}`,
+            orderR: item.adjustment || item.quantity || '',
+            completedR: item.deliveredR || '',
+            leftoverR: leftoverR.toString(),
+            status: item.deliveredkg || '',
+            'd/nno': item['d/nno'] || '',
+            'd/ndate': item['d/ndate'] || '',
+            'p/ino': item['p/ino'] || '',
+            'p/idate': item['p/idate'] || '',
+            'p/ino2': item['p/ino2'] || '',
+            'p/idate2': item['p/idate2'] || '',
+                            'invoiceno': item.invoiceno || '',
+                            'invoicedate': item.invoicedate || '',
+            phd: item.phd,
+            mode: order.mode,
+            deliveredkg: item.deliveredkg || '0',
+            'U/P': item['U/P'] || '',
+            hasSplitItem: hasSplitItem,
+            deliveryNo: item.deliveryNo || '',
+            defective: item.defective || false
+        };
+    }
+    
+    // Split 버튼 이벤트 리스너 설정
+    function setupSplitButtons() {
+        const splitButtons = document.querySelectorAll('.split-btn');
+        splitButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const { orderNo, actualItemNo } = extractRowData(row, '');
+                
+                if (orderNo && actualItemNo) {
+                    // Split 기능 구현
+                    if (confirm(`아이템 ${orderNo}-${actualItemNo}을 분할하시겠습니까?`)) {
+                        splitItem(actualItemNo, row);
+                    }
+                } else {
+                    alert('주문 정보를 찾을 수 없습니다.');
+                }
+            });
+        });
+    }
+    
+    // orderData 로드 및 테이블 채우기
+    async function loadOrderDataAndFillTable() {
+        try {
+            const response = await fetch('/api/orders');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const orderData = await response.json();
+            
+            // 전역 변수에 데이터 저장 (Email 기능용)
+            window.allOrdersData = orderData;
+            
+            // Delivery No별로 아이템들을 그룹화
+            const deliveryGroups = {};
+            
+            // 효율적인 단일 루프로 필터링 및 그룹화
+            for (const order of orderData) {
+                if (!isModeMatch(order) || !order.items?.length) continue;
+                
+                for (const item of order.items) {
+                    const deliveryNo = item.deliveryNo;
+                    if (!deliveryNo) continue;
+                    
+                    // 년도 필터링
+                    const oldestDate = getOldestDateFromItem(item);
+                    if (oldestDate && oldestDate.getFullYear() !== currentYear) continue;
+                    
+                    // 그룹 초기화
+                    if (!deliveryGroups[deliveryNo]) {
+                        deliveryGroups[deliveryNo] = [];
+                    }
+                    
+                    // 아이템 데이터 추가
+                    deliveryGroups[deliveryNo].push(createItemData(order, item));
+                }
+            }
+            
+            // 테이블 채우기
+            await fillTable(deliveryGroups);
+            
+        } catch (error) {
+            console.error('OrderData 로드 실패:', error);
+        }
+    }
+
+    // 테이블 채우기 함수
+    async function fillTable(deliveryGroups) {
+        const tbody = document.getElementById('orderTableBody');
+        tbody.innerHTML = '';
+        
+        // Delivery No를 날짜 기준으로 정렬
+        const sortedDeliveryNos = sortDeliveryNosByDate(deliveryGroups);
+        
+        for (const deliveryNo of sortedDeliveryNos) {
+            const items = deliveryGroups[deliveryNo];
+            
+            for (let index = 0; index < items.length; index++) {
+                const item = items[index];
+                const row = document.createElement('tr');
+                
+                let deliveryNoCell = '';
+                if (index === 0) {
+                    // 첫 번째 아이템에서만 모든 정보를 표시하고 rowspan 설정
+                    const firstItem = items[0];
+                    
+                    // p/ino2, p/idate2는 모든 아이템에서 찾아서 첫 번째로 발견된 값 사용
+                    let pino2 = '', pidate2 = '';
+                    for (const item of items) {
+                        if (item['p/ino2'] && !pino2) pino2 = item['p/ino2'];
+                        if (item['p/idate2'] && !pidate2) pidate2 = item['p/idate2'];
+                    }
+                    
+                    
+                    const dnnno = firstItem['d/nno'] || '';
+                    const dndate = firstItem['d/ndate'] || '';
+                    const pino = firstItem['p/ino'] || '';
+                    const pidate = firstItem['p/idate'] || '';
+                    const invoiceno = firstItem['invoiceno'] || '';
+                    const invoicedate = firstItem['invoicedate'] || '';
+                    
+                    // 체크박스와 deliveryNo, d/nno, (d/ndate), p/ino, (p/idate), p/ino2, (p/idate2), invoiceno, (invoicedate) 아홉 줄로 표시
+                    let deliveryInfo = `<input type="checkbox" class="delivery-checkbox" data-deliveryNo="${deliveryNo}" style="margin-right: 8px;">${deliveryNo}`;
+                    if (dnnno) {
+                        deliveryInfo += `<br>${dnnno}`;
+                    }
+                    if (dndate) {
+                        deliveryInfo += `<br>(${dndate})`;
+                    }
+                    if (pino) {
+                        deliveryInfo += `<br>${pino}`;
+                    }
+                    if (pidate) {
+                        deliveryInfo += `<br>(${pidate})`;
+                    }
+                    if (pino2) {
+                        deliveryInfo += `<br>${pino2}`;
+                    }
+                    if (pidate2) {
+                        deliveryInfo += `<br>(${pidate2})`;
+                    }
+                    if (invoiceno) {
+                        deliveryInfo += `<br>${invoiceno}`;
+                    }
+                    if (invoicedate) {
+                        deliveryInfo += `<br>(${invoicedate})`;
+                    }
+                    
+                    deliveryNoCell = `<td rowspan="${items.length}">${deliveryInfo}</td>`;
+                }
+                
+                // 선적 체크박스 생성 (남은R <= 0일 때 자동 체크, 읽기 전용)
+                const leftoverR = parseFloat(item.leftoverR || '0');
+                const isChecked = leftoverR <= 0 ? 'checked' : '';
+                const deliveredCheckbox = `<input type="checkbox" class="row-checkbox" onchange="toggleDeliveredStatus(this)" disabled ${isChecked}>`;
+                
+                // 불량 체크박스 생성 (defective: true이면 체크)
+                const isDefect = item.defective === true ? 'checked' : '';
+                const defectCheckbox = `<input type="checkbox" class="defect-checkbox" onchange="toggleDefectStatus(this)" ${isDefect}>`;
+                
+                // KG 열과 U/P 열 값 설정 (모든 모드에서 KG 표시, NT 모드에서만 U/P 표시)
+                const kgValue = item.status || ''; // 모든 모드에서 KG 표시
+                const upValue = item.mode === 'NT' ? (item['U/P'] || '') : ''; // NT 모드일 때만 U/P 값 표시
+                
+                // Price 계산: U/P × KG = Price
+                let priceValue = '';
+                if (upValue && kgValue) {
+                    const up = parseFloat(upValue) || 0;
+                    const kg = parseFloat(kgValue) || 0;
+                    const price = up * kg;
+                    priceValue = `$${price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                }
+                
+                row.innerHTML = `
+                    ${deliveryNoCell}
+                    <td>${item.orderNo}</td>
+                    <td>${item.itemNo}</td>
+                    <td>${item.item}</td>
+                    <td>${item.orderR}</td>
+                    <td>${item.completedR}</td>
+                    <td>${item.leftoverR}</td>
+                    <td style="text-align: center !important;">${deliveredCheckbox}</td>
+                    <td style="text-align: center !important;"><button class="split-btn" ${item.hasSplitItem ? 'style="background-color: black; color: white; border-color: black;"' : ''}>S</button></td>
+                    <td style="text-align: right !important;">${kgValue}</td>
+                    <td style="text-align: right !important;">${upValue}</td>
+                    <td style="text-align: right !important;">${priceValue}</td>
+                    <td style="text-align: center !important;">${defectCheckbox}</td>
+                `;
+                
+                tbody.appendChild(row);
+            }
+        }
+        
+        // Split 버튼 이벤트 리스너 추가
+        setupSplitButtons();
+    }
+    
+    // ========================================
+    // Delivery No 정렬 관련 함수들
+    // ========================================
+    
+    // DD.MM.YYYY 형식의 날짜 문자열을 Date 객체로 파싱하는 함수
+    function parseDateString(dateString) {
+        if (!dateString) return null;
+        
+        const parts = dateString.split('.');
+        if (parts.length >= 3) {
+            const day = parseInt(parts[0]);
+            const month = parseInt(parts[1]) - 1; // JavaScript 월은 0부터 시작
+            const year = parseInt(parts[2]);
+            return new Date(year, month, day);
+        }
+        
+        return null;
+    }
+    
+    // 아이템에서 가장 오래된 날짜(Date 객체)를 반환하는 함수
+    function getOldestDateFromItem(item) {
+        const dates = [];
+        
+        // 각 날짜를 파싱하여 Date 객체로 변환
+        if (item['d/ndate']) {
+            const parsedDate = parseDateString(item['d/ndate']);
+            if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
+        }
+        if (item['p/idate']) {
+            const parsedDate = parseDateString(item['p/idate']);
+            if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
+        }
+        if (item['p/i2date']) {
+            const parsedDate = parseDateString(item['p/i2date']);
+            if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
+        }
+        if (item['invoicedate']) {
+            const parsedDate = parseDateString(item['invoicedate']);
+            if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
+        }
+        
+        // 날짜가 없으면 null 반환
+        if (dates.length === 0) return null;
+        
+        // 가장 오래된 날짜 반환
+        return dates.reduce((oldest, current) => {
+            return current < oldest ? current : oldest;
+        });
+    }
+    
+    // Delivery No를 날짜 기준으로 정렬하는 함수
+    function sortDeliveryNosByDate(deliveryGroups) {
+        return Object.keys(deliveryGroups).sort((a, b) => {
+            const aItems = deliveryGroups[a];
+            const bItems = deliveryGroups[b];
+            
+            // 각 delivery group의 첫 번째 아이템에서 날짜 정보 가져오기
+            const aFirstItem = aItems[0];
+            const bFirstItem = bItems[0];
+            
+            // 각 delivery group의 가장 오래된 날짜 찾기
+            const aOldestDate = getOldestDateFromItem(aFirstItem);
+            const bOldestDate = getOldestDateFromItem(bFirstItem);
+            
+            // 가장 오래된 날짜 기준으로 내림차순 정렬 (최신이 위로)
+            if (aOldestDate && bOldestDate) {
+                return bOldestDate.getTime() - aOldestDate.getTime();
+            } else if (aOldestDate) {
+                return -1; // a가 날짜가 있으면 a가 위로
+            } else if (bOldestDate) {
+                return 1; // b가 날짜가 있으면 b가 위로
+            } else {
+                // 둘 다 날짜가 없으면 EK-번호 기준으로 정렬
+                const aNum = parseInt(a.replace('EK-', '')) || 0;
+                const bNum = parseInt(b.replace('EK-', '')) || 0;
+                return bNum - aNum;
+            }
+        });
+    }
+    
+    // ========================================
+    // 아이템 Split 관련 기능들
+    // ========================================
+    
+    // 아이템 Split 기능 (단일 API 호출)
+    async function splitItem(originalItemNo, row) {
+        try {
+            // 1. 해당 행의 데이터 수집 (rowspan 구조 고려)
+            const { orderNo, actualItemNo } = extractRowData(row, originalItemNo);
+            
+            if (!orderNo || !actualItemNo) {
+                alert('주문 정보를 찾을 수 없습니다.');
+                return;
+            }
+            
+            // 2. api/split로 새 아이템 생성
+            const splitResponse = await fetch('/api/split', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderNo, originalItemNo: actualItemNo })
+            });
+            
+            if (splitResponse.ok) {
+                // 3. UI 업데이트 - 새 아이템이 생성되었으므로 hasSplitItem은 true
+                updateSplitButton(row, true);
+                loadOrderDataAndFillTable();
+                alert('아이템이 성공적으로 분할되었습니다.');
+            } else {
+                const error = await splitResponse.json();
+                alert(`새 아이템 생성 실패: ${error.message}`);
+            }
+        } catch (error) {
+            console.error('Split 오류:', error);
+            alert('Split 중 오류가 발생했습니다.');
+        }
+    }
+    
+    // 행에서 주문 정보 추출 (rowspan 구조 고려)
+    function extractRowData(row, fallbackItemNo) {
+        // 모든 td 요소를 가져와서 인덱스로 접근
+        const cells = row.querySelectorAll('td');
+        
+        // 디버깅 로그 추가
+        console.log('🔍 extractRowData 디버깅:');
+        console.log('  - cells.length:', cells.length);
+        console.log('  - fallbackItemNo:', fallbackItemNo);
+        
+        // 모든 셀 내용 출력
+        for (let i = 0; i < Math.min(cells.length, 5); i++) {
+            console.log(`  - cells[${i}]:`, cells[i]?.textContent.trim());
+        }
+        
+        // rowspan 때문에 첫 번째 행과 나머지 행의 열 구조가 다름
+        // 첫 번째 행: deliveryNoCell(rowspan) + Delete + Order No + Item No + Item + ...
+        // 나머지 행들: Delete + Order No + Item No + Item + ...
+        
+        let orderNo = '';
+        let itemNo = fallbackItemNo;
+        
+        if (cells.length >= 4) {
+            // 첫 번째 행인지 확인 (deliveryNoCell이 있는지)
+            const hasDeliveryNoCell = cells[0].hasAttribute('rowspan');
+            console.log('  - hasDeliveryNoCell:', hasDeliveryNoCell);
+            
+            if (hasDeliveryNoCell) {
+                // 첫 번째 행: cells[1] = Order No, cells[2] = Item No (deliveryNoCell이 있으므로 인덱스 +1)
+                orderNo = cells[1]?.textContent.trim() || '';
+                itemNo = cells[2]?.textContent.trim() || fallbackItemNo;
+                console.log('  - 첫 번째 행: orderNo=', orderNo, 'itemNo=', itemNo);
+            } else {
+                // 나머지 행들: cells[0] = Order No, cells[1] = Item No
+                orderNo = cells[0]?.textContent.trim() || '';
+                itemNo = cells[1]?.textContent.trim() || fallbackItemNo;
+                console.log('  - 나머지 행: orderNo=', orderNo, 'itemNo=', itemNo);
+            }
+        }
+        
+        console.log('  - 최종 결과: orderNo=', orderNo, 'actualItemNo=', itemNo);
+        return { orderNo, actualItemNo: itemNo };
+    }
+    
+    // Split 버튼 스타일 업데이트
+    function updateSplitButton(row, hasSplitItem) {
+        const splitButton = row.querySelector('.split-btn');
+        if (!splitButton) return;
+        
+        // CSS 클래스 사용으로 효율성 향상
+        if (hasSplitItem) {
+            splitButton.classList.add('split-active');
+            splitButton.classList.remove('split-inactive');
+            } else {
+            splitButton.classList.add('split-inactive');
+            splitButton.classList.remove('split-active');
+        }
+    }
+    
+    // ========================================
+    // 선적 체크박스 토글 함수
+    // ========================================
+    
+    // 선적 완료 체크박스 상태 변경 시 호출되는 함수
+    // 남은R <= 0일 때만 체크박스가 체크됨 (읽기 전용)
+    // 서버 저장 없음, 수동 체크/해제 불가능
+    function toggleDeliveredStatus(checkbox) {
+        const row = checkbox.closest('tr');
+        
+        // 남은R 값 계산하여 체크 여부 확인
+        const orderRCell = row.querySelector('td:nth-child(6)'); // 주문R 열
+        const completedRCell = row.querySelector('td:nth-child(7)'); // 완료R 열
+        
+        const orderR = parseFloat(orderRCell?.textContent.trim() || '0');
+        const completedR = parseFloat(completedRCell?.textContent.trim() || '0');
+        const leftoverR = orderR - completedR;
+        
+        // 남은R <= 0이면 체크, 아니면 해제
+        checkbox.checked = leftoverR <= 0;
+    }
+    
+    // 불량 체크박스 상태 변경 시 호출되는 함수 (shipmentarchive NT청구서 방식)
+    async function toggleDefectStatus(checkbox) {
+        const isDefect = checkbox.checked;
+        
+        // 체크박스가 있는 행에서 orderNo와 itemNo 추출
+        const row = checkbox.closest('tr');
+        const cells = row.querySelectorAll('td');
+        
+        let orderNo = '';
+        let itemNo = '';
+        
+        // rowspan 때문에 첫 번째 행과 나머지 행의 열 구조가 다름
+        const hasDeliveryNoCell = cells[0] && cells[0].hasAttribute('rowspan');
+        
+        if (hasDeliveryNoCell) {
+            // 첫 번째 행: cells[1] = Order No, cells[2] = Item No (deliveryNoCell이 있으므로 인덱스 +1)
+            orderNo = cells[1]?.textContent.trim() || '';
+            itemNo = cells[2]?.textContent.trim() || '';
+        } else {
+            // 나머지 행들: cells[0] = Order No, cells[1] = Item No
+            orderNo = cells[0]?.textContent.trim() || '';
+            itemNo = cells[1]?.textContent.trim() || '';
+        }
+        
+        try {
+            await updateDefectStatusByOrderNo(orderNo, itemNo, isDefect);
+        } catch (error) {
+            console.error('불량 체크박스 업데이트 중 오류:', error);
+            alert('업데이트 중 오류가 발생했습니다: ' + error.message);
+            // 오류 발생 시 체크박스 상태를 원래대로 되돌림
+            checkbox.checked = !isDefect;
+        }
+    }
+
+    // 불량 상태 업데이트 함수 (orderNo와 itemNo로 정확한 아이템 하나만 찾아서 업데이트)
+    async function updateDefectStatusByOrderNo(orderNo, itemNo, isDefect) {
+        try {
+            // 모든 주문 데이터 가져오기
+            const allOrdersResponse = await fetch('/api/orders');
+            const allOrders = await allOrdersResponse.json();
+
+            // 해당 orderNo와 itemNo를 가진 주문 찾기
+            const targetOrder = allOrders.find(order => order.orderNo === orderNo);
+            
+            if (!targetOrder) {
+                alert(`주문 ${orderNo}를 찾을 수 없습니다.`);
+                return;
+            }
+
+            // 해당 아이템 찾기
+            const targetItem = targetOrder.items.find(item => item.itemNo === itemNo);
+            
+            if (!targetItem) {
+                alert(`주문 ${orderNo}의 아이템 ${itemNo}를 찾을 수 없습니다.`);
+                return;
+            }
+
+            // API 호출로 업데이트
+            const updateData = {
+                searchOrderBy: 'orderNo',
+                orderNo: orderNo,
+                searchMethod: 'itemNo',
+                items: [{
+                    itemNo: itemNo,
+                    defective: isDefect
+                }],
+                itemUpdateFields: ['defective']
+            };
+
+            const response = await fetch('/api/updateOrder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updateData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.message && result.message.includes('successfully')) {
+                alert(`불량 상태가 성공적으로 업데이트되었습니다.\n업데이트된 아이템: ${result.updatedItems || 1}개`);
+            } else {
+                alert(`업데이트 실패: ${result.message || '알 수 없는 오류'}`);
+            }
+
+        } catch (error) {
+            console.error('불량 상태 업데이트 중 오류:', error);
+            throw error;
+        }
+    }
+
+    // 불량 상태 업데이트 함수 (shipmentarchive NT청구서 방식) - 기존 함수 유지
+    async function updateDefectStatus(deliveryNo, itemNo, isDefect) {
+        try {
+            // 모든 주문 데이터 가져오기
+            const allOrdersResponse = await fetch('/api/orders');
+            const allOrders = await allOrdersResponse.json();
+
+            // 해당 deliveryNo와 itemNo를 가진 주문들 찾기
+            const ordersWithItem = allOrders.filter(order =>
+                order.items && order.items.some(item => 
+                    item.deliveryNo === deliveryNo && item.itemNo === itemNo
+                )
+            );
+
+            if (ordersWithItem.length === 0) {
+                alert(`해당 deliveryNo(${deliveryNo})-itemNo(${itemNo})를 가진 주문을 찾을 수 없습니다.`);
+                return;
+            }
+
+            let totalUpdated = 0;
+            let totalSkipped = 0;
+            let hasError = false;
+
+            // 각 주문별로 API 호출
+            for (const order of ordersWithItem) {
+                try {
+                    const updateData = {
+                        searchOrderBy: 'orderNo',
+                        orderNo: order.orderNo,
+                        searchMethod: 'deliveryNo',
+                        items: [{
+                            deliveryNo: deliveryNo,
+                            itemNo: itemNo,
+                            defective: isDefect
+                        }],
+                        itemUpdateFields: ['defective']
+                    };
+
+                    const response = await fetch('/api/updateOrder', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updateData)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.message && result.message.includes('successfully')) {
+                        totalUpdated += result.updatedItems || 0;
+                    } else {
+                        totalSkipped += result.skippedItems || 0;
+                        hasError = true;
+                    }
+                } catch (error) {
+                    totalSkipped++;
+                    console.error(`[불량 상태] ${order.orderNo} 업데이트 중 오류:`, error);
+                    hasError = true;
+                }
+            }
+
+            // 결과 표시 (shipmentarchive와 동일한 방식)
+            if (totalUpdated > 0) {
+                alert(`불량 상태가 성공적으로 업데이트되었습니다.\n업데이트된 아이템: ${totalUpdated}개${totalSkipped > 0 ? `, 건너뛴 아이템: ${totalSkipped}개` : ''}`);
+            } else if (hasError) {
+                alert(`일부 불량 상태 업데이트에 실패했습니다.\n업데이트된 아이템: ${totalUpdated}개, 건너뛴 아이템: ${totalSkipped}개`);
+            } else {
+                alert(`불량 상태 업데이트할 데이터가 없습니다.`);
+            }
+
+        } catch (error) {
+            console.error('불량 상태 업데이트 중 오류:', error);
+            throw error;
+        }
+    }
+    
+    // 확장/축소 기능
+    function setupExpandButton() {
+        const expandButton = document.getElementById("expandButton");
+        if (expandButton) {
+            expandButton.addEventListener("click", () => {
+                const detailArea = document.getElementById("detailButtonArea");
+                
+                if (detailArea.style.display === "none") {
+                    detailArea.style.display = "flex";
+                    expandButton.classList.add("expanded");
+                    expandButton.textContent = "▲";
+                } else {
+                    detailArea.style.display = "none";
+                    expandButton.classList.remove("expanded");
+                    expandButton.textContent = "▼";
+                }
+            });
+        }
+    }
+    
+    // 아이템 정보 삭제 함수 (X 버튼 열 제거로 인해 사용하지 않음)
+    /*
+    async function deleteItemInfo(orderNo, itemNo) {
+        if (!confirm(`정말로 이 아이템의 D/N, P/I 정보를 삭제하시겠습니까?\n주문번호: ${orderNo}\n아이템번호: ${itemNo}`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/deletedeliveryNo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    orderNo: orderNo,
+                    itemNo: itemNo
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(`아이템 정보가 성공적으로 삭제되었습니다.\n삭제된 필드: deliveryNo, d/nno, d/ndate, p/ino, p/idate, p/i2no, p/i2date, invoiceno, invoicedate, invoicedue, invoiceprice, deliveredR, isshipmentcomplete`);
+                // 페이지 새로고침하여 변경사항 반영
+                loadOrderDataAndFillTable();
+            } else {
+                alert(`삭제 실패: ${result.message}`);
+            }
+        } catch (error) {
+            alert('아이템 정보 삭제 중 오류가 발생했습니다.');
+        }
+    }
+    */
+    
+</script>
+</body>
+</html>

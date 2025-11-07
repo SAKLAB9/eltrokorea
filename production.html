@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      color: #000;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+    .page {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    h1 {
+      text-align: center;
+      margin: 0;
+      padding-bottom: 10px;
+    }
+    .top-menu {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .left-menu {
+      display: flex;
+      gap: 3px;
+    }
+    .right-menu {
+      display: flex;
+      gap: 3px;
+    }
+    .top-menu-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+    }
+    .top-menu-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    .top-menu-btn.mode-btn.selected {
+      background: black;
+      color: white;
+      border-color: black;
+    }
+    
+    /* 년도 표시 스타일 */
+    .year-display {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #000;
+      min-width: 50px;
+      text-align: center;
+      padding: 0 5px;
+      margin: 0 3px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 30px;
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 3px;
+    }
+    
+    /* 주차 표시 스타일 */
+    .week-display {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #000;
+      min-width: 50px;
+      text-align: center;
+      padding: 0 5px;
+      margin: 0 3px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 30px;
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 3px;
+      cursor: help;
+    }
+    
+    .week-display:hover {
+      background: #e9ecef;
+      border-color: #adb5bd;
+    }
+    
+    /* 년도 버튼 특별 스타일 */
+    .year-btn {
+      min-width: 30px;
+      width: 30px;
+      padding: 5px;
+    }
+
+    /* 주문 목록 테이블 스타일 */
+    .order-table-container {
+      margin-top: 20px;
+      overflow-x: auto; /* 가로 스크롤 추가 */
+      width: 100%;
+      max-width: 100%;
+      position: relative;
+    }
+    
+    #orderTable {
+      width: auto;
+      min-width: 200px; /* 13개 열 실제 너비에 맞게 조정 */
+      border-collapse: collapse;
+      border: 1px solid #ccc;
+      font-size: 0.8rem;
+      table-layout: fixed;
+    }
+    
+    #orderTable th,
+    #orderTable td {
+      border: 1px solid #ccc;
+      padding: 4px;
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    
+    /* 헤더 고정 */
+    #orderTable thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f5f5f5;
+      z-index: 10;
+    }
+    
+    /* 테이블 열 너비 및 스타일 설정 - 모든 열 픽스 */
+    #orderTable th:first-child, #orderTable td:first-child { 
+      width: 100px; 
+      max-width: 100px; 
+      min-width: 100px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    /* 체크 열 - 첫 번째와 두 번째 열 모두 */
+    #orderTable td:nth-child(1),
+    #orderTable td:nth-child(2) {
+      width: 40px; 
+      max-width: 40px; 
+      min-width: 40px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    /* 삭제 열 - 두 번째와 세 번째 열 모두 */
+    #orderTable td:nth-child(2),
+    #orderTable td:nth-child(3) {
+      width: 40px; 
+      max-width: 40px; 
+      min-width: 40px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    #orderTable th:nth-child(4), #orderTable td:nth-child(4) { 
+      width: 40px; 
+      max-width: 40px; 
+      min-width: 40px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    #orderTable th:nth-child(5), #orderTable td:nth-child(5) { 
+      width: 120px; 
+      max-width: 120px; 
+      min-width: 120px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    .delete-btn {
+      width: 12px;
+      height: 12px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #333;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 2px;
+      transform: scale(1.2);
+    }
+    
+    .delete-btn:hover {
+      background: #ff4444;
+      color: white;
+      border-color: #ff4444;
+    }
+    
+    /* 주문R 열 - 5번째와 6번째 열 모두 */
+    #orderTable td:nth-child(5),
+    #orderTable td:nth-child(6) {
+      width: 70px; 
+      max-width: 70px; 
+      min-width: 70px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    /* 주문P 열 - 6번째와 7번째 열 모두 */
+    #orderTable td:nth-child(6),
+    #orderTable td:nth-child(7) {
+      width: 70px; 
+      max-width: 70px; 
+      min-width: 70px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    #orderTable th:nth-child(8), #orderTable td:nth-child(8) { 
+      width: 70px; 
+      max-width: 70px; 
+      min-width: 70px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    /* ProducedKG 열 - 8번째와 9번째 열 모두 */
+    #orderTable td:nth-child(8),
+    #orderTable td:nth-child(9) {
+      width: 70px; 
+      max-width: 70px; 
+      min-width: 70px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    /* DeliveredKG 열 - 9번째와 10번째 열 모두 */
+    #orderTable td:nth-child(9),
+    #orderTable td:nth-child(10) {
+      width: 70px; 
+      max-width: 70px; 
+      min-width: 70px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    #orderTable th:nth-child(11), #orderTable td:nth-child(11) { 
+      width: 40px; 
+      max-width: 40px; 
+      min-width: 40px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    #orderTable th:nth-child(12), #orderTable td:nth-child(12) { 
+      width: 60px; 
+      max-width: 60px; 
+      min-width: 60px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    #orderTable th:nth-child(13), #orderTable td:nth-child(13) { 
+      width: 70px; 
+      max-width: 70px; 
+      min-width: 70px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    #orderTable th:nth-child(14), #orderTable td:nth-child(14) { 
+      width: 100px; 
+      max-width: 100px; 
+      min-width: 100px; 
+      text-align: center; 
+      white-space: nowrap; 
+      overflow: hidden; 
+    }
+    
+    /* 10번째 열 체크박스 스타일 - 생산 완료 상태 (체크되지 않으면 흰색, 체크되면 파란색) */
+    .row-checkbox {
+      transform: scale(1.2);
+      cursor: pointer;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border: 1px solid #ccc;
+      border-radius: 2px;
+      background-color: white; /* 기본 상태: 흰색 */
+      position: relative;
+    }
+    
+    /* 10번째 열 체크박스 체크된 상태: 파란색 */
+    .row-checkbox:checked {
+      background-color: #007bff;
+      border-color: #007bff;
+    }
+    
+    /* 10번째 열 체크박스 체크마크 표시 */
+    .row-checkbox:checked::after {
+      content: '✓';
+      position: absolute;
+      top: -1px;
+      left: 1px;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    
+    /* 10번째 열 체크박스 cancel 상태: 흰색 배경에 검은색 X */
+    .row-checkbox.cancel {
+      background-color: white;
+      border: 1px solid #ccc;
+    }
+    
+    .row-checkbox.cancel::after {
+      content: 'X';
+      position: absolute;
+      top: -1px;
+      left: 1px;
+      color: black;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    
+    /* 드롭다운 스타일 */
+    .dropdown-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-right: auto; /* 왼쪽으로 정렬 */
+    }
+    
+    .dropdown {
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      background: #fff;
+      font-size: 0.9rem;
+      min-width: 120px;
+    }
+    
+    .dropdown:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+    
+    /* 10번째 열 체크박스 호버 효과 */
+    .row-checkbox:hover {
+      border-color: #007bff;
+    }
+    
+    /* 2번째 열 체크박스 스타일 - 선택/해제용 (흰색 배경 유지) */
+    .itemCheckbox {
+      transform: scale(1.2);
+      cursor: pointer;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border: 1px solid #ccc;
+      border-radius: 2px;
+      background-color: white; /* 기본 상태: 흰색 */
+      position: relative;
+      margin: 0;
+    }
+    
+    /* 2번째 열 체크박스 체크된 상태: 흰색 배경 유지 */
+    .itemCheckbox:checked {
+      background-color: white;
+      border-color: #ccc;
+    }
+    
+    /* 2번째 열 체크박스 체크마크 표시 */
+    .itemCheckbox:checked::after {
+      content: '✓';
+      position: absolute;
+      top: -1px;
+      left: 1px;
+      color: black;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    
+    /* 2번째 열 체크박스 호버 효과 */
+    .itemCheckbox:hover {
+      border-color: #007bff;
+    }
+    
+    
+    #orderTable th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    
+    /* 고정된 셀의 배경색 보장 */
+    #orderTable td:first-child {
+      background-color: white;
+    }
+    
+    /* 헤더 1, 2, 3열 강제로 연한 회색 */
+    #orderTable th:nth-child(1), #orderTable th:nth-child(2), #orderTable th:nth-child(3) {
+      background-color: #f5f5f5;
+    }
+    
+    /* 1, 2, 3열 데이터 셀만 흰색 배경 (헤더는 제외) */
+    #orderTable td:nth-child(1), #orderTable td:nth-child(2), #orderTable td:nth-child(3) {
+      background-color: white;
+    }
+    
+    #orderTable td {
+      font-size: 0.9rem;
+    }
+    
+    /* 하단 버튼 영역 전체 - order.html과 동일 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 확장 손잡이 (서랍 손잡이처럼 위쪽에 튀어나옴) */
+    .expand-handle {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    /* 확장/축소 버튼 */
+    .expand-btn {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #666;
+      border-radius: 8px 8px 0 0;
+      min-width: 40px;
+      height: 20px;
+      line-height: 1;
+      transition: all 0.2s ease;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    .expand-btn:hover {
+      background: #e8e8e8;
+      border-color: #999;
+      box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    }
+
+    .expand-btn.expanded {
+      transform: rotate(180deg);
+      background: #e0e0e0;
+    }
+
+    /* 기본 버튼 그룹 레이아웃 */
+    .main-button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+
+    /* 상세 버튼 영역 */
+    .detail-button-area {
+      margin-top: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      animation: slideDown 0.3s ease;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .detail-button-area button {
+      margin: 0;
+    }
+
+    /* 애니메이션 */
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Email 버튼 - order.html 버튼과 동일한 스타일 */
+    #emailBtn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    #emailBtn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+
+    /* 테이블 하단 여백 (고정 버튼과 겹치지 않도록) */
+    .order-table-container {
+      margin-bottom: 120px;
+    }
+
+    /* 파일 미리보기 모달 스타일 */
+    .preview-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .preview-modal-content {
+      background: white;
+      border-radius: 10px;
+      width: 95%;
+      max-width: 1200px;
+      height: 90%;
+      display: flex;
+      flex-direction: row;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* 사이드바 스타일 */
+    .preview-sidebar {
+      width: 250px;
+      background: #f8f9fa;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+      border-radius: 10px 0 0 10px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 1px solid #ddd;
+      background: #e9ecef;
+      border-radius: 10px 0 0 0;
+    }
+
+    .sidebar-title {
+      margin: 0;
+      font-size: 16px;
+      color: #495057;
+    }
+
+    .file-list {
+      height: 540px;
+      overflow-y: auto;
+      padding: 10px 0;
+    }
+
+    .file-item {
+      padding: 8px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid #e9ecef;
+      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .file-item:hover {
+      background-color: #e9ecef;
+    }
+
+    .file-item.active {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .file-icon {
+      font-size: 16px;
+    }
+
+    .file-name {
+      flex: 1;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .delete-file-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 2px 4px;
+      border-radius: 3px;
+      transition: background-color 0.2s;
+      opacity: 0.7;
+    }
+
+    .delete-file-btn:hover {
+      background-color: #dc3545;
+      color: white;
+      opacity: 1;
+    }
+
+    /* 메인 컨텐츠 영역 */
+    .preview-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 1px solid #ddd;
+      background: #f8f9fa;
+    }
+
+    .preview-header h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .close-btn {
+      background: transparent;
+      color: #333;
+      border: none;
+      border-radius: 0;
+      width: 30px;
+      height: 30px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      background: #f8f9fa;
+      color: #000;
+    }
+
+    .preview-navigation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .nav-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .nav-btn:hover {
+      background: #0056b3;
+    }
+
+    .nav-btn:disabled {
+      background: #007bff;
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .download-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .download-btn:hover {
+      background: #218838;
+    }
+
+    #fileCounter {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .preview-body {
+      flex: 1;
+      padding: 20px;
+      overflow: auto;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .preview-iframe-container {
+      width: 100%;
+      max-width: 800px;
+      height: 600px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .preview-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-top: 1px solid #ddd;
+      background: #f8f9fa;
+      border-radius: 0 0 10px 10px;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1>Production</h1>
+
+  <div class="top-menu">
+    <!-- 왼쪽: Home, Year, Add -->
+    <div class="left-menu">
+      <button type="button" onclick="location.href='eltrokorea9.html'" class="top-menu-btn">Home</button>
+      
+      <!-- 년도 선택 버튼 -->
+      <button type="button" id="yearDownBtn" class="top-menu-btn year-btn">▼</button>
+      <span id="yearDisplay" class="year-display">2024</span>
+      <button type="button" id="yearUpBtn" class="top-menu-btn year-btn">▲</button>
+      
+      <!-- 주차 표시 -->
+      <div class="week-display" id="weekDisplay" title="">
+        <span id="weekNumber">W</span>
+      </div>
+    </div>
+    <!-- 오른쪽: NT, SM -->
+    <div class="right-menu">
+      <button id="ntBtn" class="top-menu-btn mode-btn selected">NT</button>
+      <button id="smBtn" class="top-menu-btn mode-btn">SM</button>
+    </div>
+  </div>
+
+  <div class="order-table-container">
+    <table id="orderTable">
+      <thead>
+        <tr>
+          <th>Order No</th>
+          <th>체크</th>
+          <th>삭제</th>
+          <th>No</th>
+          <th>Item</th>
+          <th>주문R</th>
+          <th>배송R</th>
+          <th>TF KG</th>
+          <th>ProducedKG</th>
+          <th>DeliveredKG</th>
+          <th>W</th>
+          <th>생산</th>
+          <th>CIF</th>
+          <th>분석표</th>
+        </tr>
+      </thead>
+      <tbody id="orderTableBody">
+        <!-- 주문 목록이 여기에 동적으로 추가됩니다 -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 하단 버튼 영역 - order.html과 동일한 구조 -->
+<div class="bottom-buttons">
+  <!-- 확장/축소 버튼 (서랍 손잡이처럼 위쪽에 튀어나옴) -->
+  <div class="expand-handle">
+    <button id="expandButton" type="button" class="expand-btn">▼</button>
+  </div>
+  
+  <!-- 기본 버튼 영역 (항상 보임) -->
+                <div class="main-button-group">
+                    <button id="emailBtn" class="top-menu-btn">Email</button>
+                    <button type="button" onclick="location.href='productionupdate.html'" class="top-menu-btn">Update</button>
+                </div>
+
+  <!-- 확장 가능한 상세 버튼 영역 (기본적으로 숨김) -->
+  <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+    <!-- 필요시 추가 버튼들 -->
+    </div>
+</div>
+
+<!-- 파일 미리보기 모달 -->
+<div id="previewModal" class="preview-modal" style="display: none;">
+  <div class="preview-modal-content">
+    <!-- 왼쪽 사이드바 -->
+    <div class="preview-sidebar">
+      <div class="sidebar-header">
+        <h3 class="sidebar-title">📁 파일 목록</h3>
+        <div></div>
+      </div>
+      <div class="file-list" id="fileList">
+        <!-- 파일 목록이 여기에 동적으로 추가됩니다 -->
+      </div>
+    </div>
+    
+    <!-- 메인 컨텐츠 영역 -->
+    <div class="preview-main">
+      <div class="preview-header">
+        <h3 id="previewTitle">파일 미리보기</h3>
+        <button id="closePreviewBtn" class="close-btn">&times;</button>
+      </div>
+      <div class="preview-navigation">
+        <button id="prevFileBtn" class="nav-btn">⬅️ 이전</button>
+        <span id="fileCounter">1 / 1</span>
+        <button id="nextFileBtn" class="nav-btn">다음 ➡️</button>
+      </div>
+      <div class="preview-body">
+        <div class="preview-iframe-container">
+          <iframe id="previewFrame" class="preview-iframe" src="" frameborder="0"></iframe>
+        </div>
+      </div>
+      <div class="preview-footer">
+        <div></div>
+        <button id="downloadCurrentBtn" class="download-btn">📥 다운로드</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+        // 모드 선택 버튼 (NT, SM) - 기본값 NT
+        let selectedMode = "NT";
+
+        const ntBtn = document.getElementById("ntBtn");
+        const smBtn = document.getElementById("smBtn");
+
+        ntBtn.addEventListener("click", async () => {
+            selectedMode = "NT";
+            ntBtn.classList.add("selected");
+            smBtn.classList.remove("selected");
+            await loadOrderData();
+        });
+        
+        smBtn.addEventListener("click", async () => {
+            selectedMode = "SM";
+            smBtn.classList.add("selected");
+            ntBtn.classList.remove("selected");
+            await loadOrderData();
+        });
+        
+        // 년도 선택 초기화 - 현재 년도로 설정
+        let currentYear = new Date().getFullYear();
+
+        const yearDisplay = document.getElementById("yearDisplay");
+        const yearUpBtn = document.getElementById("yearUpBtn");
+        const yearDownBtn = document.getElementById("yearDownBtn");
+
+        yearDisplay.textContent = currentYear;
+
+        // 년도 증가 버튼
+        yearUpBtn.addEventListener("click", async () => {
+            currentYear++;
+            yearDisplay.textContent = currentYear;
+            await loadOrderData();
+        });
+
+        // 년도 감소 버튼
+        yearDownBtn.addEventListener("click", async () => {
+            if (currentYear > 2020) {
+                currentYear--;
+                yearDisplay.textContent = currentYear;
+                await loadOrderData();
+            }
+        });
+        
+        // 서버에서 주문 데이터 로드 및 표시
+        async function loadOrderData() {
+            try {
+                // 서버 API를 통해 주문 데이터 가져오기
+                const response = await fetch('/api/orders');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const allOrders = await response.json();
+                
+                // 현재 모드와 년도에 맞는 주문 필터링
+                const filteredOrders = allOrders.filter(order => {
+                    // orderNo와 orderId가 모두 있는 주문만 표시 (발주 완료된 주문만)
+                    if (!order.orderNo || order.orderNo.trim() === '' || !order.orderId) {
+                        return false;
+                    }
+                    
+                    // 모드 필터링
+                    if (selectedMode === 'NT') {
+                        if (order.mode !== 'NT') return false;
+                    } else if (selectedMode === 'SM') {
+                        if (!(order.mode === 'SM-B' || order.mode === 'SM-C')) return false;
+                    }
+                    
+                    // 년도 필터링 (orderDate 또는 finalDate에서 년도 추출)
+                    let orderYear = null;
+                    
+                    // orderDate에서 년도 추출 (YYYY.MM.DD 형식)
+                    if (order.orderDate) {
+                        orderYear = parseInt(order.orderDate.substring(0, 4));
+                    }
+                    
+                    // finalDate에서 년도 추출 (DD-MMM-YYYY 형식)
+                    if (!orderYear && order.finalDate) {
+                        const parts = order.finalDate.split('-');
+                        if (parts.length >= 3) {
+                            orderYear = parseInt(parts[2].trim());
+                        }
+                    }
+                    
+                    return orderYear === currentYear;
+                });
+                
+                // 각 주문의 상세 데이터(아이템 포함) 가져오기
+                const ordersWithItems = await Promise.all(
+                    filteredOrders.map(async (order) => {
+                        try {
+                            const detailResponse = await fetch(`/api/orders?orderId=${order.orderId}`);
+                            
+                            if (detailResponse.ok) {
+                                const orderDetail = await detailResponse.json();
+                                return { 
+                                    ...order, 
+                                    ...orderDetail  // 모든 상세 데이터 병합
+                                };
+                            }
+                        } catch (error) {
+                            console.error(`[PRODUCTION] 주문 상세 데이터 로드 오류: ${order.orderNo}`, error);
+                        }
+                        return { ...order, items: [] };
+                    })
+                );
+                
+                // 테이블 업데이트
+                await updateOrderTable(ordersWithItems);
+                
+            } catch (error) {
+                console.error("[PRODUCTION] 데이터 로드 실패:", error);
+                await updateOrderTable([]);
+            }
+        }
+        
+        
+        // 주문 테이블 업데이트 함수
+        async function updateOrderTable(orders) {
+            
+            const tbody = document.getElementById('orderTableBody');
+            tbody.innerHTML = '';
+            
+            // 현재 주문 데이터를 전역 변수에 저장
+            window.currentOrders = orders;
+            
+            // 모든 주문 데이터도 전역으로 저장 (이메일 생성용)
+            if (!window.allOrdersData) {
+                window.allOrdersData = [];
+            }
+            
+            // 현재 페이지의 주문들을 allOrdersData에 추가/업데이트
+            orders.forEach(order => {
+                const existingIndex = window.allOrdersData.findIndex(existingOrder => 
+                    existingOrder.orderNo === order.orderNo
+                );
+                
+                if (existingIndex !== -1) {
+                    // 기존 데이터 업데이트
+                    window.allOrdersData[existingIndex] = order;
+                } else {
+                    // 새 데이터 추가
+                    window.allOrdersData.push(order);
+                }
+            });
+            
+            if (orders.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="13" style="text-align: center; color: #666;">해당 조건의 주문이 없습니다.</td>';
+                tbody.appendChild(row);
+                return;
+            }
+            
+            // orderDate 기준으로 정렬 (최신이 위에 오도록)
+            orders.sort((a, b) => {
+                // 점(.)을 대시(-)로 변환하여 올바른 날짜 형식으로 만들기
+                const dateA = new Date((a.orderDate || '1900-01-01').replace(/\./g, '-'));
+                const dateB = new Date((b.orderDate || '1900-01-01').replace(/\./g, '-'));
+                
+                // 내림차순 정렬 (최신 날짜가 먼저)
+                return dateB - dateA;
+            });
+            
+            for (const order of orders) {
+                
+                // 각 주문의 아이템들을 처리
+                if (order.items && order.items.length > 0) {
+                    
+                    for (const [index, item] of order.items.entries()) {
+                        const row = document.createElement('tr');
+                        
+                        // 아이템 정보 생성: PHD-6.0(620)6x 형식
+                        const itemInfo = `PHD-${item.phd}(${item.width})${item.x}`;
+                        
+                        // No 열 (2번째) - itemNo
+                        const col2Value = item.itemNo || '';
+                        
+                        // 주문R 열 (4번째) - adjustment가 있으면 adjustment, 없으면 quantity
+                        const col4Value = item.adjustment && String(item.adjustment).trim() !== '' ? item.adjustment : item.quantity;
+                        
+                        // 배송R 열 (5번째) - deliveredR
+                        const col5Value = item.deliveredR || '';
+                        
+                        // Qty 열 (6번째) - tfkg 값
+                        const col6Value = item.tfkg || '';
+                        
+                        // Produced 열 (7번째) - producedkg
+                        const col7Value = item.producedkg || '';
+                        
+                        // Delivered 열 (8번째) - deliveredkg
+                        const col8Value = item.deliveredkg || '';
+                        
+                        // W 열 (9번째) - w 값 (주차 툴팁 포함)
+                        const col9Value = item.w || '';
+                        const weekTooltip = (() => {
+                            if (!col9Value || !col9Value.includes('w')) return '';
+                            const weekNum = parseInt(col9Value.replace('w', ''));
+                            if (isNaN(weekNum) || weekNum < 1 || weekNum > 53) return '';
+                            
+                            // ISO 8601 표준에 따른 주차 계산
+                            const year = currentYear;
+                            
+                            // ISO 8601: 주차를 날짜 범위로 변환
+                            const simple = new Date(year, 0, 1 + (weekNum - 1) * 7);
+                            const dayOfWeek = simple.getDay();
+                            const ISOweekStart = new Date(simple);
+                            
+                            if (dayOfWeek <= 4) {
+                                ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+                            } else {
+                                ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+                            }
+                            
+                            const ISOweekEnd = new Date(ISOweekStart);
+                            ISOweekEnd.setDate(ISOweekStart.getDate() + 6);
+                            
+                            const weekStart = ISOweekStart;
+                            const weekEnd = ISOweekEnd;
+                            
+                            const formatDate = (date) => {
+                                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                return `${date.getDate()}-${months[date.getMonth()]}-${date.getFullYear()}`;
+                            };
+                            
+                            return `title="${formatDate(weekStart)} ~ ${formatDate(weekEnd)}"`;
+                        })();
+                        
+                        // Qty 값이 50 이하이거나 20000 이상이면 빨간색으로 표시
+                        const qtyValue = parseFloat(col6Value) || 0;
+                        const qtyStyle = (qtyValue > 0 && qtyValue <= 50) || qtyValue >= 20000 ? 'color: red; font-weight: bold;' : '';
+                        
+                        // 생산 완료 자동 체크 (90% 이상)
+                        const orderWeight = parseFloat(item.tfkg) || 0;
+                        const producedkgStr = item.producedkg || '';
+                        const producedWeight = (producedkgStr === '000.' || producedkgStr === '0.0' || producedkgStr === '0') ? 0 : parseFloat(producedkgStr) || 0;
+                        
+                        const isProductionComplete = orderWeight > 0 && producedWeight > 0 && producedWeight >= orderWeight * 0.9;
+                        
+                        const checkboxValue = `<input type="checkbox" class="row-checkbox" ${isProductionComplete ? 'checked' : ''} disabled>`;
+                        
+                        // CIF 열 (11번째) - deliveryNo가 있으면 표시, 없으면 CIF가 incheon airport인 경우만 air, 나머지는 공란
+                        const col11Value = (() => {
+                            // 우선순위 1: deliveryNo가 있으면 표시
+                            if (item.deliveryNo && item.deliveryNo.trim() !== '') {
+                                return item.deliveryNo;
+                            }
+                            
+                            // 우선순위 2: deliveryNo가 없고 CIF가 incheon airport인 경우만 air
+                            const cif = order.cif || '';
+                            const cifLower = cif.toLowerCase();
+                            if (cifLower.includes('incheon airport')) {
+                                return 'air';
+                            }
+                            
+                            // 나머지 경우는 공란
+                            return '';
+                        })();
+                        
+                        // 삭제 버튼 (itemNo에 .1이 붙어있는 경우에만 표시)
+                        const deleteButton = col2Value.includes('.1') ? 
+                            `<button class="delete-btn" onclick="deleteItem('${order.orderNo}', '${col2Value}')" title="삭제">×</button>` : '';
+                        
+                        // 공통 아이템 행 HTML
+                        const itemRowHTML = `
+                            <td><input type="checkbox" class="itemCheckbox" data-order-no="${order.orderNo}" data-item-no="${col2Value}" onchange="toggleRowSelection(this)"></td>
+                            <td>${deleteButton}</td>
+                            <td>${col2Value}</td>
+                            <td class="item-cell">${itemInfo}</td>
+                            <td>${col4Value}</td>
+                            <td>${col5Value}</td>
+                            <td style="${qtyStyle}">${col6Value}</td>
+                            <td>${col7Value}</td>
+                            <td>${col8Value}</td>
+                            <td ${weekTooltip}>${col9Value}</td>
+                            <td>${checkboxValue}</td>
+                            <td>${col11Value}</td>
+                            <td>
+                                <button class="top-menu-btn" onclick="uploadAnalysis('${order.orderNo}', '${col2Value}')" style="padding: 2px 4px; margin: 0 1px; border: 1px solid #ccc; border-radius: 2px; background: #fff; cursor: pointer; font-size: 10px; min-width: 20px; height: 20px; line-height: 1;" title="분석표 업로드">📤</button>
+                                <button class="top-menu-btn preview-btn" onclick="viewAnalysis('${order.orderNo}', '${col2Value}')" data-order-no="${order.orderNo}" data-item-no="${col2Value}" data-file-type="분석표" style="padding: 2px 4px; margin: 0 1px; border: 1px solid #ccc; border-radius: 2px; background: #fff; cursor: pointer; font-size: 10px; min-width: 20px; height: 20px; line-height: 1;" title="분석표 보기">👁️</button>
+                            </td>
+                        `;
+                        
+                        if (index === 0) {
+                            // 첫 번째 아이템: Order No 셀 + 아이템 행
+                            const orderInfo = [
+                                order.orderNo || '',
+                                order.finalDate ? `(${order.finalDate})` : '',
+                                order.orderId || '',
+                                order.orderDate ? `(${order.orderDate})` : '',
+                                order.expectedDate ? `(${order.expectedDate}월입고분)` : '',
+                                order.tfNo || '',
+                                order.tfDate ? `(${order.tfDate})` : ''
+                            ].filter(item => item !== '').join('<br>');
+                            
+                            row.innerHTML = `<td rowspan="${order.items.length}" style="vertical-align: top;">${orderInfo}</td>${itemRowHTML}`;
+                        } else {
+                            // 나머지 아이템: 아이템 행만
+                            row.innerHTML = itemRowHTML;
+                        }
+                        tbody.appendChild(row);
+                    }
+                }
+            }
+            
+            // isProductionComplete 상태에 따른 버튼 스타일 업데이트
+            updatePreviewButtonStyles();
+        }
+        
+        // 체크박스 선택 상태를 관리하는 Map (2열 체크박스용)
+        const globalCheckboxStates = new Map();
+        
+        
+        // 이메일 텍스트 생성
+        async function generateEmailText() {
+            // 전역 상태에서 체크된 아이템들 찾기
+            const urgentItems = [];
+            let itemIndex = 1;
+            
+            // 모든 주문 데이터를 순회하면서 체크된 아이템들 찾기
+            if (window.allOrdersData) {
+                window.allOrdersData.forEach(order => {
+                    if (order.items) {
+                        order.items.forEach(item => {
+                            const key = `${order.orderNo}-${item.itemNo}`;
+                            if (globalCheckboxStates.get(key)) {
+                                // tfNo와 itemNo 조합 (itemNo 앞의 00 제거)
+                                const cleanItemNo = item.itemNo ? item.itemNo.replace(/^00/, '') : '';
+                                const itemDisplay = `${order.tfNo}.${cleanItemNo}`;
+                                
+                                // 모드에 따른 회사명 추가
+                                const companyName = order.mode === 'NT' ? 'for Eltro Korea' : 'for Sungmoon';
+                                
+                                urgentItems.push(`${itemIndex}. ${itemDisplay} ${companyName}`);
+                                itemIndex++;
+                            }
+                        });
+                    }
+                });
+            }
+            
+            if (urgentItems.length === 0) {
+                return "No items selected.";
+            }
+            
+            let emailText = `Hello,
+
+The following items are urgent:
+${urgentItems.map(item => `\t${item}`).join('\n')}
+
+Please check the production schedule for these items.
+
+Thank you.`;
+            
+            return emailText;
+        }
+        
+        // 클립보드에 텍스트 복사
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch (err) {
+                // fallback for older browsers
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    const result = document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    return result;
+                } catch (err) {
+                    document.body.removeChild(textArea);
+                    return false;
+                }
+            }
+        }
+        
+        // 분석표 업로드 함수
+        function uploadAnalysis(orderNo, itemNo) {
+            uploadFile(orderNo, '분석표', itemNo);
+        }
+        
+        // 분석표 보기 함수
+        function viewAnalysis(orderNo, itemNo) {
+            viewFile(orderNo, '분석표', itemNo);
+        }
+        
+        
+        // 파일 업로드 공통 함수 (production.html용) - orderarchive.html과 동일한 구조
+        function uploadFile(orderNo, fileType, itemNo) {
+            // 파일 입력 요소 생성
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.txt'; // 허용할 파일 형식
+            fileInput.style.display = 'none';
+            
+            // 파일 선택 이벤트 리스너
+            fileInput.addEventListener('change', async function(event) {
+                const file = event.target.files[0];
+                if (!file) {
+                    return;
+                }
+                
+                try {
+                    // FormData 생성
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('orderNo', orderNo); // OrderNO 경로용
+                    formData.append('fileType', fileType);
+                    formData.append('mode', selectedMode); // 현재 모드 추가
+                    formData.append('itemNo', itemNo); // itemNo 추가
+                    formData.append('originalFileName', file.name); // 원본 파일명 전송 (한국어 보존)
+                    
+                    // 서버로 업로드
+                    const response = await fetch('/api/uploadFile', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        alert(`${fileType} 파일이 성공적으로 업로드되었습니다.\n경로: ${selectedMode}/OrderNO/${orderNo}/${itemNo}/${fileType}`);
+                        
+                        // 분석표 업로드 성공 시 isProductionComplete 업데이트
+                        if (fileType === '분석표') {
+                            await updateProductionCompleteStatus(orderNo, itemNo, true);
+                        }
+                        
+                        // 업로드 성공 후 화면 리프레시
+                        location.reload();
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error(`[UPLOAD] 업로드 실패:`, error);
+                    alert(`${fileType} 파일 업로드에 실패했습니다.\n에러: ${error.message}`);
+                }
+                
+                // 파일 입력 요소 제거
+                document.body.removeChild(fileInput);
+            });
+            
+            // 파일 입력 요소를 DOM에 추가하고 클릭 이벤트 발생
+            document.body.appendChild(fileInput);
+            fileInput.click();
+        }
+        
+        // 파일 미리보기 전역 변수
+        let currentFiles = [];
+        let currentFileIndex = 0;
+        let currentOrderNo = '';
+        let currentItemNo = '';
+        let currentFileType = '';
+
+        // 파일 보기/미리보기 공통 함수 - itemNo 폴더만 확인
+        function viewFile(orderNo, fileType, itemNo) {
+            // 서버에서 파일 목록 조회 (itemNo 폴더만 확인)
+            fetch(`/api/listFiles/${selectedMode}/OrderNO/${orderNo}/${itemNo}`)
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                })
+                .then(data => {
+                    if (data.files && data.files.length > 0) {
+                        // 파일 목록 저장
+                        currentFiles = data.files;
+                        currentFileIndex = 0;
+                        currentOrderNo = orderNo;
+                        currentItemNo = itemNo;
+                        currentFileType = fileType;
+                        
+                        // 미리보기 모달 표시
+                        showPreviewModal();
+                    } else {
+                        alert(`${fileType} 파일이 없습니다. 먼저 업로드해주세요.`);
+                    }
+                })
+                .catch(error => {
+                    console.error(`[VIEW] 파일 조회 실패:`, error);
+                    alert(`${fileType} 파일을 불러오는데 실패했습니다.\n에러: ${error.message}`);
+                });
+        }
+        
+        // 파일 다운로드 공통 함수 - itemNo 폴더만 확인
+        function downloadFile(orderNo, fileType, itemNo) {
+            // 서버에서 파일 목록 조회 (itemNo 폴더만 확인)
+            fetch(`/api/listFiles/${selectedMode}/OrderNO/${orderNo}/${itemNo}`)
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                })
+                .then(data => {
+                    if (data.files && data.files.length > 0) {
+                        // 첫 번째 파일 다운로드
+                        const fileName = data.files[0].filename;
+                        const link = document.createElement('a');
+                        link.href = `/api/downloadFile/${selectedMode}/OrderNO/${orderNo}/${itemNo}/${fileName}`;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    } else {
+                        alert(`${fileType} 파일이 없습니다. 먼저 업로드해주세요.`);
+                    }
+                })
+                .catch(error => {
+                    console.error(`[DOWNLOAD] 파일 조회 실패:`, error);
+                    alert(`${fileType} 파일을 다운로드하는데 실패했습니다.\n에러: ${error.message}`);
+                });
+        }
+
+        // 미리보기 모달 표시
+        function showPreviewModal() {
+            const modal = document.getElementById('previewModal');
+            const title = document.getElementById('previewTitle');
+            const counter = document.getElementById('fileCounter');
+            const fileList = document.getElementById('fileList');
+            
+            // 제목 설정
+            title.textContent = `${currentFileType} 파일 미리보기 (${currentOrderNo}/${currentItemNo})`;
+            
+            // 파일 카운터 업데이트
+            counter.textContent = `${currentFileIndex + 1} / ${currentFiles.length}`;
+            
+            // 사이드바에 파일 목록 생성
+            fileList.innerHTML = '';
+            currentFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = `file-item ${index === currentFileIndex ? 'active' : ''}`;
+                fileItem.onclick = () => selectFile(index);
+                
+                // 파일 아이콘 결정
+                const fileExtension = file.filename.split('.').pop().toLowerCase();
+                let icon = '📄';
+                if (fileExtension === 'pdf') icon = '📄';
+                else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) icon = '🖼️';
+                else if (['doc', 'docx'].includes(fileExtension)) icon = '📝';
+                else if (['xls', 'xlsx'].includes(fileExtension)) icon = '📊';
+                
+                fileItem.innerHTML = `
+                    <span class="file-icon">${icon}</span>
+                    <span class="file-name" title="${file.filename}">${file.filename}</span>
+                    <button class="delete-file-btn" onclick="deleteFile(event, ${index})" title="파일 삭제">🗑️</button>
+                `;
+                
+                fileList.appendChild(fileItem);
+            });
+            
+            // 첫 번째 파일 표시
+            showCurrentFile();
+            
+            // 모달 표시
+            modal.style.display = 'flex';
+        }
+
+        // 사이드바에서 파일 선택
+        function selectFile(index) {
+            if (index >= 0 && index < currentFiles.length) {
+                currentFileIndex = index;
+                showCurrentFile();
+                updateFileList();
+                updateNavigationButtons();
+            }
+        }
+
+        // 파일 목록 업데이트 (활성 파일 표시)
+        function updateFileList() {
+            const fileItems = document.querySelectorAll('.file-item');
+            fileItems.forEach((item, index) => {
+                if (index === currentFileIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // 현재 파일 표시
+        function showCurrentFile() {
+            if (currentFiles.length === 0) return;
+            
+            const currentFile = currentFiles[currentFileIndex];
+            const previewFrame = document.getElementById('previewFrame');
+            const counter = document.getElementById('fileCounter');
+            
+            // 파일 확장자 확인
+            const fileExtension = currentFile.filename.split('.').pop().toLowerCase();
+            
+            // 미리보기 전용 API 사용 (다운로드 방지)
+            const previewUrl = `/api/previewFile/${selectedMode}/OrderNO/${currentOrderNo}/${currentItemNo}/${encodeURIComponent(currentFile.filename)}`;
+            
+            // PDF, 이미지 파일의 경우 직접 미리보기
+            if (['pdf', 'jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+                previewFrame.src = previewUrl;
+            }
+            // 기타 파일의 경우 다운로드 링크 표시
+            else {
+                const downloadUrl = `/api/downloadFile/${selectedMode}/OrderNO/${currentOrderNo}/${currentItemNo}/${encodeURIComponent(currentFile.filename)}`;
+                previewFrame.src = `data:text/html,<html><body style="text-align:center;padding:50px;font-family:Arial;">
+                    <h3>미리보기 불가능한 파일 형식</h3>
+                    <p>파일명: ${currentFile.filename}</p>
+                    <p>크기: ${(currentFile.size / 1024).toFixed(1)} KB</p>
+                    <a href="${downloadUrl}" style="background:#007bff;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;">📥 파일 다운로드</a>
+                </body></html>`;
+            }
+            
+            // 카운터 업데이트
+            counter.textContent = `${currentFileIndex + 1} / ${currentFiles.length}`;
+            
+            // 사이드바 파일 목록 업데이트
+            updateFileList();
+            
+            // 네비게이션 버튼 상태 업데이트
+            updateNavigationButtons();
+        }
+
+        // 네비게이션 버튼 상태 업데이트
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevFileBtn');
+            const nextBtn = document.getElementById('nextFileBtn');
+            
+            prevBtn.disabled = currentFileIndex === 0;
+            nextBtn.disabled = currentFileIndex === currentFiles.length - 1;
+        }
+
+        // 미리보기 버튼 스타일 업데이트 함수 (production.html용 - isProductionComplete 기반)
+        function updatePreviewButtonStyles() {
+            const previewButtons = document.querySelectorAll('.preview-btn');
+            
+            for (const button of previewButtons) {
+                const orderNo = button.getAttribute('data-order-no');
+                const itemNo = button.getAttribute('data-item-no');
+                
+                // 현재 주문 데이터에서 해당 아이템 찾기
+                const currentOrder = window.currentOrders.find(order => order.orderNo === orderNo);
+                if (currentOrder) {
+                    const item = currentOrder.items.find(item => item.itemNo === itemNo);
+                    if (item && item.isProductionComplete === true) {
+                        // isProductionComplete가 true이면 연한 파란 배경
+                        button.style.background = '#87CEEB';
+                        button.style.color = 'white';
+                    } else {
+                        // isProductionComplete가 false이거나 없으면 흰 배경
+                        button.style.background = '#fff';
+                        button.style.color = 'black';
+                    }
+                } else {
+                    // 주문을 찾을 수 없으면 흰 배경
+                    button.style.background = '#fff';
+                    button.style.color = 'black';
+                }
+            }
+        }
+
+
+        // Email 버튼 클릭 이벤트
+        document.getElementById("emailBtn").addEventListener("click", async () => {
+            try {
+                const emailText = await generateEmailText();
+                
+                if (emailText.includes("No items selected")) {
+                    alert("선택된 아이템이 없습니다.\n\n체크박스를 선택한 후 다시 시도해주세요.");
+                    return;
+                }
+                
+                if (emailText.includes("Selected item information not found")) {
+                    alert("선택된 아이템의 정보를 찾을 수 없습니다.");
+                    return;
+                }
+                
+                const success = await copyToClipboard(emailText);
+                
+                if (success) {
+                    alert('Email 내용이 클립보드에 복사되었습니다.\n바로 붙여넣기(Ctrl+V)를 사용할 수 있습니다.');
+                } else {
+                    alert('클립보드 복사에 실패했습니다. 브라우저 권한을 확인해주세요.');
+                }
+            } catch (error) {
+                console.error("이메일 텍스트 생성 중 오류:", error);
+                alert("이메일 텍스트 생성 중 오류가 발생했습니다.");
+            }
+        });
+        
+        // 확장/축소 기능
+        document.getElementById("expandButton").addEventListener("click", () => {
+            const detailArea = document.getElementById("detailButtonArea");
+            const expandBtn = document.getElementById("expandButton");
+            
+            if (detailArea.style.display === "none") {
+                detailArea.style.display = "flex";
+                expandBtn.classList.add("expanded");
+                expandBtn.textContent = "▲";
+            } else {
+                detailArea.style.display = "none";
+                expandBtn.classList.remove("expanded");
+                expandBtn.textContent = "▼";
+            }
+        });
+        
+        
+        
+        // isProductionComplete 업데이트 함수
+        async function updateProductionCompleteStatus(orderNo, itemNo, isComplete) {
+            try {
+                const response = await fetch('/api/updateOrder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        searchOrderBy: 'orderNo',
+                        orderNo: orderNo,
+                        searchMethod: 'itemNo',
+                        itemUpdateFields: ['isProductionComplete'],
+                        items: [{
+                            itemNo: itemNo,
+                            isProductionComplete: isComplete
+                        }]
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log(`✅ 생산 완료 상태 업데이트 성공: ${orderNo}-${itemNo} = ${isComplete}`);
+                } else {
+                    console.error('❌ 생산 완료 상태 업데이트 실패:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ 생산 완료 상태 업데이트 중 오류:', error);
+            }
+        }
+        
+        // 체크박스 선택/해제 함수 (간단화)
+        function toggleRowSelection(checkbox) {
+            const orderNo = checkbox.dataset.orderNo;
+            const itemNo = checkbox.dataset.itemNo;
+            const isChecked = checkbox.checked;
+            
+            // 2번째 열 체크박스 (itemCheckbox)인 경우
+            if (checkbox.classList.contains('itemCheckbox')) {
+                const key = `${orderNo}-${itemNo}`;
+                globalCheckboxStates.set(key, isChecked);
+            }
+            
+            // 10번째 열 체크박스 (row-checkbox)인 경우 - 읽기 전용이므로 아무것도 하지 않음
+        }
+        
+        // ISO 8601 표준에 따른 주차 계산 함수
+        function getWeekNumber(date) {
+            const targetDate = new Date(date.valueOf());
+            const dayNumber = (date.getUTCDay() + 6) % 7;
+            targetDate.setUTCDate(targetDate.getUTCDate() - dayNumber + 3);
+            const firstThursday = targetDate.valueOf();
+            targetDate.setUTCMonth(0, 1);
+            if (targetDate.getUTCDay() !== 4) {
+                targetDate.setUTCMonth(0, 1 + ((4 - targetDate.getUTCDay()) + 7) % 7);
+            }
+            return 1 + Math.ceil((firstThursday - targetDate) / 604800000);
+        }
+        
+        // 주차 표시 업데이트 함수
+        function updateWeekDisplay() {
+            const now = new Date();
+            const weekNumber = getWeekNumber(now);
+            const year = now.getFullYear();
+            const dateStr = now.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+            
+            const weekDisplay = document.getElementById('weekDisplay');
+            const weekNumberSpan = document.getElementById('weekNumber');
+            
+            weekNumberSpan.textContent = `W${weekNumber}`;
+            weekDisplay.title = `${dateStr} (${year}년 ${weekNumber}주차)`;
+        }
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            // 주차 표시 업데이트
+            updateWeekDisplay();
+            
+            // 초기 데이터 로드
+            loadOrderData();
+        });
+
+        // 파일 삭제 함수
+        async function deleteFile(event, fileIndex) {
+            event.stopPropagation(); // 파일 선택 이벤트 방지
+            
+            if (currentFiles.length === 0 || fileIndex >= currentFiles.length) {
+                return;
+            }
+            
+            const fileToDelete = currentFiles[fileIndex];
+            const confirmDelete = confirm(`파일 "${fileToDelete.filename}"을(를) 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`);
+            
+            if (!confirmDelete) {
+                return;
+            }
+            
+            try {
+                // 파일명을 안전하게 인코딩
+                const encodedFilename = encodeURIComponent(fileToDelete.filename);
+                
+                // 서버에 파일 삭제 요청 (OrderNO 경로 사용)
+                const response = await fetch(`/api/deleteFile/${selectedMode}/OrderNO/${currentOrderNo}/${currentItemNo}/${encodedFilename}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert('파일이 성공적으로 삭제되었습니다.');
+                    
+                    // 분석표 삭제 시 isProductionComplete 업데이트
+                    if (currentFileType === '분석표') {
+                        await updateProductionCompleteStatus(currentOrderNo, currentItemNo, false);
+                    }
+                    
+                    // 삭제 성공 후 화면 리프레시
+                    location.reload();
+                } else {
+                    const errorData = await response.json();
+                    alert(`파일 삭제에 실패했습니다: ${errorData.error || '알 수 없는 오류'}`);
+                }
+            } catch (error) {
+                console.error('파일 삭제 중 오류:', error);
+                alert(`파일 삭제 중 오류가 발생했습니다: ${error.message}`);
+            }
+        }
+
+        // 미리보기 모달 이벤트 리스너
+        document.getElementById('closePreviewBtn').addEventListener('click', () => {
+            document.getElementById('previewModal').style.display = 'none';
+        });
+
+        document.getElementById('prevFileBtn').addEventListener('click', () => {
+            if (currentFileIndex > 0) {
+                currentFileIndex--;
+                showCurrentFile();
+            }
+        });
+
+        document.getElementById('nextFileBtn').addEventListener('click', () => {
+            if (currentFileIndex < currentFiles.length - 1) {
+                currentFileIndex++;
+                showCurrentFile();
+            }
+        });
+
+        document.getElementById('downloadCurrentBtn').addEventListener('click', () => {
+            if (currentFiles.length > 0) {
+                const currentFile = currentFiles[currentFileIndex];
+                const fileUrl = `/api/downloadFile/${selectedMode}/OrderNO/${currentOrderNo}/${currentItemNo}/${encodeURIComponent(currentFile.filename)}`;
+                
+                // 다운로드 링크 생성
+                const link = document.createElement('a');
+                link.href = fileUrl;
+                link.download = currentFile.filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        });
+
+        // 모달 외부 클릭 시 닫기
+        document.getElementById('previewModal').addEventListener('click', (e) => {
+            if (e.target.id === 'previewModal') {
+                document.getElementById('previewModal').style.display = 'none';
+            }
+        });
+
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && document.getElementById('previewModal').style.display === 'flex') {
+                document.getElementById('previewModal').style.display = 'none';
+            }
+        });
+
+        // 아이템 삭제 함수 (order.html 방식)
+        async function deleteItem(orderNo, itemNo) {
+            // 현재 주문에서 해당 아이템 찾기
+            const currentOrder = window.currentOrders.find(order => order.orderNo === orderNo);
+            if (!currentOrder) {
+                alert('주문을 찾을 수 없습니다.');
+                return;
+            }
+            
+            const item = currentOrder.items.find(item => item.itemNo === itemNo);
+            if (!item) {
+                alert('아이템을 찾을 수 없습니다.');
+                return;
+            }
+            
+            if (!confirm(`주문번호: ${orderNo}\n아이템번호: ${itemNo}\n아이템: PHD-${item.phd}(${item.width})${item.x}\n\n이 아이템을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/deleteItem', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        orderId: currentOrder.orderId,
+                        phd: item.phd,
+                        width: item.width,
+                        length: item.length,
+                        adjustment: item.adjustment
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('아이템이 성공적으로 삭제되었습니다.');
+                    // 테이블 새로고침
+                    loadOrderData();
+                } else {
+                    const errorData = await response.json();
+                    alert(`삭제 실패: ${errorData.error || '알 수 없는 오류가 발생했습니다.'}`);
+                }
+            } catch (error) {
+                console.error('삭제 중 오류:', error);
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
+    </script>
+</body>
+</html>

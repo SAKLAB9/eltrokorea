@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      color: #000;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+    .page {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff !important;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    h1 {
+      text-align: center;
+      margin: 0;
+      padding-bottom: 10px;
+    }
+    .top-menu {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .left-menu {
+      display: flex;
+      gap: 3px;
+    }
+    .right-menu {
+      display: flex;
+      gap: 3px;
+    }
+    .top-menu-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+    }
+    .top-menu-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    .top-menu-btn.mode-btn.selected {
+      background: black;
+      color: white;
+      border-color: black;
+    }
+    .flex-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      box-sizing: border-box;
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 15px;
+      margin-bottom: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      resize: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+      white-space: pre;
+      word-wrap: break-word;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 2px 12px rgba(0,123,255,0.2);
+    }
+    /* 모든 버튼 기본 스타일 - Export와 동일 */
+    button {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    .button-area {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #outputArea[readonly] {
+      background-color: #f9f9f9;
+      color: #444;
+    }
+
+    /* Order Header 스타일 */
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 10px;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    /* 왼쪽/오른쪽 영역에 input 사용 */
+    .order-header .left, .order-header .right {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .order-header .left input,
+    .order-header .right input {
+      font-size: 1rem;
+      width: 140px;
+      padding: 4px 4px;
+      height: 24px;
+    }
+
+  </style>
+</head>
+<body>
+<div class="page">
+      <h1>Upload Form</h1>
+
+  <div class="top-menu">
+    <!-- 왼쪽: Order, Organize -->
+    <div class="left-menu">
+      <button type="button" onclick="location.href='order.html'" class="top-menu-btn">Order</button>
+      <button type="button" id="organizeBtn" class="top-menu-btn">Organize</button>
+    </div>
+    <!-- 오른쪽: NT, SM-B, SM-C -->
+    <div class="right-menu">
+      <button id="ntBtn" class="top-menu-btn mode-btn selected">NT</button>
+      <button id="smbBtn" class="top-menu-btn mode-btn">SM-B</button>
+      <button id="smcBtn" class="top-menu-btn mode-btn">SM-C</button>
+    </div>
+  </div>
+
+  <!-- Order No와 Date 입력 영역 -->
+  <div class="order-header">
+    <div class="left">
+      ORDER NO :
+      <input type="text" id="orderNoInput" autocomplete="off" />
+    </div>
+    <div class="right">
+      DATE :
+      <input type="text" id="orderDateInput" autocomplete="off" />
+      입고 :
+      <input type="text" id="warehouseInput" autocomplete="off" />
+    </div>
+  </div>
+
+  <div class="flex-container">
+    <div class="box">
+      <textarea id="inputArea" placeholder="NT: 번호/치수/수량 블록 or 한 줄에 $&#10;SM: 치수+수량 (수량 없는줄 스킵)&#10;소수점 아래 3자리 => 천단위, .0 => 정수"></textarea>
+    </div>
+    <div class="box">
+      <textarea id="outputArea" readonly></textarea>
+    </div>
+  </div>
+
+  <div class="button-area">
+    <button id="convertBtn">Convert</button>
+    <button id="exportBtn">Export</button>
+  </div>
+</div>
+
+<script>
+  let globalParsedData = [];
+  let selectedMode = "NT";
+
+  // Order No와 Date 초기화 함수
+  function initializeOrderFields() {
+    const orderNoInput = document.getElementById("orderNoInput");
+    const orderDateInput = document.getElementById("orderDateInput");
+    const warehouseInput = document.getElementById("warehouseInput");
+    
+    if (orderNoInput) {
+      orderNoInput.value = '';
+    }
+    
+    if (orderDateInput) {
+      // Date 필드를 공란으로 설정
+      orderDateInput.value = '';
+    }
+    
+    if (warehouseInput) {
+      // 입고 필드를 공란으로 설정
+      warehouseInput.value = '';
+    }
+  }
+  
+  // 페이지 로드 시 NT 모드 예시 설정
+  document.addEventListener("DOMContentLoaded", () => {
+    // 입력 영역 placeholder 설정
+    const inputArea = document.getElementById("inputArea");
+    if (inputArea) {
+      inputArea.placeholder = `NT 모드 예시:
+1 3*620*39000 1,000
+2 4*820*40000 1,000
+3 4*920*40000 2,000
+
+형식: 번호 치수*폭*길이 수량`;
+    }
+
+    // Order No와 Date 초기화
+    initializeOrderFields();
+
+    // 모든 버튼 이벤트 리스너 등록
+    setupConvertButton();
+    setupExportButton();
+    setupOrganizeButton();
+    setupModeButtons();
+  });
+  
+  //-------------------------------------------------------
+  // Organize 버튼 이벤트 리스너 등록 함수
+  //-------------------------------------------------------
+  function setupOrganizeButton() {
+    const organizeBtn = document.getElementById("organizeBtn");
+    if (!organizeBtn) {
+      console.error("[ORGANIZE] Organize 버튼을 찾을 수 없습니다!");
+      return;
+    }
+    
+    // 기존 이벤트 리스너 제거 (중복 방지)
+    organizeBtn.removeEventListener("click", handleOrganizeClick);
+    
+    // 새로운 이벤트 리스너 등록
+    organizeBtn.addEventListener("click", handleOrganizeClick);
+  }
+  
+  //-------------------------------------------------------
+  // 날짜 변환 함수 (2025년 1월 2일 → 2025.01.02)
+  //-------------------------------------------------------
+  function convertKoreanDate(dateStr) {
+    if (!dateStr || typeof dateStr !== 'string') {
+      return dateStr;
+    }
+    
+    // 1. 띄어쓰기 제거
+    let result = dateStr.replace(/\s/g, '');
+    
+    // 2. 한글을 .으로 변환
+    result = result.replace(/년/g, '.').replace(/월/g, '.').replace(/일/g, '');
+    
+    // 3. 마지막 . 제거 (있다면)
+    if (result.endsWith('.')) {
+      result = result.slice(0, -1);
+    }
+    
+    // 4. 월과 일을 두 자리로 변환
+    const parts = result.split('.');
+    if (parts.length === 3) {
+      const year = parts[0];
+      const month = parts[1].padStart(2, '0');
+      const day = parts[2].padStart(2, '0');
+      result = `${year}.${month}.${day}`;
+    }
+    return result;
+  }
+
+  //-------------------------------------------------------
+  // Organize 버튼 클릭 핸들러
+  //-------------------------------------------------------
+  function handleOrganizeClick() {
+    
+    // 1. 메인 텍스트 영역 정리
+    const inputArea = document.getElementById("inputArea");
+    const currentText = inputArea.value;
+    
+    if (currentText.trim() !== "") {
+      // 1) 줄바꿈을 기준으로 각 줄을 분리
+      const lines = currentText.split('\n');
+      
+      // 2) 각 줄에 대해 처리
+      const processedLines = lines.map(line => {
+        // 1) *, 숫자, .(소수점)을 제외한 모든 문자 제거
+        let processedLine = line.replace(/[^*0-9.]/g, '');
+        
+        // 2) = 문자도 추가로 제거 (혹시 남아있을 경우)
+        processedLine = processedLine.replace(/=/g, '');
+        
+        return processedLine;
+      });
+      
+      // 3) 빈 줄 제거 (*이나 숫자만 있던 줄)
+      const filteredLines = processedLines.filter(line => line.trim() !== '');
+      
+      // 4) 처리된 줄들을 다시 합치기
+      const resultText = filteredLines.join('\n');
+      
+      // 5) 결과를 입력 영역에 설정
+      inputArea.value = resultText;
+    }
+    
+    // 2. ORDER NO 입력 필드 정리 (띄어쓰기만 제거)
+    const orderNoInput = document.getElementById("orderNoInput");
+    if (orderNoInput && orderNoInput.value.trim() !== "") {
+      // 띄어쓰기만 제거, 나머지 문자는 그대로 유지
+      let cleanedOrderNo = orderNoInput.value.replace(/\s/g, '');
+      orderNoInput.value = cleanedOrderNo;
+    }
+    
+    // 3. DATE 입력 필드 정리 (한국어 날짜 변환 + 띄어쓰기 제거)
+    const orderDateInput = document.getElementById("orderDateInput");
+    if (orderDateInput && orderDateInput.value.trim() !== "") {
+      let originalDate = orderDateInput.value;
+      // 1단계: 한국어 날짜 변환 시도
+      let processedDate = convertKoreanDate(originalDate);
+      
+      // 2단계: 변환된 결과에서 띄어쓰기 제거
+      let finalDate = processedDate.replace(/\s/g, '');
+      
+      // 3단계: 최종 결과 적용
+      orderDateInput.value = finalDate;
+    }
+    
+    // 4. 입고 날짜 입력 필드 정리 (한국어 날짜 변환 + 띄어쓰기 제거)
+    const warehouseInput = document.getElementById("warehouseInput");
+    if (warehouseInput && warehouseInput.value.trim() !== "") {
+      let originalWarehouseDate = warehouseInput.value;
+      // 1단계: 한국어 날짜 변환 시도
+      let processedWarehouseDate = convertKoreanDate(originalWarehouseDate);
+      
+      // 2단계: 변환된 결과에서 띄어쓰기 제거
+      let finalWarehouseDate = processedWarehouseDate.replace(/\s/g, '');
+      
+      // 3단계: 최종 결과 적용
+      warehouseInput.value = finalWarehouseDate;
+    }
+    
+    // 4. 포커스 설정
+    inputArea.focus();
+  }
+
+  //-------------------------------------------------------
+  // 모드 버튼들 이벤트 리스너 등록 함수
+  //-------------------------------------------------------
+  function setupModeButtons() {
+    const ntBtn = document.getElementById("ntBtn");
+    const smbBtn = document.getElementById("smbBtn");
+    const smcBtn = document.getElementById("smcBtn");
+    
+    if (!ntBtn || !smbBtn || !smcBtn) {
+      console.error("[MODE] 모드 버튼을 찾을 수 없습니다!");
+      return;
+    }
+    
+    // 기존 이벤트 리스너 제거 (중복 방지)
+    ntBtn.removeEventListener("click", handleNTModeClick);
+    smbBtn.removeEventListener("click", handleSMBModeClick);
+    smcBtn.removeEventListener("click", handleSMCModeClick);
+    
+    // 새로운 이벤트 리스너 등록
+    ntBtn.addEventListener("click", handleNTModeClick);
+    smbBtn.addEventListener("click", handleSMBModeClick);
+    smcBtn.addEventListener("click", handleSMCModeClick);
+    
+  }
+  
+  //-------------------------------------------------------
+  // NT 모드 클릭 핸들러
+  //-------------------------------------------------------
+  function handleNTModeClick() {
+    selectedMode = "NT";
+    
+    const ntBtn = document.getElementById("ntBtn");
+    const smbBtn = document.getElementById("smbBtn");
+    const smcBtn = document.getElementById("smcBtn");
+    
+    ntBtn.classList.add("selected");
+    smbBtn.classList.remove("selected");
+    smcBtn.classList.remove("selected");
+    
+    
+    // NT 모드 예시 텍스트 설정
+    const inputArea = document.getElementById("inputArea");
+    if (inputArea) {
+      inputArea.placeholder = `NT 모드 예시:
+1 3*620*39000 1,000
+2 4*820*40000 1,000
+3 4*920*40000 2,000
+
+형식: 번호 치수*폭*길이 수량`;
+    }
+  }
+  
+  //-------------------------------------------------------
+  // SM-B 모드 클릭 핸들러
+  //-------------------------------------------------------
+  function handleSMBModeClick() {
+    console.log("[MODE] SM-B 모드 선택됨");
+    selectedMode = "SM-B";
+    
+    const ntBtn = document.getElementById("ntBtn");
+    const smbBtn = document.getElementById("smbBtn");
+    const smcBtn = document.getElementById("smcBtn");
+    
+    smbBtn.classList.add("selected");
+    ntBtn.classList.remove("selected");
+    smcBtn.classList.remove("selected");
+    
+    // SM-B 모드 예시 텍스트 설정
+    const inputArea = document.getElementById("inputArea");
+    if (inputArea) {
+      inputArea.placeholder = `SM-B 모드 예시:
+6.0*620*40500 10000
+6.5*620*37200 15000
+7.0*620*34500 20000
+
+형식: 치수*폭*길이 수량`;
+    }
+  }
+  
+  //-------------------------------------------------------
+  // SM-C 모드 클릭 핸들러
+  //-------------------------------------------------------
+  function handleSMCModeClick() {
+    console.log("[MODE] SM-C 모드 선택됨");
+    selectedMode = "SM-C";
+    
+    const ntBtn = document.getElementById("ntBtn");
+    const smbBtn = document.getElementById("smbBtn");
+    const smcBtn = document.getElementById("smcBtn");
+    
+    smcBtn.classList.add("selected");
+    ntBtn.classList.remove("selected");
+    smbBtn.classList.remove("selected");
+    
+    // SM-C 모드 예시 텍스트 설정
+    const inputArea = document.getElementById("inputArea");
+    if (inputArea) {
+      inputArea.placeholder = `SM-C 모드 예시:
+6.0*620*40500 10000
+6.5*620*37200 15000
+7.0*620*34500 20000
+
+형식: 치수*폭*길이 수량`;
+    }
+  }
+
+
+  //-------------------------------------------------------
+  // parseSmartNumber(str):
+  //   1) 제거 콤마
+  //   2) 정규식으로 소수점 뒤 3자리 => 천단위로 간주 -> decimal 제거
+  //   3) .0 => 정수
+  //   4) parseFloat -> trailing zero 제거
+  //-------------------------------------------------------
+  function parseSmartNumber(str) {
+    if (!str) return "";
+
+    // remove comma
+    let s = str.replace(/,/g, "").trim(); // ex) "20.000"
+
+    // case: exactly 3 digits after decimal => treat as thousand
+    // ex) "20.000" => "20000", "7.345" => "7345"
+    let thousandMatch = s.match(/^(\d+)\.(\d{3})$/);
+    if (thousandMatch) {
+      // combine => "(\1)(\2)"
+      s = thousandMatch[1] + thousandMatch[2]; // ex) "20" + "000" => "20000"
+    } else {
+      // case: if decimal is .0 or .00 etc => remove
+      let zeroMatch = s.match(/^(\d+)\.0+$/);
+      if (zeroMatch) {
+        // ex) "3000.0" => "3000"
+        s = zeroMatch[1];
+      }
+    }
+
+    let val = parseFloat(s);
+    if (isNaN(val)) return "";
+
+    // trailing zeros
+    // ex) 6.50 => 6.5
+    // ex) 7 => "7"
+    if (Math.floor(val) === val) {
+      return String(Math.floor(val));
+    } else {
+      // up to 5 decimal to avoid float issues
+      val = parseFloat(val.toFixed(5));
+      return String(val);
+    }
+  }
+
+  //-------------------------------------------------------
+  // NT MODE: 새로운 형식 (번호 치수*폭*길이 수량)
+  //-------------------------------------------------------
+  function parseNT(inputText) {
+    const lines = inputText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    let successList = [];
+
+    lines.forEach(line => {
+      // 새로운 형식: "번호 치수*폭*길이 수량"
+      // 예: "1 3*620*39000 1,000"
+      
+      // 공백으로 분리
+      const parts = line.split(/\s+/);
+      if (parts.length < 3) {
+        return; // 최소 3개 부분 필요 (번호 치수*폭*길이 수량)
+      }
+
+      const number = parts[0];
+      
+      // 치수*폭*길이 부분에서 *로 분리
+      const dimensionPart = parts[1];
+      const dimensionParts = dimensionPart.split("*");
+      if (dimensionParts.length !== 3) {
+        return; // 치수*폭*길이 3개 부분 필요
+      }
+      
+      const phd = parseSmartNumber(dimensionParts[0]);
+      const width = dimensionParts[1];
+      const length = dimensionParts[2];
+      const quantity = parseSmartNumber(parts[2]);
+
+      if (!number || !phd || !width || !length || !quantity) {
+        return; // 필수 데이터가 없으면 스킵
+      }
+
+      successList.push({ 
+        number, 
+        phd, 
+        width, 
+        length, 
+        "수량(kg)": quantity 
+      });
+    });
+
+    return successList;
+  }
+
+  //-------------------------------------------------------
+  // SM MODE: 새로운 형식 (치수 * 폭 * 길이 수량)
+  //-------------------------------------------------------
+  function parseSM(inputText) {
+    const lines = inputText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    let result = [];
+
+    lines.forEach(line => {
+      // 새로운 형식: "치수*폭*길이 수량"
+      // 예: "6.0*620*40500 10000"
+      
+      // 공백으로 분리
+      const parts = line.split(/\s+/);
+      if (parts.length < 2) {
+        return; // 최소 2개 부분 필요 (치수*폭*길이 수량)
+      }
+
+      // 첫 번째 부분: 치수*폭*길이
+      const dimensionPart = parts[0];
+      const dimensionParts = dimensionPart.split("*");
+      if (dimensionParts.length !== 3) {
+        return; // *가 정확히 2개 있어야 함 (치수*폭*길이)
+      }
+      
+      // 치수, 폭, 길이 추출
+      const phd = parseSmartNumber(dimensionParts[0]);
+      const width = dimensionParts[1];
+      const length = dimensionParts[2];
+      const quantity = parseSmartNumber(parts[1].replace(/,/g, '')); // 콤마 제거
+
+      if (!phd || !width || !length || !quantity) {
+        return; // 필수 데이터가 없으면 스킵
+      }
+
+      result.push({ 
+        number: (result.length + 1).toString(), // 순서대로 번호 추가
+        phd, 
+        width, 
+        length, 
+        "수량(kg)": quantity 
+      });
+    });
+
+    return result;
+  }
+
+  //-------------------------------------------------------
+  // Convert 버튼 이벤트 리스너 등록 함수
+  //-------------------------------------------------------
+  function setupConvertButton() {
+    const convertBtn = document.getElementById("convertBtn");
+    if (!convertBtn) {
+      console.error("[CONVERT] Convert 버튼을 찾을 수 없습니다!");
+      return;
+    }
+    
+    // 기존 이벤트 리스너 제거 (중복 방지)
+    convertBtn.removeEventListener("click", handleConvertClick);
+    
+    // 새로운 이벤트 리스너 등록
+    convertBtn.addEventListener("click", handleConvertClick);
+  }
+  
+  //-------------------------------------------------------
+  // 주문 데이터 파싱 함수 (새로운 형식)
+  //-------------------------------------------------------
+  function parseOrderData(inputText) {
+    const lines = inputText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+    
+    const parsedOrders = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      let orderData = null;
+      
+      if (selectedMode === "NT") {
+        // NT 모드: 1 6*820*40500 1000 형식 파싱
+        const parts = line.split(/\s+/);
+        if (parts.length < 3) {
+          continue;
+        }
+
+        const number = parts[0];
+        const dimensionPart = parts[1];
+        const dimensionParts = dimensionPart.split("*");
+        if (dimensionParts.length !== 3) {
+          continue;
+        }
+        
+        const phd = parseSmartNumber(dimensionParts[0]);
+        const width = dimensionParts[1];
+        const length = dimensionParts[2];
+        const quantity = parseSmartNumber(parts[2]);
+
+        if (!number || !phd || !width || !length || !quantity) {
+          continue;
+        }
+
+        orderData = { 
+          number, 
+          phd, 
+          width, 
+          length, 
+          "U/P": quantity.toString(),
+          "수량(kg)": quantity.toString(),  // 호환성을 위해 두 필드 모두 설정
+          "kg": quantity.toString()  // kg 필드 추가
+        };
+        
+      } else if (selectedMode === "SM-B" || selectedMode === "SM-C") {
+        // SM-B/SM-C 모드: 6.0*620*40500 10000 형식 파싱
+        const parts = line.split(/\s+/);
+        if (parts.length < 2) {
+          continue;
+        }
+
+        // 첫 번째 부분: 치수*폭*길이
+        const dimensionPart = parts[0];
+        const dimensionParts = dimensionPart.split("*");
+        if (dimensionParts.length !== 3) {
+          continue;
+        }
+
+        const phd = parseSmartNumber(dimensionParts[0]);
+        const width = dimensionParts[1];
+        const length = dimensionParts[2];
+        const quantity = parseSmartNumber(parts[1].replace(/,/g, '')); // 콤마 제거
+
+        if (!phd || !width || !length || !quantity) {
+          continue;
+        }
+
+        orderData = { 
+          number: (i + 1).toString(), // 자동 번호 생성
+          phd, 
+          width, 
+          length, 
+          "U/P": quantity.toString(),
+          "kg": quantity.toString()  // kg 필드 추가
+        };
+      }
+      
+      if (orderData) {
+        parsedOrders.push(orderData);
+      }
+    }
+    
+    return parsedOrders;
+  }
+
+  //-------------------------------------------------------
+  // Convert 버튼 클릭 핸들러
+  //-------------------------------------------------------
+  function handleConvertClick() {
+    const inputText = document.getElementById("inputArea").value;
+
+    // 새로운 주문 데이터 파싱 로직 사용
+    globalParsedData = parseOrderData(inputText);
+    
+    let output = "";
+    globalParsedData.forEach((o, index) => {
+      output += "rowNumber - " + (index + 1) + "\n";
+      output += "PHD - " + o.phd + "\n";
+      output += "width - " + o.width + "\n";
+      output += "length - " + o.length + "\n";
+      // U/P 필드가 있으면 사용하고, 없으면 수량(kg) 필드 사용
+      const quantity = o["U/P"] || o["수량(kg)"] || "";
+      output += "수량(kg) - " + quantity + "\n\n";
+    });
+    
+    document.getElementById("outputArea").value =
+      output.trim() || "파싱된 데이터가 없습니다.";
+    
+  }
+
+  //-------------------------------------------------------
+  // 현재 데이터 저장 함수 (브라우저 뒤로가기용)
+  //-------------------------------------------------------
+  function saveCurrentOrderData() {
+    // Order No와 Date 필드 값 가져오기
+    const orderNoInput = document.getElementById("orderNoInput");
+    const orderDateInput = document.getElementById("orderDateInput");
+    const warehouseInput = document.getElementById("warehouseInput");
+    const orderNo = orderNoInput ? orderNoInput.value.trim() : '';
+    const orderDate = orderDateInput ? orderDateInput.value.trim() : '';
+    const expectedDate = warehouseInput ? warehouseInput.value.trim() : '';
+    
+    // 메인 텍스트 영역 값 가져오기
+    const inputArea = document.getElementById("inputArea");
+    const inputText = inputArea ? inputArea.value.trim() : '';
+    
+    // 현재 상태 저장
+    const currentState = {
+      orderNo: orderNo,
+      orderDate: orderDate,
+      expectedDate: expectedDate,
+      inputText: inputText,
+      selectedMode: selectedMode,
+      parsedData: globalParsedData
+    };
+    
+    sessionStorage.setItem("orderupdateState", JSON.stringify(currentState));
+  }
+
+  //-------------------------------------------------------
+  // Export 버튼 이벤트 리스너 등록 함수
+  //-------------------------------------------------------
+  function setupExportButton() {
+    const exportBtn = document.getElementById("exportBtn");
+    if (!exportBtn) {
+      console.error("[EXPORT] Export 버튼을 찾을 수 없습니다!");
+      return;
+    }
+    
+    // 기존 이벤트 리스너 제거 (중복 방지)
+    exportBtn.removeEventListener("click", handleExportClick);
+    
+    // 새로운 이벤트 리스너 등록
+    exportBtn.addEventListener("click", handleExportClick);
+  }
+  
+  //-------------------------------------------------------
+  // Export 버튼 클릭 핸들러
+  //-------------------------------------------------------
+  function handleExportClick() {
+    if (!globalParsedData || globalParsedData.length === 0) {
+      alert("먼저 Convert를 실행하세요.");
+      return;
+    }
+    
+    // Export 전에 현재 상태 저장 (뒤로가기용)
+    saveCurrentOrderData();
+    
+    // Order No와 Date 필드 값 가져오기
+    const orderNoInput = document.getElementById("orderNoInput");
+    const orderDateInput = document.getElementById("orderDateInput");
+    const warehouseInput = document.getElementById("warehouseInput");
+    const orderNo = orderNoInput ? orderNoInput.value.trim() : '';
+    const orderDate = orderDateInput ? orderDateInput.value.trim() : '';
+    const expectedDate = warehouseInput ? warehouseInput.value.trim() : '';
+    
+    
+    // 기존 데이터에 Order 정보 추가 (모든 모드에서 expectedDate 처리)
+    const exportData = {
+      orderData: globalParsedData,
+      orderId: orderNo,
+      orderDate: orderDate,
+      expectedDate: expectedDate  // 모든 모드에서 동일하게 처리
+    };
+    
+    // 선택된 모드 정보와 함께 저장
+    sessionStorage.setItem("parsedData", JSON.stringify(exportData));
+    sessionStorage.setItem("selectedMode", selectedMode);
+    
+    // isNewOrder 플래그를 false로 설정하여 기존 데이터를 불러오도록 함
+    sessionStorage.setItem("isNewOrder", "false");
+    
+    window.location.href = "order.html";
+  }
+
+  //-------------------------------------------------------
+  // 브라우저 뒤로가기 이벤트 처리
+  //-------------------------------------------------------
+  window.addEventListener('beforeunload', function() {
+    saveCurrentOrderData();
+  });
+  
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      saveCurrentOrderData();
+    }
+  });
+
+  //-------------------------------------------------------
+  // 상태 복원 함수
+  //-------------------------------------------------------
+  function restoreOrderData() {
+    console.log("[DEBUG] restoreOrderData() 호출됨");
+    
+    const savedState = sessionStorage.getItem('orderupdateState');
+    console.log("[DEBUG] 저장된 상태:", savedState);
+    
+    if (savedState) {
+      try {
+        const state = JSON.parse(savedState);
+        console.log("[DEBUG] 파싱된 상태:", state);
+        
+        // Order No와 Date 필드 복원
+        const orderNoInput = document.getElementById("orderNoInput");
+        const orderDateInput = document.getElementById("orderDateInput");
+        const warehouseInput = document.getElementById("warehouseInput");
+        
+        
+        if (orderNoInput && state.orderNo) {
+          // 약간의 지연 후 값 설정 (DOM 완전 로드 보장)
+          setTimeout(() => {
+            orderNoInput.value = state.orderNo;
+            // 강제로 input 이벤트 발생시켜서 화면 업데이트
+            orderNoInput.dispatchEvent(new Event('input', { bubbles: true }));
+            orderNoInput.dispatchEvent(new Event('change', { bubbles: true }));
+          }, 100);
+        }
+        
+        if (orderDateInput && state.orderDate) {
+          // 약간의 지연 후 값 설정 (DOM 완전 로드 보장)
+          setTimeout(() => {
+            orderDateInput.value = state.orderDate;
+            // 강제로 input 이벤트 발생시켜서 화면 업데이트
+            orderDateInput.dispatchEvent(new Event('input', { bubbles: true }));
+            orderDateInput.dispatchEvent(new Event('change', { bubbles: true }));
+          }, 100);
+        }
+        
+        if (warehouseInput && state.expectedDate) {
+          // 약간의 지연 후 값 설정 (DOM 완전 로드 보장)
+          setTimeout(() => {
+            warehouseInput.value = state.expectedDate;
+            // 강제로 input 이벤트 발생시켜서 화면 업데이트
+            warehouseInput.dispatchEvent(new Event('input', { bubbles: true }));
+            warehouseInput.dispatchEvent(new Event('change', { bubbles: true }));
+          }, 100);
+        }
+        
+        // 메인 텍스트 영역 복원
+        const inputArea = document.getElementById("inputArea");
+        if (inputArea && state.inputText) {
+          inputArea.value = state.inputText;
+        }
+        
+        // 모드 버튼 복원
+        if (state.selectedMode) {
+          selectedMode = state.selectedMode;
+          const modeButtons = document.querySelectorAll('.mode-btn');
+          modeButtons.forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.textContent === state.selectedMode) {
+              btn.classList.add('selected');
+            }
+          });
+        }
+        
+        // 파싱된 데이터 복원
+        if (state.parsedData && state.parsedData.length > 0) {
+          globalParsedData = state.parsedData;
+          
+          // Convert 결과도 복원
+          let output = "";
+          globalParsedData.forEach(o => {
+            if (selectedMode === "NT") {
+              output += "number: " + o.number + "\n";
+              output += "phd: " + o.phd + "\n";
+              output += "width: " + o.width + "\n";
+              output += "length: " + o.length + "\n";
+              output += "수량(kg): " + o["수량(kg)"] + "\n\n";
+            } else {
+              if (o.number) {
+                output += "number: " + o.number + "\n";
+              }
+              output += "phd: " + o.phd + "\n";
+              output += "width: " + o.width + "\n";
+              output += "length: " + o.length + "\n";
+              output += "수량(kg): " + o["수량(kg)"] + "\n\n";
+            }
+          });
+          
+          const outputArea = document.getElementById("outputArea");
+          if (outputArea) {
+            outputArea.value = output.trim() || "파싱된 데이터가 없습니다.";
+          }
+        }
+        
+        // 저장된 상태 제거 (한 번만 사용)
+        sessionStorage.removeItem('orderupdateState');
+        
+      } catch (error) {
+        console.error("[INIT] 상태 복원 실패:", error);
+      }
+    }
+  }
+
+  //-------------------------------------------------------
+  // 뒤로가기 시 상태 복원 (pageshow 이벤트)
+  //-------------------------------------------------------
+  window.addEventListener('pageshow', function(event) {
+    // 뒤로가기로 돌아온 경우 (캐시에서 복원)
+    if (event.persisted) {
+      // DOM 요소가 준비될 때까지 기다린 후 복원
+      const waitForElements = () => {
+        const orderNoInput = document.getElementById("orderNoInput");
+        const orderDateInput = document.getElementById("orderDateInput");
+        const inputArea = document.getElementById("inputArea");
+        
+        if (orderNoInput && orderDateInput && inputArea) {
+          restoreOrderData();
+        } else {
+          setTimeout(waitForElements, 50);
+        }
+      };
+      
+      waitForElements();
+    }
+  });
+
+  //-------------------------------------------------------
+  // 페이지 로드 시 초기화 (리프레시 시에는 복원하지 않음)
+  //-------------------------------------------------------
+  window.addEventListener('load', function() {
+    // 리프레시인지 확인 (뒤로가기가 아닌 경우)
+    const isRefresh = !window.performance.navigation || window.performance.navigation.type === 1;
+    
+    if (isRefresh) {
+      // 리프레시 시에는 저장된 상태 제거
+      sessionStorage.removeItem('orderupdateState');
+    } else {
+      restoreOrderData();
+    }
+  });
+</script>
+</body>
+</html>

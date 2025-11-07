@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+    <title>입금내역</title>
+  <!-- SortableJS (드래그 정렬) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #000;
+      line-height: 1.5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      margin: 20px;
+      padding: 0;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+
+    /* 메인 페이지 컨테이너 */
+    .page-container {
+      max-width: 210mm; /* A4 가로 사이즈 */
+      margin: 20px auto;
+      padding: 0;
+    }
+
+    .page {
+      width: 210mm; /* A4 가로 사이즈 고정 */
+      min-height: 297mm; /* A4 세로 최소 높이 */
+      margin: 0 auto 20px auto;
+      padding: 10mm 25mm 25mm 25mm;
+      box-sizing: border-box;
+      background: #fff;
+      position: relative;
+      border: 1px solid #ddd;
+    }
+
+    /* 상단 타이틀 */
+    .document-title {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+
+    /* 공통 버튼 스타일 */
+    .common-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    .common-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+
+    /* 숫자 입력 필드 스피너 제거 */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    /* 입력 필드 하이라이트 제거 - PDF용 강화 */
+    .transfer-table td input,
+    .transfer-table td input[type="text"],
+    .transfer-table td input[type="number"] {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      -webkit-border-radius: 0;
+      -moz-border-radius: 0;
+      border-radius: 0;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: auto;
+      line-height: inherit;
+      font-size: inherit;
+      color: inherit;
+    }
+
+    .transfer-table td input:focus,
+    .transfer-table td input:active,
+    .transfer-table td input:hover {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+
+    /* 텍스트 잘림 방지 */
+    .transfer-table td {
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
+    }
+
+    .transfer-table input {
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
+      min-width: 100%;
+    }
+
+    /* 입금내역 테이블 */
+    .transfer-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      margin-bottom: 200px; /* 하단 메뉴바 높이 + 충분한 여백 */
+      background: #fff;
+      border: 1px solid #ddd;
+    }
+
+    .transfer-table th {
+      background-color: #f5f5f5;
+      padding: 8px 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-weight: bold;
+      font-size: 0.7rem;
+      color: #333;
+    }
+
+    .transfer-table td {
+      padding: 5px 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-size: 0.7rem;
+    }
+
+    .transfer-table tr {
+      background-color: #fff;
+    }
+
+    .transfer-table tr:hover {
+      background-color: #fff;
+    }
+
+    /* 컬럼 너비 설정 - 절대값 */
+    .transfer-table th:nth-child(1),
+    .transfer-table td:nth-child(1) {
+      width: 50px; /* 삭제/드래그 버튼 */
+    }
+
+    .transfer-table th:nth-child(2),
+    .transfer-table td:nth-child(2) {
+      width: 200px; /* 내역 */
+    }
+
+    .transfer-table th:nth-child(3),
+    .transfer-table td:nth-child(3) {
+      width: 150px; /* 송금인 */
+    }
+
+    .transfer-table th:nth-child(4),
+    .transfer-table td:nth-child(4) {
+      width: 100px; /* 금액 */
+    }
+
+    .transfer-table th:nth-child(5),
+    .transfer-table td:nth-child(5) {
+      width: 120px; /* 날짜 */
+    }
+    
+    /* 금액 열 오른쪽 정렬 */
+    .transfer-table td:nth-child(4) {
+      text-align: right;
+      padding: 5px 12px 5px 8px; /* 오른쪽 패딩 늘리기 */
+    }
+    
+    /* 금액 열의 입력 필드도 오른쪽 정렬 */
+    .transfer-table td:nth-child(4) input {
+      text-align: right;
+    }
+    
+    /* 드래그 핸들 */
+    .drag-handle {
+      width: 18px;
+      height: 14px;
+      cursor: move;
+      font-size: 0.8rem;
+      display: inline-block;
+      text-align: center;
+      line-height: 14px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 2px;
+      margin-right: 2px;
+    }
+    
+    .drag-handle:hover {
+      background-color: #f0f0f0;
+    }
+    
+    /* 버튼 컨테이너 */
+    .button-container {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    
+
+    /* 하단 버튼 영역 전체 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 확장 손잡이 (서랍 손잡이처럼 위쪽에 튀어나옴) */
+    .expand-handle {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    /* 확장/축소 버튼 */
+    .expand-btn {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #666;
+      border-radius: 8px 8px 0 0;
+      min-width: 40px;
+      height: 20px;
+      line-height: 1;
+      transition: all 0.2s ease;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    .expand-btn:hover {
+      background: #e8e8e8;
+      border-color: #999;
+      box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    }
+
+    .expand-btn.expanded {
+      transform: rotate(180deg);
+      background: #e0e0e0;
+    }
+
+    /* 기본 버튼 그룹 레이아웃 */
+    .main-button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+    
+    .left-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .right-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .main-button-group button {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+    
+    .main-button-group button:hover {
+      background: #f0f0f0;
+    }
+
+    /* 상세 버튼 영역 */
+    .detail-button-area {
+      margin-top: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      animation: slideDown 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+  <body>
+    <div class="page-container">
+      <div class="page">
+    <h1 class="document-title">입금내역</h1>
+    
+    
+    <!-- 입금내역 테이블 -->
+    <table class="transfer-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>내역</th>
+          <th>송금인</th>
+          <th>금액</th>
+          <th>날짜</th>
+        </tr>
+      </thead>
+      <tbody id="transferTableBody">
+        <!-- 데이터가 여기에 동적으로 추가됩니다 -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 하단 버튼 영역 -->
+  <div class="bottom-buttons">
+    <!-- 확장/축소 버튼 (서랍 손잡이처럼 위쪽에 튀어나옴) -->
+    <div class="expand-handle">
+      <button id="expandButton" type="button" class="expand-btn">▼</button>
+    </div>
+    
+    <!-- 기본 버튼 영역 (항상 보임) -->
+    <div class="main-button-group">
+      <div class="left-buttons">
+        <button type="button" onclick="addDepositRow()" class="common-btn">행추가</button>
+        <button type="button" onclick="saveAllDeposits()" class="common-btn">Update</button>
+      </div>
+      <div class="right-buttons">
+        <button type="button" onclick="location.href='eltrokorea9.html'" class="common-btn">Home</button>
+        <button type="button" onclick="location.href='accounting.html'" class="common-btn">Accounting</button>
+      </div>
+    </div>
+
+    <!-- 확장 가능한 상세 버튼 영역 (기본적으로 숨김) -->
+    <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+      <!-- 필요시 추가 버튼들 -->
+    </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const expandButton = document.getElementById('expandButton');
+      const detailArea = document.getElementById('detailButtonArea');
+      
+      // 확장 버튼 이벤트
+      expandButton.addEventListener('click', function() {
+        const isExpanded = detailArea.style.display !== 'none';
+        
+        detailArea.style.display = isExpanded ? 'none' : 'flex';
+        expandButton.classList.toggle('expanded', !isExpanded);
+        expandButton.textContent = isExpanded ? '▼' : '▲';
+      });
+      
+      // 초기 데이터 로드
+      loadDepositData();
+    });
+    
+    // 1. Deposits 데이터 불러오기
+    async function loadDepositData() {
+      try {
+        const response = await fetch('/api/transfers?section=deposits');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        renderTransferTable(data || []);
+      } catch (error) {
+        alert('데이터 로드 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+    
+    // 2. Deposits 데이터 저장/업데이트
+    async function saveDeposit(depositData) {
+      try {
+        const response = await fetch('/api/transfers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(depositData)
+        });
+        
+        return await response.json();
+      } catch (error) {
+        return null;
+      }
+    }
+    
+    // Deposits 데이터 삭제 (description 기반)
+    async function deleteDepositByDescription(description) {
+      try {
+        const response = await fetch('/api/transfers', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description })
+        });
+        
+        if (response.ok) {
+          return await response.json();
+        } else {
+          const error = await response.json();
+          throw new Error(error.error || '삭제 실패');
+        }
+      } catch (error) {
+        return null;
+      }
+    }
+    
+    
+    // 행추가 함수
+    function addDepositRow() {
+      const tableBody = document.getElementById('transferTableBody');
+      const newId = 1000 + tableBody.children.length;
+      
+      const row = document.createElement('tr');
+      row.dataset.depositId = newId;
+      row.innerHTML = createDepositRowHTML({});
+      tableBody.appendChild(row);
+      
+      setTimeout(() => {
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const firstInput = row.querySelector('input');
+        if (firstInput) {
+          firstInput.focus();
+        }
+      }, 100);
+    }
+    
+    
+    // 행삭제 함수
+    async function removeDepositRow(button) {
+      const row = button.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      
+      if (inputs.length >= 4) {
+        const description = inputs[0].value.trim();
+        
+        if (description) {
+          if (!confirm(`"${description}" 항목을 삭제하시겠습니까?`)) {
+            return;
+          }
+          
+          const result = await deleteDepositByDescription(description);
+          if (!result) {
+            alert('transfer.json에 매칭되는 데이터가 없습니다.\n행은 삭제됩니다.');
+          }
+        }
+      }
+      
+      row.remove();
+    }
+    
+    // Save 함수 - Deposits 데이터를 transfer.json에 저장 (현재 화면 순서대로)
+    async function saveAllDeposits() {
+      try {
+        const rows = document.querySelectorAll('#transferTableBody tr');
+        const depositItems = [];
+        
+        rows.forEach((row, index) => {
+          const inputs = row.querySelectorAll('input');
+          if (inputs.length < 4) return;
+          
+          depositItems.push({
+            id: depositItems.length + 1,
+            description: inputs[0].value.trim(),
+            sender: inputs[1].value.trim(),
+            amount: parseInt(inputs[2].value.replace(/,/g, '')) || 0,
+            date: inputs[3].value.trim()
+          });
+        });
+        
+        if (depositItems.length === 0) {
+          alert('저장할 데이터가 없습니다.');
+          return;
+        }
+        
+        const response = await fetch('/api/transfers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            action: 'reorder',
+            deposits: depositItems 
+          })
+        });
+        
+        if (response.ok) {
+          alert('Deposits 데이터 저장 완료! (순서 및 ID 업데이트)');
+          loadDepositData();
+        } else {
+          alert('데이터 저장에 실패했습니다.');
+        }
+        
+      } catch (error) {
+        alert('데이터 저장 중 오류가 발생했습니다.');
+      }
+    }
+
+    
+    // 드래그 정렬 초기화
+    function initializeSortable() {
+      const tableBody = document.getElementById('transferTableBody');
+      if (tableBody && typeof Sortable !== 'undefined') {
+        Sortable.create(tableBody, {
+          animation: 150,
+          handle: '.drag-handle'
+          // 드래그 후 자동 저장 제거 - Update 버튼을 눌러야 저장됨
+        });
+      }
+    }
+    
+    
+    // 테이블 렌더링
+    function renderTransferTable(deposits) {
+      const tableBody = document.getElementById('transferTableBody');
+      tableBody.innerHTML = '';
+      
+      deposits.forEach(deposit => {
+        const row = document.createElement('tr');
+        row.dataset.depositId = deposit.id;
+        row.innerHTML = createDepositRowHTML(deposit);
+        tableBody.appendChild(row);
+      });
+      
+      // 드래그 기능 초기화
+      initializeSortable();
+    }
+    
+    // Deposits 행 HTML 생성
+    function createDepositRowHTML(deposit) {
+      const inputStyle = "width: 100%; border: none; padding: 5px;";
+      const buttonStyle = "font-size: 0.7rem; padding: 1px 2px; cursor: pointer; margin: 0; display: inline-block; width: 18px; height: 14px; border: 1px solid #ccc; background: #fff; color: #000; border-radius: 2px;";
+      
+      return `
+        <td>
+          <div class="button-container">
+            <div class="drag-handle">☰</div>
+            <button type="button" onclick="removeDepositRow(this)" class="deleteButton" style="${buttonStyle}">X</button>
+          </div>
+        </td>
+        <td><input type="text" value="${deposit.description || ''}" style="${inputStyle}" onkeydown="handleEnterKey(event, this)"></td>
+        <td><input type="text" value="${deposit.sender || ''}" style="${inputStyle}" onkeydown="handleEnterKey(event, this)"></td>
+        <td><input type="text" value="${formatNumber(deposit.amount || 0)}" style="${inputStyle}" oninput="formatAmountInput(this)" onkeydown="handleEnterKey(event, this)"></td>
+        <td><input type="text" value="${deposit.date || ''}" style="${inputStyle}" onkeydown="handleEnterKey(event, this)"></td>
+      `;
+    }
+    
+    // 입력 필드 포커스 및 선택 헬퍼 함수
+    function focusInput(input) {
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }
+    
+    // 엔터키 처리 함수 - 같은 열의 아래 행으로 이동
+    function handleEnterKey(event, currentInput) {
+      if (event.key !== 'Enter') return;
+      
+      event.preventDefault();
+      
+      const currentRow = currentInput.closest('tr');
+      const currentCell = currentInput.closest('td');
+      const currentCellIndex = currentCell.cellIndex;
+      
+      // 같은 열의 아래 행 찾기
+      const nextRow = currentRow.nextElementSibling;
+      if (nextRow) {
+        const sameColumnInput = nextRow.cells[currentCellIndex]?.querySelector('input');
+        if (sameColumnInput) {
+          focusInput(sameColumnInput);
+          return;
+        }
+      }
+      
+      // 아래 행이 없는 경우, 새 행 추가
+      addDepositRow();
+      
+      // 새로 추가된 행의 같은 열 입력 필드로 포커스
+      setTimeout(() => {
+        const newRow = document.querySelector('#transferTableBody tr:last-child');
+        const sameColumnInput = newRow?.cells[currentCellIndex]?.querySelector('input');
+        focusInput(sameColumnInput);
+      }, 100);
+    }
+    
+    // 숫자 포맷팅 함수 (콤마 추가)
+    function formatNumber(num) {
+      if (num === null || num === undefined || num === '') return '0';
+      return Number(num).toLocaleString();
+    }
+    
+    // 금액 입력 필드 포맷팅
+    function formatAmountInput(input) {
+      // 커서 위치 저장
+      const cursorPosition = input.selectionStart;
+      const originalValue = input.value;
+      const originalLength = originalValue.length;
+      
+      // 숫자만 추출
+      let value = input.value.replace(/[^0-9]/g, '');
+      
+      if (value === '') {
+        input.value = '0';
+        input.setSelectionRange(0, 0);
+      } else {
+        // 포맷팅 전 숫자 문자열에서의 커서 위치 계산
+        let numBeforeCursor = 0;
+        for (let i = 0; i < Math.min(cursorPosition, originalLength); i++) {
+          if (originalValue[i] >= '0' && originalValue[i] <= '9') {
+            numBeforeCursor++;
+          }
+        }
+        
+        // 포맷팅된 값 설정
+        const formattedValue = formatNumber(value);
+        input.value = formattedValue;
+        
+        // 포맷팅된 문자열에서 적절한 커서 위치 계산
+        let newPosition = 0;
+        let numCount = 0;
+        for (let i = 0; i < formattedValue.length && numCount < numBeforeCursor; i++) {
+          if (formattedValue[i] >= '0' && formattedValue[i] <= '9') {
+            numCount++;
+          }
+          newPosition = i + 1;
+        }
+        
+        // 커서 위치 복원
+        input.setSelectionRange(newPosition, newPosition);
+      }
+    }
+    
+    
+  </script>
+</body>
+</html>

@@ -1,0 +1,4528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Order Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      color: #000;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+    .page {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff !important;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      max-height: 100vh;
+      overflow-y: auto;
+    }
+    h1 {
+      text-align: center;
+      margin: 0; /* 상단 여백 제거 */
+      padding-bottom: 10px;
+    }
+    .top-menu {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+    .mode-btn {
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      cursor: pointer;
+    }
+    .mode-btn.selected {
+      background: #000; /* 검정 배경 */
+      color: #fff;      /* 흰 글씨 */
+      border-color: #000;
+    }
+
+
+    table {
+      width: auto;
+      border-collapse: collapse;
+      margin-bottom: 80px;
+    }
+    thead th {
+      border: 1px solid #000;
+      background-color: #f0f0f0;
+      padding: 5px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    /* 테이블 바디의 행은 테두리 없음 */
+    #orderTableBody {
+      background: #fff !important;
+    }
+    
+    #orderTableBody tr td {
+      border: none;
+      text-align: center;
+      vertical-align: middle;
+      padding: 5px;
+      background: #fff !important;
+    }
+
+    /* 각 열을 개별적으로 설정 */
+      /* 1열: Drag + X + S */
+      #orderTableBody tr td:nth-child(1) {
+        width: 80px;
+        min-width: 80px;
+      }
+    
+    /* 2열: PHD */
+    #orderTableBody tr td:nth-child(2) {
+      width: auto;
+    }
+    
+    /* 3열: Width */
+    #orderTableBody tr td:nth-child(3) {
+      width: auto;
+    }
+    
+    /* 4열: Length */
+    #orderTableBody tr td:nth-child(4) {
+      width: auto;
+    }
+    
+    /* 5열: X */
+    #orderTableBody tr td:nth-child(5) {
+      width: auto;
+    }
+    
+    /* 6열: KG */
+    #orderTableBody tr td:nth-child(6) {
+      width: auto;
+    }
+    
+    /* 7열: Quantity */
+    #orderTableBody tr td:nth-child(7) {
+      width: auto;
+    }
+    
+    /* 8열: Convert */
+    #orderTableBody tr td:nth-child(8) {
+      width: auto;
+    }
+    
+    
+    /* 10열: 조정 */
+    #orderTableBody tr td:nth-child(10) {
+      width: auto;
+    }
+    
+    /* 11열: 나머지 */
+    #orderTableBody tr td:nth-child(11) {
+      width: auto;
+    }
+    /* 테이블 헤더 스타일 */
+    #orderTable {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-radius: 5px;
+      border: 1px solid #e0e0e0;
+      background: #fff !important;
+    }
+
+    #orderTable thead {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: #fff;
+    }
+
+    #orderTable thead th {
+      background: #fff;
+      color: #000;
+      padding: 15px 8px;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: 1px solid #e0e0e0;
+      border-bottom: 2px solid #ccc;
+      line-height: 1.4;
+      vertical-align: middle;
+      min-width: 40px;
+      height: 50px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    #orderTable thead th:hover {
+      background: #f8f8f8;
+      border-color: #999;
+    }
+
+    /* 1열 헤더 폭 설정 */
+    .drag-select-header {
+      width: 80px;
+      background: #f8f8f8 !important;
+      min-width: 80px;
+    }
+
+    /* 각 열을 개별적으로 설정 */
+    /* PHD 열 */
+    th:nth-child(3) {
+      width: auto;
+    }
+    
+    /* Width 열 */
+    th:nth-child(4) {
+      width: auto;
+    }
+    
+    /* Length 열 */
+    th:nth-child(5) {
+      width: auto;
+    }
+    
+    /* X 열 */
+    th:nth-child(6) {
+      width: auto;
+    }
+    
+    /* KG 열 */
+    th:nth-child(7) {
+      width: auto;
+    }
+    
+    /* Quantity 열 */
+    th:nth-child(8) {
+      width: auto;
+    }
+    
+    /* Convert 열 */
+    th:nth-child(9) {
+      width: auto;
+    }
+    
+    
+    /* 조정 열 */
+    th:nth-child(11) {
+      width: auto;
+    }
+    
+    /* 나머지 열 */
+    th:nth-child(12) {
+      width: auto;
+    }
+
+    /* 특정 헤더 클래스들도 개별 설정 */
+    .x-header {
+      width: 0px;
+      min-width: 0px;
+    }
+    
+    .adjust-header {
+      width: 0px;
+      min-width: 0px;
+    }
+    
+    .adjust2-header {
+      width: 0px;
+      min-width: 0px;
+    }
+    
+    .remainder-header {
+      width: 0px;
+      min-width: 0px;
+    }
+
+    /* 드래그 + Select 합쳐진 셀 */
+    .drag-select-cell {
+      width: 0px;
+      padding: 0px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    /* 드래그 핸들 */
+    .drag-handle {
+      width: 22px;
+      cursor: move;
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    /* Select 버튼들 컨테이너 */
+    .select-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-items: center;
+    }
+
+    /* Select 버튼 행 */
+    .select-row {
+      display: flex;
+      gap: 2px;
+      justify-content: center;
+    }
+
+    .deleteButton {
+      font-size: 0.75rem;
+      padding: 1px 3px;
+      cursor: pointer;
+      margin: 0;
+      display: inline-block;
+      width: 22px;
+      height: 18px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 2px;
+    }
+
+    /* S 버튼 스타일 */
+    .s-button {
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      font-weight: normal;
+      padding: 0;
+      margin: 0;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+      line-height: 18px;
+      transition: all 0.2s ease;
+    }
+    .s-button:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    .s-button.selected {
+      background: #007bff !important;
+      color: white !important;
+      border-color: #007bff !important;
+    }
+    /* 1열 버튼 컨테이너 스타일 */
+    .button-container {
+      display: flex;
+      gap: 2px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: nowrap;
+    }
+    
+    .adjustUpButton, .adjustDownButton {
+      font-size: 0.9rem;
+      padding: 2px 4px;
+      cursor: pointer;
+      margin: 2px;
+      display: block;
+      width: 20px;
+      height: 20px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+    }
+    
+    .adjustUpButton:hover, .adjustDownButton:hover {
+      background: #f0f0f0;
+    }
+
+    /* 1열 헤더의 organize 버튼 스타일 */
+    #sortPHDButton {
+      font-size: 0.7rem;
+      padding: 2px 4px;
+      margin: 0;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 2px;
+      min-width: 50px;
+      height: 18px;
+      line-height: 1;
+      display: block;
+      margin: 0 auto;
+    }
+
+    #sortPHDButton:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    input[type="number"], input[type="text"], select {
+      width: 100%;
+      padding: 4px;
+      box-sizing: border-box;
+      height: 30px;
+      font-size: 0.95rem;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+    
+    
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='12'%20height='12'%3E%3Cpolygon%20points='0,0%206,6%2012,0'%20style='fill:%23666;'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 12px;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    /* 하단 버튼 컨테이너 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #ccc;
+      padding: 15px 20px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 기타 버튼 스타일 */
+    #addRowButton, #convertBtn, #optimizeBtn, #saveBtn, #emailBtn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+    }
+
+    /* Convert, Unconvert, Optimize 버튼들 - organize 버튼과 동일한 크기 */
+    #convert1Button, #convert2Button, #unconvertButton, #opt1Button, #opt2Button {
+      font-size: 0.8rem;
+      padding: 2px 4px;
+      margin: 0 2px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 60px;
+      height: 20px;
+      line-height: 1.2;
+    }
+
+    /* 버튼 호버 효과 */
+    #addRowButton:hover, #convertBtn:hover, #optimizeBtn:hover, #saveBtn:hover, #emailBtn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    #convert1Button:hover, #convert2Button:hover, #unconvertButton:hover, #opt1Button:hover, #opt2Button:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+
+    /* 하단 버튼 영역 전체 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 확장 손잡이 (서랍 손잡이처럼 위쪽에 튀어나옴) */
+    .expand-handle {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    /* 확장/축소 버튼 */
+    .expand-btn {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #666;
+      border-radius: 8px 8px 0 0;
+      min-width: 40px;
+      height: 20px;
+      line-height: 1;
+      transition: all 0.2s ease;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    .expand-btn:hover {
+      background: #e8e8e8;
+      border-color: #999;
+      box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    }
+
+    .expand-btn.expanded {
+      transform: rotate(180deg);
+      background: #e0e0e0;
+    }
+
+    /* 기본 버튼 그룹 레이아웃 */
+    .main-button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+
+    /* 상세 버튼 영역 */
+    .detail-button-area {
+      margin-top: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      animation: slideDown 0.3s ease;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .detail-button-area button {
+      margin: 0;
+    }
+
+    /* 애니메이션 */
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 테이블 하단 여백 (고정 버튼과 겹치지 않도록) */
+    #orderTable {
+      margin-bottom: 120px;
+    }
+
+    /* + 버튼은 정사각형으로 */
+    #addRowButton {
+      min-width: 30px;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: normal;
+    }
+
+
+    /* 버튼 그룹 내부 간격 조정 */
+    .left-button-group button, .center-button-group button {
+      margin-right: 5px;
+    }
+
+    .left-button-group button:last-child, .center-button-group button:last-child {
+      margin-right: 0;
+    }
+
+    /* 작은 버튼들을 큰 버튼과 중간 정렬 맞추기 */
+    #convert1Button, #convert2Button, #unconvertButton, #opt1Button, #opt2Button {
+      vertical-align: middle;
+      margin-top: 5px; /* 큰 버튼과 중간 정렬을 위해 위쪽 여백 조정 */
+    }
+
+    /* 상단 메뉴 좌우 배치 레이아웃 */
+    .top-menu {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .left-menu {
+      display: flex;
+      gap: 3px;
+    }
+
+    .right-menu {
+      display: flex;
+      gap: 3px;
+    }
+
+    /* 상단 메뉴 버튼 스타일 */
+    .top-menu-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+    }
+
+    .top-menu-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    /* 모드 버튼 선택 상태 */
+    .top-menu-btn.mode-btn.selected {
+      background: black;
+      color: white;
+      border-color: black;
+    }
+
+    /* 모드 버튼 비활성화 상태 */
+    .top-menu-btn.mode-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: #f0f0f0;
+      color: #999;
+      border-color: #ccc;
+    }
+
+    .top-menu-btn.mode-btn:disabled:hover {
+      background: #f0f0f0;
+      border-color: #ccc;
+    }
+
+    /* 모달 창 스타일 */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 2% auto;
+      padding: 0;
+      border: 1px solid #888;
+      width: 500px;
+      max-height: 90vh;
+      border-radius: 5px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 15px 20px;
+      background-color: #f8f8f8;
+      border-bottom: 1px solid #ddd;
+      border-radius: 5px 5px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: #333;
+    }
+
+    .close-server, .close-filename, .close-delete {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .close-server:hover, .close-filename:hover, .close-delete:hover {
+      color: #000;
+    }
+
+    .close {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .close:hover {
+      color: #000;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .file-input-section {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .file-info {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 5px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .file-info h4 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      background-color: #f8f8f8;
+      border-top: 1px solid #ddd;
+      border-radius: 0 0 5px 5px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    
+    /* 모달 내부 버튼 호버 효과 */
+    .modal button:hover {
+      background: #f0f0f0 !important;
+      border-color: #999 !important;
+    }
+
+    /* 변환된 행은 초록색 글자 */
+    .converted {
+      color: green;
+    }
+
+    /* Order Header 스타일 */
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 10px;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    /* 왼쪽/오른쪽 영역에 input 사용 */
+    .order-header .left, .order-header .right {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .order-header .left input,
+    .order-header .right input {
+      font-size: 1rem;
+      width: 140px;
+      padding: 4px 4px;
+      height: 24px;
+    }
+  </style>
+  <!-- SortableJS (드래그 정렬) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+</head>
+
+<body>
+<div class="page">
+  <h1>Order Form</h1>
+
+  <!-- 상단 메뉴 영역 -->
+  <div class="top-menu">
+    <!-- 왼쪽: Home -->
+    <div class="left-menu">
+      <button type="button" onclick="location.href='eltrokorea9.html'" class="top-menu-btn">Home</button>
+    </div>
+    <!-- 오른쪽: NT, SM-B, SM-C -->
+    <div class="right-menu">
+      <button id="ntBtn" class="top-menu-btn mode-btn selected">NT</button>
+      <button id="smbBtn" class="top-menu-btn mode-btn">SM-B</button>
+      <button id="smcBtn" class="top-menu-btn mode-btn">SM-C</button>
+    </div>
+  </div>
+
+  <!-- Order ID와 Date 입력 영역 -->
+  <div class="order-header">
+    <div class="left">
+      ORDER ID :
+      <input type="text" id="orderIdInput" autocomplete="off" />
+    </div>
+    <div class="right">
+      DATE :
+      <input type="text" id="orderDateInput" autocomplete="off" />
+      입고 :
+      <input type="text" id="warehouseInput" autocomplete="off" />
+    </div>
+  </div>
+
+  <table id="orderTable">
+    <thead>
+      <tr>
+        <!-- Row Number -->
+        <th class="row-number-header" style="width: 25px; min-width: 25px; background: #f8f8f8 !important;"></th>
+        <!-- Drag + Select (합쳐진 열) -->
+        <th class="drag-select-header" style="width: 80px; min-width: 80px;">
+          <button id="sortPHDButton" type="button">organize</button>
+        </th>
+        <!-- PHD -->
+        <th>PHD</th>
+        <th>Width</th>
+        <th>Length</th>
+        <th class="x-header">X</th>
+        <th style="width: 80px; min-width: 80px;">KG<br><span id="totalKg" style="font-size: 0.8em; color: #666;">총: 0</span></th>
+        <th style="width: 80px; min-width: 80px;">Quantity<br><span id="totalQuantity" style="font-size: 0.8em; color: #666;">총: 0</span></th>
+        <!-- 9번째 열: Adjustment -->
+        <th class="adjust-header">Convert<br><span id="totalAdjustment" style="font-size: 0.8em; color: #666;">총: 0</span></th>
+        <!-- 11번째 열: 조정 버튼 -->
+        <th class="adjust-buttons-header">조정</th>
+        <!-- 12번째 열: 나머지 -->
+        <th class="remainder-header">나머지</th>
+      </tr>
+    </thead>
+    <tbody id="orderTableBody">
+      <!-- 초기에는 빈 상태 -->
+    </tbody>
+  </table>
+
+  <div class="bottom-buttons">
+    <!-- 확장/축소 버튼 (서랍 손잡이처럼 위쪽에 튀어나옴) -->
+    <div class="expand-handle">
+      <button id="expandButton" type="button" class="expand-btn">▼</button>
+    </div>
+    
+          <!-- 기본 버튼 영역 (항상 보임) -->
+      <div class="main-button-group">
+        <button id="addRowButton" type="button">+</button>
+        <button id="convertBtn" type="button">Convert</button>
+        <button id="optimizeBtn" type="button">Optimize</button>
+        <button id="saveBtn" type="button">Save</button>
+        <button id="emailBtn" type="button">Email</button>
+        <div style="margin-left: auto; display: flex; gap: 8px;">
+          <button type="button" onclick="startNewOrder()" class="top-menu-btn">Update</button>
+          <button type="button" id="openServerBtn" class="top-menu-btn">Open</button>
+        </div>
+      </div>
+    
+    <!-- 확장 가능한 상세 버튼 영역 (기본적으로 숨김) -->
+    <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+    <button id="convert1Button" type="button">Convert1</button>
+    <button id="convert2Button" type="button">Convert2</button>
+    <button id="unconvertButton" type="button">Unconvert</button>
+      <button id="opt1Button" type="button">Opt1</button>
+      <button id="opt2Button" type="button">Opt2</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 서버 파일 목록 모달 -->
+<div id="serverFileModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>파일 불러오기</h3>
+      <span class="close-server">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom: 15px;">
+        <select id="modeFilter" style="width: 67px; padding: 6px 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
+          <option value="all">전체</option>
+          <option value="NT">NT</option>
+          <option value="SM-B">SM-B</option>
+          <option value="SM-C">SM-C</option>
+        </select>
+      </div>
+      <div id="serverFileList">
+        <p>서버에서 파일 목록을 불러오는 중...</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+    </div>
+  </div>
+</div>
+
+
+<!-- 삭제 확인 모달 -->
+<div id="deleteConfirmModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>파일 삭제 확인</h3>
+      <span class="close-delete">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div style="text-align: center; padding: 20px;">
+        <div style="font-size: 18px; margin-bottom: 15px;">
+          <strong id="deleteFileName"></strong> 파일을 삭제하시겠습니까?
+        </div>
+        <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; border-radius: 4px; margin: 15px 0;">
+          <strong>⚠️ 주의:</strong> 삭제된 파일은 복구할 수 없습니다.
+        </div>
+        <div id="deleteFileInfo" style="background-color: #f8f9fa; padding: 10px; border-radius: 4px; margin-top: 10px;">
+          <!-- 파일 정보가 여기에 표시됩니다 -->
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="confirmDeleteBtn" class="top-menu-btn" style="background-color: #dc3545; color: white; border-color: #dc3545;">삭제</button>
+      <button type="button" id="cancelDeleteBtn" class="top-menu-btn">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- 템플릿: 원본 행 -->
+<template id="baseRowTemplate">
+  <tr>
+    <!-- Row Number -->
+    <td class="row-number-cell" style="text-align: center; width: 25px; min-width: 25px;">
+      <span class="row-number">1</span>
+    </td>
+    <!-- 1: Drag + X + S (합쳐진 열) -->
+    <td class="drag-select-cell">
+      <div class="button-container">
+        <div class="drag-handle">☰</div>
+        <button class="deleteButton" type="button">X</button>
+        <button class="s-button" type="button">S</button>
+      </div>
+    </td>
+    <!-- 4: PHD -->
+    <td>
+      <select class="phdSelect">
+        <option value="3">3</option>
+        <option value="3.5">3.5</option>
+        <option value="4">4</option>
+        <option value="4.5">4.5</option>
+        <option value="5">5</option>
+        <option value="5.5">5.5</option>
+        <option value="6">6</option>
+        <option value="6.5">6.5</option>
+        <option value="7">7</option>
+        <option value="7.5">7.5</option>
+        <option value="8">8</option>
+        <option value="8.5">8.5</option>
+        <option value="9">9</option>
+        <option value="9.5">9.5</option>
+        <option value="10">10</option>
+        <option value="10.5">10.5</option>
+        <option value="11">11</option>
+        <option value="11.5">11.5</option>
+        <option value="12">12</option>
+        <option value="12.5">12.5</option>
+        <option value="13">13</option>
+        <option value="13.5">13.5</option>
+        <option value="14">14</option>
+        <option value="14.5">14.5</option>
+        <option value="15">15</option>
+        <option value="15.5">15.5</option>
+        <option value="16">16</option>
+        <option value="16.5">16.5</option>
+        <option value="17">17</option>
+        <option value="17.5">17.5</option>
+        <option value="18">18</option>
+        <option value="18.5">18.5</option>
+        <option value="19">19</option>
+        <option value="19.5">19.5</option>
+        <option value="20">20</option>
+      </select>
+    </td>
+    <!-- 5: Width -->
+    <td><input type="number" class="widthInput"></td>
+    <!-- 6: Length -->
+    <td><input type="number" class="lengthInput"></td>
+    <!-- 7: X -->
+    <td><input type="text" class="xOutput"></td>
+    <!-- 8: KG -->
+    <td><input type="number" class="kgInput"></td>
+    <!-- 9: Quantity -->
+    <td><input type="number" class="quantityOutput"></td>
+    <!-- 10: 1안 -->
+    <td><input type="number" class="adjustmentInput" ></td>
+    <!-- 12: 조정 버튼 -->
+    <td>
+      <button class="adjustUpButton" type="button" title="위로 조정">▲</button>
+      <button class="adjustDownButton" type="button" title="아래로 조정">▼</button>
+    </td>
+    <!-- 13: 나머지 -->
+    <td><input type="number" class="remainderInput"></td>
+  </tr>
+</template>
+
+<!-- 템플릿: 변환 행 (.converted) -->
+<template id="convertedRowTemplate">
+  <tr class="converted">
+    <!-- Row Number -->
+    <td class="row-number-cell" style="text-align: center; width: 25px; min-width: 25px;">
+      <span class="row-number">1</span>
+    </td>
+    <!-- 1: Drag + X + S (합쳐진 열) -->
+    <td class="drag-select-cell">
+      <div class="button-container">
+        <div class="drag-handle">☰</div>
+        <button class="deleteButton" type="button">X</button>
+        <button class="s-button" type="button">S</button>
+      </div>
+    </td>
+    <!-- 4: PHD -->
+    <td>
+      <select class="phdSelect">
+        <option value="3">3</option>
+        <option value="3.5">3.5</option>
+        <option value="4">4</option>
+        <option value="4.5">4.5</option>
+        <option value="5">5</option>
+        <option value="5.5">5.5</option>
+        <option value="6">6</option>
+        <option value="6.5">6.5</option>
+        <option value="7">7</option>
+        <option value="7.5">7.5</option>
+        <option value="8">8</option>
+        <option value="8.5">8.5</option>
+        <option value="9">9</option>
+        <option value="9.5">9.5</option>
+        <option value="10">10</option>
+        <option value="10.5">10.5</option>
+        <option value="11">11</option>
+        <option value="11.5">11.5</option>
+        <option value="12">12</option>
+        <option value="12.5">12.5</option>
+        <option value="13">13</option>
+        <option value="13.5">13.5</option>
+        <option value="14">14</option>
+        <option value="14.5">14.5</option>
+        <option value="15">15</option>
+        <option value="15.5">15.5</option>
+        <option value="16">16</option>
+        <option value="16.5">16.5</option>
+        <option value="17">17</option>
+        <option value="17.5">17.5</option>
+        <option value="18">18</option>
+        <option value="18.5">18.5</option>
+        <option value="19">19</option>
+        <option value="19.5">19.5</option>
+        <option value="20">20</option>
+      </select>
+    </td>
+    <!-- 5: Width -->
+    <td><input type="number" class="widthInput"></td>
+    <!-- 6: Length -->
+    <td><input type="number" class="lengthInput"></td>
+    <!-- 7: X -->
+    <td><input type="text" class="xOutput"></td>
+    <!-- 8: KG -->
+    <td><input type="number" class="kgInput"></td>
+    <!-- 9: Quantity -->
+    <td><input type="number" class="quantityOutput"></td>
+    <!-- 10: 1안 -->
+    <td><input type="number" class="adjustmentInput" ></td>
+    <!-- 12: 조정 버튼 -->
+    <td>
+      <button class="adjustUpButton" type="button" title="위로 조정">▲</button>
+      <button class="adjustDownButton" type="button" title="아래로 조정">▼</button>
+    </td>
+    <!-- 13: 나머지 -->
+    <td><input type="number" class="remainderInput"></td>
+  </tr>
+</template>
+
+<script>
+  // ================== mode selection =====================
+  let selectedMode = "NT"; // default mode
+
+  const ntBtn  = document.getElementById("ntBtn");
+  const smbBtn = document.getElementById("smbBtn");
+  const smcBtn = document.getElementById("smcBtn");
+
+  ntBtn.addEventListener("click", () => {
+    selectedMode = "NT";
+    ntBtn.classList.add("selected");
+    smbBtn.classList.remove("selected");
+    smcBtn.classList.remove("selected");
+  });
+  smbBtn.addEventListener("click", () => {
+    selectedMode = "SM-B";
+    smbBtn.classList.add("selected");
+    ntBtn.classList.remove("selected");
+    smcBtn.classList.remove("selected");
+  });
+  smcBtn.addEventListener("click", () => {
+    selectedMode = "SM-C";
+    smcBtn.classList.add("selected");
+    ntBtn.classList.remove("selected");
+    smbBtn.classList.remove("selected");
+  });
+
+  // PHD별 base값(예시) - Quantity 계산할 때 사용
+  const phdMapping = {
+    "3": 13000, "3.5": 11200, "4": 10000, "4.5": 9100,
+    "5": 8100, "5.5": 7400, "6": 6750, "6.5": 6200,
+    "7": 5750, "7.5": 5350, "8": 5000, "8.5": 4700,
+    "9": 4500, "10": 4050, "12": 3350, "15": 2650,
+    "18": 2200, "20": 2000
+  };
+
+
+
+
+
+
+
+  //===================================================
+  // 1안 값 위/아래 조정 (비율에 맞는 다음/이전 값)
+  //===================================================
+  function adjustAdjustmentValue(row, direction) {
+    // 중복 호출 방지
+    if (row.isAdjusting) {
+      return;
+    }
+    row.isAdjusting = true;
+    
+    const phdVal = row.querySelector(".phdSelect").value;
+    const lengthVal = parseFloat(row.querySelector(".lengthInput").value) || 0;
+    const widthVal = parseFloat(row.querySelector(".widthInput").value) || 0;
+    const currentAdjustment = parseFloat(row.querySelector(".adjustmentInput").value) || 0;
+    
+    // 디버그: 시작 상태 로깅
+    
+    // currentAdjustment === 0 이더라도 동작해야 하므로 제거
+    if (!phdVal || lengthVal === 0 || widthVal === 0) {
+      row.isAdjusting = false;
+      return;
+    }
+    
+    let newAdjustment = currentAdjustment;
+
+    // 1번 룰: 620 +버튼은 언제나 작동, -버튼은 나머지 조건 적용
+    if (widthVal === 620) {
+      const currentAdj = parseFloat(row.querySelector(".adjustmentInput").value) || 0;
+      const currentRem = getRemainderValue(row);
+      
+      if (direction === 'up') {
+        // 620 +버튼: 언제나 작동, 620 1안 +1, 나머지 +1
+        row.querySelector(".adjustmentInput").value = currentAdj + 1;
+        row.querySelector(".remainderInput").value = currentRem + 1;
+      } else {
+        // 620 -버튼: 나머지가 >0인 경우에만 작동
+        if (currentRem <= 0) {
+          updateTotals();
+          row.isAdjusting = false;
+          return;
+        }
+        
+        if (currentAdj <= 0) {
+          updateTotals();
+          row.isAdjusting = false;
+          return;
+        }
+        row.querySelector(".adjustmentInput").value = currentAdj - 1;
+        row.querySelector(".remainderInput").value = Math.max(0, currentRem - 1);
+      }
+      updateTotals();
+      row.isAdjusting = false;
+      return;
+    }
+
+    // 2번 룰: 620·820 있고 920 없음
+    if (widthVal === 620) {
+      const allRows = document.querySelectorAll("#orderTableBody tr");
+      const sameGroupRows = Array.from(allRows).filter(row => {
+        const rowPhd = row.querySelector(".phdSelect").value;
+        const rowLength = parseFloat(row.querySelector(".lengthInput").value) || 0;
+        return rowPhd === phdVal && rowLength === lengthVal;
+      });
+      
+      const hasRow820 = sameGroupRows.some(r => parseFloat(r.querySelector(".widthInput").value) === 820);
+      const hasRow920 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 920 && adjustment > 0;
+      });
+      
+      if (hasRow820 && !hasRow920) {
+        const currentAdj = parseFloat(row.querySelector(".adjustmentInput").value) || 0;
+        const currentRem = getRemainderValue(row);
+        
+        if (direction === 'up') {
+          // 620 +버튼: 언제나 작동, 620 1안 +1, 나머지 +1
+          row.querySelector(".adjustmentInput").value = currentAdj + 1;
+          row.querySelector(".remainderInput").value = currentRem + 1;
+        } else {
+          // 620 -버튼: 나머지가 >0인 경우에만 작동
+          if (currentRem <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          
+          if (currentAdj <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          row.querySelector(".adjustmentInput").value = currentAdj - 1;
+          row.querySelector(".remainderInput").value = Math.max(0, currentRem - 1);
+        }
+        updateTotals();
+        row.isAdjusting = false;
+        return;
+      }
+    }
+    
+    if (widthVal === 820) {
+      const allRows = document.querySelectorAll("#orderTableBody tr");
+      const sameGroupRows = Array.from(allRows).filter(row => {
+        const rowPhd = row.querySelector(".phdSelect").value;
+        const rowLength = parseFloat(row.querySelector(".lengthInput").value) || 0;
+        return rowPhd === phdVal && rowLength === lengthVal;
+      });
+      
+      // 630, 850, 745, 770을 제외하고 620, 820, 920만 고려
+      const hasRow620 = sameGroupRows.some(r => parseFloat(r.querySelector(".widthInput").value) === 620);
+      const hasRow920 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 920 && adjustment > 0;
+      });
+      
+      if (hasRow620 && !hasRow920) {
+        const row620_e = sameGroupRows.find(r => parseFloat(r.querySelector(".widthInput").value) === 620);
+        const row820_e = row;
+        const adj820 = parseFloat(row820_e.querySelector(".adjustmentInput").value) || 0;
+        const adj620 = parseFloat(row620_e.querySelector(".adjustmentInput").value) || 0;
+        const rem620 = getRemainderValue(row620_e);
+        
+        if (direction === 'up') {
+          row820_e.querySelector(".adjustmentInput").value = adj820 + 3;
+          
+          // 620 나머지에 따른 처리
+          if (rem620 === 0) {
+            // 620 나머지가 0이나 공란인 경우
+            row620_e.querySelector(".adjustmentInput").value = adj620 + 3;
+          } else if (rem620 >= 1 && rem620 <= 2) {
+            // 620 나머지가 1이나 2일 때
+            // 620 1안은 820 1안과 같은 값, 나머지 0
+            row620_e.querySelector(".adjustmentInput").value = adj820 + 3;
+            row620_e.querySelector(".remainderInput").value = 0;
+          } else if (rem620 >= 3) {
+            // 620 나머지가 3이상일 때
+            row620_e.querySelector(".remainderInput").value = rem620 - 3;
+          }
+        } else {
+          if (adj820 <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          row820_e.querySelector(".adjustmentInput").value = adj820 - 3;
+          
+          // 620 나머지에 따른 처리
+          if (rem620 === 0) {
+            // 620 나머지가 0이나 공란인 경우
+            row620_e.querySelector(".adjustmentInput").value = Math.max(0, adj620 - 3);
+          } else if (rem620 >= 1 && rem620 <= 2) {
+            // 620 나머지가 1이나 2일 때 - 나머지 그대로
+            // 620 1안은 그대로 유지
+          } else if (rem620 >= 3) {
+            // 620 나머지가 3이상일 때 - 나머지 그대로
+            // 620 1안은 그대로 유지
+          }
+        }
+        updateTotals();
+        row.isAdjusting = false;
+        return;
+      }
+    }
+
+    // 3번 룰: 620·920 있고 820 없음
+    if (widthVal === 620) {
+      const allRows = document.querySelectorAll("#orderTableBody tr");
+      const sameGroupRows = Array.from(allRows).filter(row => {
+        const rowPhd = row.querySelector(".phdSelect").value;
+        const rowLength = parseFloat(row.querySelector(".lengthInput").value) || 0;
+        return rowPhd === phdVal && rowLength === lengthVal;
+      });
+      
+      const hasRow820 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 820 && adjustment > 0;
+      });
+      const hasRow920 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 920 && adjustment > 0;
+      });
+      
+      if (!hasRow820 && hasRow920) {
+        const currentAdj = parseFloat(row.querySelector(".adjustmentInput").value) || 0;
+        const currentRem = getRemainderValue(row);
+        
+        if (direction === 'up') {
+          // 620 +버튼: 언제나 작동, 620 1안 +1, 나머지 +1
+          row.querySelector(".adjustmentInput").value = currentAdj + 1;
+          row.querySelector(".remainderInput").value = currentRem + 1;
+        } else {
+          // 620 -버튼: 나머지가 >0인 경우에만 작동
+          if (currentRem <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          
+          if (currentAdj <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          row.querySelector(".adjustmentInput").value = currentAdj - 1;
+          row.querySelector(".remainderInput").value = Math.max(0, currentRem - 1);
+        }
+        updateTotals();
+        row.isAdjusting = false;
+        return;
+      }
+    }
+    
+    if (widthVal === 920) {
+      
+      const allRows = document.querySelectorAll("#orderTableBody tr");
+      const sameGroupRows = Array.from(allRows).filter(row => {
+        const rowPhd = row.querySelector(".phdSelect").value;
+        const rowLength = parseFloat(row.querySelector(".lengthInput").value) || 0;
+        return rowPhd === phdVal && rowLength === lengthVal;
+      });
+      
+      // 630, 850, 745, 770을 제외하고 620, 820, 920만 고려
+      const hasRow620 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 620 && adjustment > 0;
+      });
+      const hasRow820 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 820 && adjustment > 0;
+      });
+      
+      
+      if (hasRow620 && !hasRow820) {
+        const row620_e3 = sameGroupRows.find(r => parseFloat(r.querySelector(".widthInput").value) === 620);
+        const row920_e3 = row;
+        const adj920 = parseFloat(row920_e3.querySelector(".adjustmentInput").value) || 0;
+        const adj620 = parseFloat(row620_e3.querySelector(".adjustmentInput").value) || 0;
+        const rem620 = getRemainderValue(row620_e3);
+        
+        
+        if (direction === 'up') {
+          row920_e3.querySelector(".adjustmentInput").value = adj920 + 4;
+          if (rem620 > 0) {
+            row620_e3.querySelector(".remainderInput").value = Math.max(0, rem620 - 1);
+          } else {
+            row620_e3.querySelector(".adjustmentInput").value = adj620 + 1;
+          }
+        } else {
+          if (adj920 <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          row920_e3.querySelector(".adjustmentInput").value = adj920 - 4;
+          if (rem620 > 0) {
+            row620_e3.querySelector(".remainderInput").value = rem620 + 1;
+          } else {
+            row620_e3.querySelector(".adjustmentInput").value = Math.max(0, adj620 - 1);
+          }
+        }
+        updateTotals();
+        row.isAdjusting = false;
+        return;
+      } else {
+      }
+    }
+
+    // 4번 룰: 820·920 있고 620 없음 (820만 조정 가능)
+    if (widthVal === 820) {
+      const allRows = document.querySelectorAll("#orderTableBody tr");
+      const sameGroupRows = Array.from(allRows).filter(row => {
+        const rowPhd = row.querySelector(".phdSelect").value;
+        const rowLength = parseFloat(row.querySelector(".lengthInput").value) || 0;
+        return rowPhd === phdVal && rowLength === lengthVal;
+      });
+      
+      // 630, 850, 745, 770을 제외하고 620, 820, 920만 고려
+      const hasRow620 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 620 && adjustment > 0;
+      });
+      const hasRow820 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 820 && adjustment > 0;
+      });
+      const hasRow920 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 920 && adjustment > 0;
+      });
+      
+      if (!hasRow620 && hasRow820 && hasRow920) {
+        const row820_e4 = sameGroupRows.find(r => parseFloat(r.querySelector(".widthInput").value) === 820);
+        const row920_e4 = sameGroupRows.find(r => parseFloat(r.querySelector(".widthInput").value) === 920);
+        const adj820 = parseFloat(row820_e4.querySelector(".adjustmentInput").value) || 0;
+        const adj920 = parseFloat(row920_e4.querySelector(".adjustmentInput").value) || 0;
+        
+        if (direction === 'up') {
+          row820_e4.querySelector(".adjustmentInput").value = adj820 + 3;
+          row920_e4.querySelector(".adjustmentInput").value = adj920 + 2;
+        } else {
+          if (adj820 <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          row820_e4.querySelector(".adjustmentInput").value = adj820 - 3;
+          row920_e4.querySelector(".adjustmentInput").value = Math.max(0, adj920 - 2);
+        }
+        updateTotals();
+        row.isAdjusting = false;
+        return;
+      }
+    }
+
+    // 5번 룰: 620·820·920 모두 있음
+    if (widthVal === 620) {
+      const allRows = document.querySelectorAll("#orderTableBody tr");
+      const sameGroupRows = Array.from(allRows).filter(row => {
+        const rowPhd = row.querySelector(".phdSelect").value;
+        const rowLength = parseFloat(row.querySelector(".lengthInput").value) || 0;
+        return rowPhd === phdVal && rowLength === lengthVal;
+      });
+      
+      const hasRow820 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 820 && adjustment > 0;
+      });
+      const hasRow920 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 920 && adjustment > 0;
+      });
+      
+      if (hasRow820 && hasRow920) {
+        const currentAdj = parseFloat(row.querySelector(".adjustmentInput").value) || 0;
+        const currentRem = getRemainderValue(row);
+        
+        if (direction === 'up') {
+          // 620 +버튼: 언제나 작동, 620 1안 +1, 나머지 +1
+          row.querySelector(".adjustmentInput").value = currentAdj + 1;
+          row.querySelector(".remainderInput").value = currentRem + 1;
+        } else {
+          // 620 -버튼: 나머지가 >0인 경우에만 작동
+          if (currentRem <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          
+          if (currentAdj <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          row.querySelector(".adjustmentInput").value = currentAdj - 1;
+          row.querySelector(".remainderInput").value = Math.max(0, currentRem - 1);
+        }
+        updateTotals();
+        row.isAdjusting = false;
+        return;
+      }
+    }
+    
+    if (widthVal === 820 || widthVal === 920) {
+      const allRows = document.querySelectorAll("#orderTableBody tr");
+      const sameGroupRows = Array.from(allRows).filter(row => {
+        const rowPhd = row.querySelector(".phdSelect").value;
+        const rowLength = parseFloat(row.querySelector(".lengthInput").value) || 0;
+        return rowPhd === phdVal && rowLength === lengthVal;
+      });
+      
+      // 630, 850, 745, 770을 제외하고 620, 820, 920만 고려
+      const hasRow620 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 620 && adjustment > 0;
+      });
+      const hasRow820 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 820 && adjustment > 0;
+      });
+      const hasRow920 = sameGroupRows.some(r => {
+        const width = parseFloat(r.querySelector(".widthInput").value);
+        const adjustment = parseFloat(r.querySelector(".adjustmentInput").value);
+        return width === 920 && adjustment > 0;
+      });
+      
+      if (hasRow620 && hasRow820 && hasRow920) {
+        const row620_e5 = sameGroupRows.find(r => parseFloat(r.querySelector(".widthInput").value) === 620);
+        const row820_e5 = sameGroupRows.find(r => parseFloat(r.querySelector(".widthInput").value) === 820);
+        const row920_e5 = sameGroupRows.find(r => parseFloat(r.querySelector(".widthInput").value) === 920);
+        const adj620 = parseFloat(row620_e5.querySelector(".adjustmentInput").value) || 0;
+        const adj820 = parseFloat(row820_e5.querySelector(".adjustmentInput").value) || 0;
+        const adj920 = parseFloat(row920_e5.querySelector(".adjustmentInput").value) || 0;
+        const rem620 = getRemainderValue(row620_e5);
+        
+        if (widthVal === 820) {
+          if (direction === 'up') {
+            row820_e5.querySelector(".adjustmentInput").value = adj820 + 3;
+            row920_e5.querySelector(".adjustmentInput").value = adj920 + 2;
+          } else {
+            if (adj820 <= 0) {
+              updateTotals();
+              row.isAdjusting = false;
+              return;
+            }
+            row820_e5.querySelector(".adjustmentInput").value = adj820 - 3;
+            row920_e5.querySelector(".adjustmentInput").value = Math.max(0, adj920 - 2);
+          }
+        } else if (widthVal === 920) {
+          if (direction === 'up') {
+            row920_e5.querySelector(".adjustmentInput").value = adj920 + 4;
+            if (rem620 > 0) {
+              row620_e5.querySelector(".remainderInput").value = Math.max(0, rem620 - 1);
+            } else {
+              row620_e5.querySelector(".adjustmentInput").value = adj620 + 1;
+            }
+          } else {
+            if (adj920 <= 0) {
+              updateTotals();
+              row.isAdjusting = false;
+              return;
+            }
+            if (adj620 === rem620) {
+              updateTotals();
+              row.isAdjusting = false;
+              return;
+            }
+            row920_e5.querySelector(".adjustmentInput").value = adj920 - 4;
+            if (rem620 > 0) {
+              row620_e5.querySelector(".remainderInput").value = rem620 + 1;
+            } else {
+              row620_e5.querySelector(".adjustmentInput").value = Math.max(0, adj620 - 1);
+            }
+          }
+        }
+        updateTotals();
+        row.isAdjusting = false;
+        return;
+      }
+    }
+
+    // 6번 룰: 630 버튼
+    if (widthVal === 630) {
+      const adj630 = parseFloat(row.querySelector(".adjustmentInput").value) || 0;
+      if (direction === 'up') {
+        row.querySelector(".adjustmentInput").value = adj630 + 1;
+      } else {
+        if (adj630 <= 0) {
+          updateTotals();
+          row.isAdjusting = false;
+          return;
+        }
+        row.querySelector(".adjustmentInput").value = adj630 - 1;
+      }
+      updateTotals();
+      row.isAdjusting = false;
+      return;
+    }
+
+    // 7번 룰: 850 버튼
+    if (widthVal === 850) {
+      const adj850 = parseFloat(row.querySelector(".adjustmentInput").value) || 0;
+      if (direction === 'up') {
+        row.querySelector(".adjustmentInput").value = adj850 + 5;
+      } else {
+        if (adj850 <= 0) {
+          updateTotals();
+          row.isAdjusting = false;
+          return;
+        }
+        row.querySelector(".adjustmentInput").value = adj850 - 5;
+      }
+      updateTotals();
+      row.isAdjusting = false;
+      return;
+    }
+
+    // 8번 룰: 745 버튼 (620과 연동)
+    if (widthVal === 620) {
+      const allRows = document.querySelectorAll("#orderTableBody tr");
+      const sameGroupRows = Array.from(allRows).filter(row => {
+        const rowPhd = row.querySelector(".phdSelect").value;
+        const rowLength = parseFloat(row.querySelector(".lengthInput").value) || 0;
+        return rowPhd === phdVal && rowLength === lengthVal;
+      });
+      
+      const hasRow745 = sameGroupRows.some(r => parseFloat(r.querySelector(".widthInput").value) === 745);
+      
+      if (hasRow745) {
+        const currentAdj = parseFloat(row.querySelector(".adjustmentInput").value) || 0;
+        const currentRem = getRemainderValue(row);
+        
+        if (direction === 'up') {
+          // 620 +버튼: 언제나 작동, 620 1안 +1, 나머지 +1
+          row.querySelector(".adjustmentInput").value = currentAdj + 1;
+          row.querySelector(".remainderInput").value = currentRem + 1;
+        } else {
+          // 620 -버튼: 나머지가 >0인 경우에만 작동
+          if (currentRem <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          
+          if (currentAdj <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          row.querySelector(".adjustmentInput").value = currentAdj - 1;
+          row.querySelector(".remainderInput").value = Math.max(0, currentRem - 1);
+        }
+        updateTotals();
+        row.isAdjusting = false;
+        return;
+      }
+    }
+    
+    if (widthVal === 745) {
+      const adj745 = parseFloat(row.querySelector(".adjustmentInput").value) || 0;
+      if (direction === 'up') {
+        row.querySelector(".adjustmentInput").value = adj745 + 5;
+      } else {
+        if (adj745 <= 0) {
+          updateTotals();
+          row.isAdjusting = false;
+          return;
+        }
+        row.querySelector(".adjustmentInput").value = adj745 - 5;
+      }
+      
+      const allRows = document.querySelectorAll("#orderTableBody tr");
+      const sameGroupRows = Array.from(allRows).filter(row => {
+        const rowPhd = row.querySelector(".phdSelect").value;
+        const rowLength = parseFloat(row.querySelector(".lengthInput").value) || 0;
+        return rowPhd === phdVal && rowLength === lengthVal;
+      });
+      
+      const row620 = sameGroupRows.find(r => parseFloat(r.querySelector(".widthInput").value) === 620);
+      if (row620) {
+        const adj620 = parseFloat(row620.querySelector(".adjustmentInput").value) || 0;
+        const rem620 = getRemainderValue(row620);
+        
+        if (direction === 'up') {
+          if (rem620 > 0) {
+            row620.querySelector(".remainderInput").value = Math.max(0, rem620 - 1);
+          } else {
+            row620.querySelector(".adjustmentInput").value = adj620 + 1;
+          }
+        } else {
+          if (rem620 > 0) {
+            row620.querySelector(".remainderInput").value = rem620 + 1;
+          } else {
+            row620.querySelector(".adjustmentInput").value = Math.max(0, adj620 - 1);
+          }
+        }
+      }
+      updateTotals();
+      row.isAdjusting = false;
+      return;
+    }
+
+    // 9번 룰: 770 버튼 (620과 연동)
+    if (widthVal === 620) {
+      const allRows = document.querySelectorAll("#orderTableBody tr");
+      const sameGroupRows = Array.from(allRows).filter(row => {
+        const rowPhd = row.querySelector(".phdSelect").value;
+        const rowLength = parseFloat(row.querySelector(".lengthInput").value) || 0;
+        return rowPhd === phdVal && rowLength === lengthVal;
+      });
+      
+      const hasRow770 = sameGroupRows.some(r => parseFloat(r.querySelector(".widthInput").value) === 770);
+      
+      if (hasRow770) {
+        const currentAdj = parseFloat(row.querySelector(".adjustmentInput").value) || 0;
+        const currentRem = getRemainderValue(row);
+        
+        if (direction === 'up') {
+          // 620 +버튼: 언제나 작동, 620 1안 +1, 나머지 +1
+          row.querySelector(".adjustmentInput").value = currentAdj + 1;
+          row.querySelector(".remainderInput").value = currentRem + 1;
+        } else {
+          // 620 -버튼: 나머지가 >0인 경우에만 작동
+          if (currentRem <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          
+          if (currentAdj <= 0) {
+            updateTotals();
+            row.isAdjusting = false;
+            return;
+          }
+          row.querySelector(".adjustmentInput").value = currentAdj - 1;
+          row.querySelector(".remainderInput").value = Math.max(0, currentRem - 1);
+        }
+        updateTotals();
+        row.isAdjusting = false;
+        return;
+      }
+    }
+    
+    if (widthVal === 770) {
+      const adj770 = parseFloat(row.querySelector(".adjustmentInput").value) || 0;
+      if (direction === 'up') {
+        row.querySelector(".adjustmentInput").value = adj770 + 4;
+      } else {
+        if (adj770 <= 0) {
+          updateTotals();
+          row.isAdjusting = false;
+          return;
+        }
+        row.querySelector(".adjustmentInput").value = adj770 - 4;
+      }
+      
+      const allRows = document.querySelectorAll("#orderTableBody tr");
+      const sameGroupRows = Array.from(allRows).filter(row => {
+        const rowPhd = row.querySelector(".phdSelect").value;
+        const rowLength = parseFloat(row.querySelector(".lengthInput").value) || 0;
+        return rowPhd === phdVal && rowLength === lengthVal;
+      });
+      const row620 = sameGroupRows.find(r => parseFloat(r.querySelector(".widthInput").value) === 620);
+      if (row620) {
+        const adj620 = parseFloat(row620.querySelector(".adjustmentInput").value) || 0;
+        const rem620 = getRemainderValue(row620);
+        
+        if (direction === 'up') {
+          if (rem620 > 1) {
+            row620.querySelector(".remainderInput").value = Math.max(0, rem620 - 2);
+          } else if (rem620 === 1) {
+            row620.querySelector(".remainderInput").value = 0;
+            row620.querySelector(".adjustmentInput").value = adj620 + 1;
+          } else {
+            row620.querySelector(".adjustmentInput").value = adj620 + 2;
+          }
+        } else {
+          if (rem620 > 1) {
+            row620.querySelector(".remainderInput").value = rem620 + 2;
+          } else if (rem620 === 1) {
+            row620.querySelector(".remainderInput").value = rem620 + 2;
+          } else {
+            row620.querySelector(".adjustmentInput").value = Math.max(0, adj620 - 2);
+          }
+        }
+      }
+      updateTotals();
+      row.isAdjusting = false;
+      return;
+    }
+
+    // 620 공통 가드: 나머지가 공란/0이면 -버튼 작동 금지
+    if (direction === 'down' && widthVal === 620) {
+      const remVal = getRemainderValue(row);
+      if (!(remVal > 0)) {
+        updateTotals();
+        row.isAdjusting = false;
+        return;
+      }
+    }
+    
+    updateTotals();
+    
+    // 조정 완료 후 플래그 해제
+    row.isAdjusting = false;
+    return;
+  }
+
+  //===================================================
+  // 같은 PHD-Length 그룹의 1안 값들 자동 조정
+  //===================================================
+  function updateRelatedAdjustments(changedRow) {
+    // Optimize 모드일 때는 자동 조정 비활성화
+    if (window.isOptimizeMode) {
+      return;
+    }
+    
+    // 920 width 변경 시 자동 조정 비활성화 (수동 조정만 허용)
+    const changedWidth = parseFloat(changedRow.querySelector(".widthInput").value) || 0;
+    if (changedWidth === 920) {
+      return;
+    }
+    
+    const phdVal = changedRow.querySelector(".phdSelect").value;
+    const lengthVal = parseFloat(changedRow.querySelector(".lengthInput").value) || 0;
+    const changedAdjustment = parseFloat(changedRow.querySelector(".adjustmentInput").value) || 0;
+    
+    if (!phdVal || lengthVal === 0 || changedWidth === 0) return;
+    
+    // 같은 PHD-Length 그룹의 모든 행 찾기
+    const allRows = document.querySelectorAll("#orderTableBody tr");
+    const sameGroupRows = Array.from(allRows).filter(row => {
+      const rowPhd = row.querySelector(".phdSelect").value;
+      const rowLength = parseFloat(row.querySelector(".lengthInput").value) || 0;
+      return rowPhd === phdVal && rowLength === lengthVal;
+    });
+    
+    // Width별 1안 값 조정 (1안 값이 이미 있는 행만 조정)
+    sameGroupRows.forEach(row => {
+      const rowWidth = parseFloat(row.querySelector(".widthInput").value) || 0;
+      const rowAdjustment = parseFloat(row.querySelector(".adjustmentInput").value) || 0;
+      
+      if (rowWidth === 0) return;
+      
+      // 1안 값이 이미 있는 행만 조정 (공란인 행은 건드리지 않음)
+      if (rowAdjustment > 0) {
+        // 620, 820, 920 Width에 대한 비율 규칙 적용
+        if (rowWidth === 620) {
+          if (changedWidth === 820) {
+            // 820 1안이 변경되면 620 1안 = 820 1안과 동일
+            const newValue = changedAdjustment;
+            row.querySelector(".adjustmentInput").value = newValue;
+          } else if (changedWidth === 920) {
+            // 920 1안이 변경되면 620 1안 = 920 1안 / 4
+            const newValue = Math.round(changedAdjustment / 4);
+            row.querySelector(".adjustmentInput").value = newValue;
+          }
+        } else if (rowWidth === 820) {
+          if (changedWidth === 620) {
+            // 620 1안이 변경되면 820 1안 = 620 1안과 동일
+            const newValue = changedAdjustment;
+            row.querySelector(".adjustmentInput").value = newValue;
+          } else if (changedWidth === 920) {
+            // 920 1안이 변경되면 820 1안 = 920 1안 * 3/2
+            const newValue = Math.round(changedAdjustment * 3 / 2);
+            row.querySelector(".adjustmentInput").value = newValue;
+          }
+        } else if (rowWidth === 920) {
+          if (changedWidth === 620) {
+            // 620 1안이 변경되면 920 1안 = 620 1안 * 4
+            const newValue = changedAdjustment * 4;
+            row.querySelector(".adjustmentInput").value = newValue;
+          } else if (changedWidth === 820) {
+            // 820 1안이 변경되면 920 1안 = 820 1안 * 2/3
+            const newValue = Math.round(changedAdjustment * 2 / 3);
+            row.querySelector(".adjustmentInput").value = newValue;
+          }
+        }
+      }
+    });
+  }
+
+  //===================================================
+  // 총 수량 계산 및 업데이트
+  //===================================================
+  function updateTotals() {
+    const rows = document.querySelectorAll("#orderTableBody tr");
+    let totalKg = 0;
+    let totalAdjustmentKg = 0;
+    let totalQuantityKg = 0;
+    
+    // 선택된 행이 있으면 선택된 행만 계산, 없으면 모든 행 계산
+    const rowsToCalculate = selectedRows.size > 0 ? Array.from(selectedRows) : rows;
+    rowsToCalculate.forEach(row => {
+      const kgVal = parseFloat(row.querySelector(".kgInput")?.value) || 0;
+      const adjVal = parseFloat(row.querySelector(".adjustmentInput")?.value) || 0;
+      const qtyVal = parseFloat(row.querySelector(".quantityOutput")?.value) || 0;
+      const phdVal = row.querySelector(".phdSelect")?.value;
+      const wVal = parseFloat(row.querySelector(".widthInput")?.value) || 0;
+      const lVal = parseFloat(row.querySelector(".lengthInput")?.value) || 0;
+      
+      totalKg += kgVal;
+      
+      // Quantity 값이 있으면 width * x * 0.0355 * 퀀터티로 계산
+      if (qtyVal > 0 && wVal > 0) {
+        // X값 추출 (예: "4x" -> 4)
+        const xCell = row.querySelector(".xOutput");
+        if (xCell && xCell.value) {
+          const xValue = parseInt(xCell.value.replace('x', ''));
+          if (xValue > 0) {
+            const quantityKg = wVal * xValue * 0.0355 * qtyVal;
+            totalQuantityKg += quantityKg;
+          }
+        }
+      }
+      
+      // 1안 값이 있으면 width * x * 0.0355 * 1안 수량으로 계산
+      if (adjVal > 0 && wVal > 0) {
+        // X값 추출 (예: "4x" -> 4)
+        const xCell = row.querySelector(".xOutput");
+        if (xCell && xCell.value) {
+          const xValue = parseInt(xCell.value.replace('x', ''));
+          if (xValue > 0) {
+            const adjustmentKg = wVal * xValue * 0.0355 * adjVal;
+            totalAdjustmentKg += adjustmentKg;
+          }
+        }
+      }
+    });
+    
+    // kg을 ton으로 변환 (1 ton = 1000 kg)
+    const totalTon = (totalKg / 1000).toFixed(1);
+    const totalAdjustmentTon = (totalAdjustmentKg / 1000).toFixed(1);
+    const totalQuantityTon = (totalQuantityKg / 1000).toFixed(1);
+    
+    
+    document.getElementById("totalKg").textContent = `총: ${totalTon}t`;
+    document.getElementById("totalQuantity").textContent = `총: ${totalQuantityTon}t`;
+    document.getElementById("totalAdjustment").textContent = `총: ${totalAdjustmentTon}t`;
+  }
+
+  //===================================================
+  // 이메일 텍스트 생성 및 클립보드 복사
+  //===================================================
+  function generateEmailText() {
+    const rows = document.querySelectorAll("#orderTableBody tr");
+    
+    let emailText = "안녕하세요.\n\n";
+    emailText += "주문 감사합니다.\n";
+    emailText += "폭 비율을 고려하여 하기와 같이 주문해도 될지 검토하여 주시기 바랍니다.\n\n";
+    
+    // 주문 데이터 수집 및 정렬
+    const orderItems = [];
+    
+    rows.forEach((row, index) => {
+      const phdVal = row.querySelector(".phdSelect")?.value;
+      const widthVal = parseFloat(row.querySelector(".widthInput")?.value) || 0;
+      const lengthVal = parseFloat(row.querySelector(".lengthInput")?.value) || 0;
+      const adjustmentVal = parseFloat(row.querySelector(".adjustmentInput")?.value) || 0;
+      
+      // Convert 행과 Quantity 행 확인
+      const convertVal = parseFloat(row.querySelector("td:nth-child(9) input")?.value) || 0;
+      const quantityVal = parseFloat(row.querySelector("td:nth-child(8) input")?.value) || 0;
+      
+      
+      // 우선순위: Convert(adjustment) → Quantity
+      // 컨버트된 행의 경우 adjustment 값을 사용
+      let finalValue = (convertVal > 0) ? convertVal : quantityVal;
+      if (finalValue === 0 && adjustmentVal > 0) {
+        finalValue = adjustmentVal;
+      }
+      
+      
+      // 1안 값이 있는 행만 포함 (Convert 또는 Quantity 값이 있어야 함)
+      // 원본 행과 컨버트된 행 모두 포함
+      if (phdVal && widthVal > 0 && lengthVal > 0 && finalValue > 0) {
+        orderItems.push({
+          phd: phdVal,
+          width: widthVal,
+          length: lengthVal,
+          adjustment: finalValue,
+          isConverted: row.classList.contains('converted') // 컨버트된 행인지 표시
+        });
+      } else {
+      }
+    });
+    
+    
+    // PHD, Width 순으로 정렬
+    orderItems.sort((a, b) => {
+      const phdDiff = parseFloat(a.phd) - parseFloat(b.phd);
+      if (phdDiff !== 0) return phdDiff;
+      return a.width - b.width;
+    });
+    
+    // 이메일 텍스트 생성
+    orderItems.forEach(item => {
+      emailText += `PHD-${item.phd} x ${item.width}m x ${item.length.toLocaleString()}m : ${item.adjustment}롤\n`;
+    });
+    
+    emailText += "\n감사합니다";
+    
+    return emailText;
+  }
+
+  //===================================================
+  // 클립보드에 텍스트 복사
+  //===================================================
+  async function copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (err) {
+      // fallback for older browsers
+      if (!document.body) {
+        return false;
+      }
+      
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return true;
+      } catch (err) {
+        document.body.removeChild(textArea);
+        return false;
+      }
+    }
+  }
+
+  //===================================================
+  // 행에서 Quantity 재계산
+  //===================================================
+  function recalcRow(row) {
+    
+    const phdVal = row.querySelector(".phdSelect").value;
+    const wVal   = parseFloat(row.querySelector(".widthInput").value) || 0;
+    const lVal   = parseFloat(row.querySelector(".lengthInput").value) || 0;
+    const totalkgVal  = parseFloat(row.querySelector(".kgInput").value) || 0;
+    const xOut   = row.querySelector(".xOutput");
+    const rlOut  = row.querySelector(".quantityOutput");
+    
+
+    // PHD와 Length만 있으면 X 계산 (KG은 Quantity 계산에만 필요)
+    if (!phdVal || lVal===0) {
+      xOut.value = "";
+      rlOut.value = "";
+      return;
+    }
+    
+    // Width가 없으면 X만 계산하고 Quantity는 비움
+    if (wVal===0) {
+      const base = phdMapping[phdVal];
+      if (!base) {
+        xOut.value = "";
+        rlOut.value = "";
+        return;
+      }
+      const xValue = lVal / base;
+      xOut.value = Math.round(xValue) + "x";
+      rlOut.value = "";
+      return;
+    }
+    
+    // KG이 없으면 X만 계산하고 Quantity는 비움
+    if (totalkgVal===0) {
+      const base = phdMapping[phdVal];
+      if (!base) {
+        xOut.value = "";
+        rlOut.value = "";
+        return;
+      }
+      const xValue = lVal / base;
+      xOut.value = Math.round(xValue) + "x";
+      rlOut.value = "";
+      return;
+    }
+    const base = phdMapping[phdVal];
+    if (!base) {
+      xOut.value = "";
+      rlOut.value = "";
+      return;
+    }
+
+    // X = Length / base (뒤에 x 붙임)
+    const xValue = lVal / base;
+    xOut.value = Math.round(xValue) + "x";
+
+    // unitkg = X * (Width * 0.0355)
+    const unitkg = xValue * (wVal * 0.0355);
+    if (unitkg===0) {
+      rlOut.value="";
+      return;
+    }
+    let qty = totalkgVal / unitkg;
+    rlOut.value = Math.round(qty);
+  }
+
+  //===================================================
+  // X 값 수정 시 연결된 값들 업데이트
+  //===================================================
+  function updateFromX(row) {
+    
+    const xInput = row.querySelector(".xOutput");
+    let xValue = parseFloat(xInput.value.replace('x', '')) || 0;
+    const phdVal = row.querySelector(".phdSelect").value;
+    const wVal = parseFloat(row.querySelector(".widthInput").value) || 0;
+    const totalkgVal = parseFloat(row.querySelector(".kgInput").value) || 0;
+    const lInput = row.querySelector(".lengthInput");
+    
+    // 룰 2: X 값이 바뀌었다 → Length도 따라 역으로 계산
+    if (xValue > 0 && phdVal) {
+      const base = phdMapping[phdVal];
+      if (base) {
+        const newLength = xValue * base;
+        lInput.value = Math.round(newLength);
+      }
+    }
+    const rlOut = row.querySelector(".quantityOutput");
+
+    if (!phdVal || xValue === 0) {
+      return;
+    }
+    
+    // Width나 KG이 없으면 Quantity 계산하지 않음
+    if (wVal === 0 || totalkgVal === 0) {
+      return;
+    }
+
+    const base = phdMapping[phdVal];
+    if (!base) {
+      return;
+    }
+
+    // X = Length / base 이므로 Length = X * base
+    const newLength = xValue * base;
+    lInput.value = newLength.toFixed(2);
+
+    // Quantity 재계산
+    const unitkg = xValue * (wVal * 0.0355);
+    if (unitkg === 0) {
+      rlOut.value = "";
+      return;
+    }
+    let qty = totalkgVal / unitkg;
+    rlOut.value = qty.toFixed(2);
+  }
+
+
+
+  //===================================================
+  // Quantity 값 수정 시 연결된 값들 업데이트
+  //===================================================
+  function updateFromQuantity(row) {
+    
+    const rlInput = row.querySelector(".quantityOutput");
+    const qtyValue = parseFloat(rlInput.value) || 0;
+    const phdVal = row.querySelector(".phdSelect").value;
+    const wVal = parseFloat(row.querySelector(".widthInput").value) || 0;
+    const lVal = parseFloat(row.querySelector(".lengthInput").value) || 0;
+    const totalkgInput = row.querySelector(".kgInput");
+    
+    // 룰 4: Quantity가 바뀌었다 → KG 변화
+    if (qtyValue > 0 && phdVal && wVal > 0 && lVal > 0) {
+      const base = phdMapping[phdVal];
+      if (base) {
+        const xValue = lVal / base;
+        const unitkg = xValue * (wVal * 0.0355);
+        const newKg = qtyValue * unitkg;
+        totalkgInput.value = Math.round(newKg);
+      }
+    }
+    const xOut = row.querySelector(".xOutput");
+
+    if (!phdVal || qtyValue === 0 || lVal === 0) {
+      return;
+    }
+    
+    // Width가 없으면 KG 역계산하지 않음
+    if (wVal === 0) {
+      return;
+    }
+
+    const base = phdMapping[phdVal];
+    if (!base) {
+      return;
+    }
+
+    // X 값은 변경하지 않고 현재 값 사용 (무한 루프 방지)
+    const xValue = parseFloat(xOut.value.replace('x', '')) || 0;
+    if (xValue === 0) {
+      return;
+    }
+
+    // Quantity = Math.ceil(totalkg / unitkg)
+    // unitkg = X * (Width * 0.0355)
+    const unitkg = xValue * (wVal * 0.0355);
+    if (unitkg === 0) {
+      return;
+    }
+
+    // totalkg = Quantity * unitkg
+    const newTotalkg = qtyValue * unitkg;
+    totalkgInput.value = newTotalkg.toFixed(2);
+  }
+
+  //===================================================
+  // 행 삭제
+  //===================================================
+  function deleteRow(row) {
+    // 1. 행 정보 수집 (삭제 전에)
+    const orderId = document.getElementById('orderIdInput').value;
+    const phd = row.querySelector('.phdSelect').value;
+    const width = row.querySelector('.widthInput').value;
+    const length = row.querySelector('.lengthInput').value;
+    const adjustment = row.querySelector('.adjustmentInput').value;
+    
+    // 2. order ID, phd, width, length가 모두 있는지 확인
+    const hasAllData = orderId && phd && width && length;
+    
+    if (!hasAllData) {
+      // 데이터가 모두 없는 경우 - 그냥 행 삭제
+      // 화면에서 행 제거
+      row.remove();
+      
+      // 화면 행번호 업데이트
+      updateRowNumbers();
+      
+      // 화면 총무게 업데이트
+      updateTotals();
+      return;
+    }
+    
+    // 3. 모든 데이터가 있는 경우 - 서버에서도 삭제
+    const confirmMessage = `정말로 이 아이템을 삭제하시겠습니까?\n\nOrder ID: ${orderId}\nPHD: ${phd}\nWidth: ${width}\nLength: ${length}\nAdjustment: ${adjustment}`;
+    
+    if (!confirm(confirmMessage)) {
+      return; // 사용자가 취소하면 아무것도 하지 않음
+    }
+    
+    // 4. 화면에서 행 제거
+    row.remove();
+    
+    // 5. 화면 행번호 업데이트
+    updateRowNumbers();
+    
+    // 6. 화면 총무게 업데이트
+    updateTotals();
+    
+    // 7. 서버에서 해당 아이템 삭제 + rowNumber 동기화
+    deleteItemFromServer(phd, width, length, adjustment);
+  }
+
+
+
+
+  //===================================================
+  // baseRow, convertedRow 생성
+  //===================================================
+  function createBaseRow() {
+    const tmpl = document.getElementById("baseRowTemplate");
+    if (!tmpl) {
+      return null;
+    }
+    const row  = tmpl.content.firstElementChild.cloneNode(true);
+    return row;
+  }
+  function createConvertedRow() {
+    const tmpl = document.getElementById("convertedRowTemplate");
+    const row  = tmpl.content.firstElementChild.cloneNode(true);
+    return row;
+  }
+
+  //===================================================
+  // 각 행에 이벤트 + 삭제버튼 + 키보드 이동
+  //===================================================
+  function attachRowEvents(row, isLoading = false) {
+    const inputs = row.querySelectorAll("input, select");
+    
+    // phd, width, length 필드 확인
+    const phdSelect = row.querySelector(".phdSelect");
+    const widthInput = row.querySelector(".widthInput");
+    const lengthInput = row.querySelector(".lengthInput");
+    
+    
+    inputs.forEach(el=>{
+      // X와 Quantity 필드는 특별한 이벤트 처리
+      if (el.classList.contains("xOutput")) {
+        el.addEventListener("input", () => {
+          if (!isLoading) { // 모든 행에서 자동 계산
+            updateFromX(row);
+            updateTotals();
+          }
+        });
+        el.addEventListener("change", () => {
+          if (!isLoading) { // 모든 행에서 자동 계산
+            updateFromX(row);
+            updateTotals();
+          }
+        });
+      } else if (el.classList.contains("quantityOutput")) {
+        el.addEventListener("input", () => {
+          if (!isLoading) { // 항상 자동 계산
+            updateFromQuantity(row);
+            updateTotals();
+          }
+        });
+        el.addEventListener("change", () => {
+          if (!isLoading) { // 항상 자동 계산
+            updateFromQuantity(row);
+            updateTotals();
+          }
+        });
+      } else if (el.classList.contains("adjustmentInput")) {
+        // 1안 필드는 총량 업데이트 + 같은 그룹의 다른 Width 1안 값들 자동 조정
+        el.addEventListener("input", () => {
+          if (!isLoading) {
+            updateTotals();
+            updateRelatedAdjustments(row);
+          }
+        });
+        el.addEventListener("change", () => {
+          if (!isLoading) {
+            updateTotals();
+            updateRelatedAdjustments(row);
+          }
+        });
+      } else if (el.classList.contains("remainderInput")) {
+        // 나머지 필드는 총량만 업데이트
+        el.addEventListener("input", () => {
+          if (!isLoading) {
+            updateTotals();
+          }
+        });
+        el.addEventListener("change", () => {
+          if (!isLoading) {
+            updateTotals();
+          }
+        });
+      } else {
+        // 다른 필드들은 기존 recalcRow 사용
+        el.addEventListener("input", () => {
+          if (!isLoading) { // 모든 행에서 자동 계산
+            recalcRow(row);
+            updateTotals();
+          }
+        });
+        el.addEventListener("change", () => {
+          if (!isLoading) { // 모든 행에서 자동 계산
+            recalcRow(row);
+            updateTotals();
+          }
+        });
+      }
+      
+      el.addEventListener("keydown", e=>{
+        if(e.key==="Enter"||e.key==="ArrowDown"){
+          e.preventDefault();
+          navigate(row, e.target, "down");
+        } else if(e.key==="ArrowUp"){
+          e.preventDefault();
+          navigate(row, e.target, "up");
+        } else if(e.key==="ArrowRight"){
+          e.preventDefault();
+          navigate(row, e.target, "right");
+        } else if(e.key==="ArrowLeft"){
+          e.preventDefault();
+          navigate(row, e.target, "left");
+        }
+      });
+    });
+    // X 버튼 이벤트 리스너 추가 (중복 방지)
+    const delBtn = row.querySelector(".deleteButton");
+    if(delBtn){
+      // 기존 이벤트 리스너 제거 후 새로 등록 (중복 방지)
+      delBtn.replaceWith(delBtn.cloneNode(true));
+      const newDelBtn = row.querySelector(".deleteButton");
+      newDelBtn.addEventListener("click", ()=> deleteRow(row));
+    }
+    
+    // S 버튼 이벤트 리스너 추가 (중복 방지)
+    const sButton = row.querySelector(".s-button");
+    if (sButton) {
+      // 기존 이벤트 리스너 제거 (모든 이벤트 리스너 제거)
+      sButton.replaceWith(sButton.cloneNode(true));
+      // 새로운 이벤트 리스너 등록
+      const newSButton = row.querySelector(".s-button");
+      newSButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSButtonClick(newSButton, row);
+      });
+    }
+    
+    // 조정 버튼 이벤트 리스너 추가 (중복 방지)
+    const adjustUpBtn = row.querySelector(".adjustUpButton");
+    if(adjustUpBtn){
+      // 기존 이벤트 리스너 제거 (모든 이벤트 리스너 제거)
+      adjustUpBtn.replaceWith(adjustUpBtn.cloneNode(true));
+      // 새로운 이벤트 리스너 등록
+      const newAdjustUpBtn = row.querySelector(".adjustUpButton");
+      newAdjustUpBtn.addEventListener("click", ()=> adjustAdjustmentValue(row, 'up'));
+    }
+    
+    const adjustDownBtn = row.querySelector(".adjustDownButton");
+    if(adjustDownBtn){
+      // 기존 이벤트 리스너 제거 (모든 이벤트 리스너 제거)
+      adjustDownBtn.replaceWith(adjustDownBtn.cloneNode(true));
+      // 새로운 이벤트 리스너 등록
+      const newAdjustDownBtn = row.querySelector(".adjustDownButton");
+      newAdjustDownBtn.addEventListener("click", ()=> adjustAdjustmentValue(row, 'down'));
+    }
+    
+  }
+
+
+  //===================================================
+  // 키보드 내비게이션
+  //===================================================
+  function navigate(currentRow, currentElement, direction) {
+    const tbody = currentRow.parentElement;
+    const rows  = Array.from(tbody.querySelectorAll("tr"));
+    const currentRowIndex = rows.indexOf(currentRow);
+    const cells = Array.from(currentRow.children);
+    const currentCell     = currentElement.closest("td");
+    const currentCellIndex= cells.indexOf(currentCell);
+    const totalRows  = rows.length;
+    const totalCells = cells.length;
+
+    let newRowIndex  = currentRowIndex;
+    let newCellIndex = currentCellIndex;
+
+    if(direction==="down"){
+      if(currentRowIndex < totalRows - 1){
+        newRowIndex = currentRowIndex + 1;
+      } else{
+        // 맨 아래 => 맨 위
+        newRowIndex = 0;
+        if(currentCellIndex < totalCells - 1){
+          newCellIndex = currentCellIndex + 1;
+        }
+      }
+    }
+    else if(direction==="up"){
+      if(currentRowIndex > 0){
+        newRowIndex = currentRowIndex - 1;
+      } else{
+        // 맨 위 => 맨 아래
+        newRowIndex = totalRows - 1;
+        if(currentCellIndex > 0){
+          newCellIndex = currentCellIndex - 1;
+        }
+      }
+    }
+    else if(direction==="right"){
+      if(currentCellIndex < totalCells - 1){
+        newCellIndex = currentCellIndex + 1;
+      }
+    }
+    else if(direction==="left"){
+      if(currentCellIndex > 0){
+        newCellIndex = currentCellIndex - 1;
+      }
+    }
+
+    const targetRow  = rows[newRowIndex];
+    if(targetRow){
+      const targetCells= Array.from(targetRow.children);
+      const targetCell = targetCells[newCellIndex];
+      if(targetCell){
+        const tInput= targetCell.querySelector("input, select");
+        if(tInput){
+          tInput.focus();
+        }
+      }
+    }
+  }
+
+  //===================================================
+  // Sortable (드래그 정렬)
+  //===================================================
+  Sortable.create(document.getElementById("orderTableBody"), {
+    animation: 150,
+    handle: '.drag-handle',
+    onEnd: function(evt) {
+      // 행 이동 후 행번호 업데이트
+      updateRowNumbers();
+    }
+  });
+
+
+  //===================================================
+  // Email 버튼 클릭 이벤트
+  //===================================================
+  document.getElementById("emailBtn").addEventListener("click", async () => {
+    try {
+      const emailText = generateEmailText();
+      
+      if (emailText === "안녕하세요.\n\n주문 감사합니다.\n폭 비율을 고려하여 하기와 같이 주문해도 될지 검토하여 주시기 바랍니다.\n\n\n감사합니다") {
+        alert("주문 데이터가 없습니다. 1안 값이 입력된 행을 확인해주세요.");
+        return;
+      }
+      
+      const success = await copyToClipboard(emailText);
+      
+      if (success) {
+        alert('Email 내용이 클립보드에 복사되었습니다.\n바로 붙여넣기(Ctrl+V)를 사용할 수 있습니다.');
+        
+        // 복사된 텍스트를 콘솔에 출력 (디버깅용)
+      } else {
+        alert('클립보드 복사에 실패했습니다. 브라우저 권한을 확인해주세요.');
+      }
+    } catch (error) {
+      alert("이메일 텍스트 생성 중 오류가 발생했습니다.");
+    }
+  });
+
+
+  //===================================================
+  // PHD + Width 오름차순 정렬
+  //===================================================
+  document.getElementById("sortPHDButton").addEventListener("click", ()=>{
+    const tbody = document.getElementById("orderTableBody");
+    const rows  = Array.from(tbody.querySelectorAll("tr"));
+    rows.sort((a,b)=>{
+      // 1차 정렬: PHD 오름차순
+      const pa = parseFloat(a.querySelector(".phdSelect")?.value || "0");
+      const pb = parseFloat(b.querySelector(".phdSelect")?.value || "0");
+      if(pa !== pb){
+        return pa - pb;
+      }
+      
+      // 2차 정렬: 같은 PHD 안에서 Length 오름차순
+      const la = parseFloat(a.querySelector(".lengthInput")?.value || "0");
+      const lb = parseFloat(b.querySelector(".lengthInput")?.value || "0");
+      if(la !== lb){
+        return la - lb;
+      }
+      
+      // 3차 정렬: 같은 PHD Length 안에서 Width 오름차순
+      const wa = parseFloat(a.querySelector(".widthInput")?.value || "0");
+      const wb = parseFloat(b.querySelector(".widthInput")?.value || "0");
+      return wa - wb;
+    });
+    rows.forEach(r=>tbody.appendChild(r));
+    // 행 번호 업데이트
+    updateRowNumbers();
+  });
+
+  //===================================================
+  // Convert 전 원본행들 모든 데이터 백업
+  //===================================================
+  function storeOriginalData(){
+    const baseRows= document.querySelectorAll("#orderTableBody tr:not(.converted)");
+    baseRows.forEach(r=>{
+      // 모든 필드 데이터 백업
+      r.dataset.origPHD = r.querySelector(".phdSelect").value;
+      r.dataset.origWidth = r.querySelector(".widthInput").value;
+      r.dataset.origLength = r.querySelector(".lengthInput").value;
+      r.dataset.origKg = r.querySelector(".kgInput").value;
+      r.dataset.origX = r.querySelector(".xOutput").value;
+      r.dataset.origQty = r.querySelector(".quantityOutput").value;
+      r.dataset.origAdjustment = r.querySelector(".adjustmentInput").value;
+    });
+  }
+
+  //===================================================
+  // (도우미 함수) 가장 가까운 4의 배수를 만드는 +x
+  //===================================================
+  function getPlusToNearestMultipleOf4(n){
+    if(n % 4 === 0) return 0;
+    let r = n % 4;
+    return (4 - r);
+  }
+
+  //===================================================
+  // (도우미 함수) .converted 새 행 생성 + 특정 위치에 삽입
+  //===================================================
+  function insertConvertedRow(refRow, position, phdVal, widthVal, adjustVal) {
+  const newRow = createConvertedRow();
+
+  // (1) 파생 행에 들어갈 값들 설정
+  //     - phd는 기존처럼 파라미터로 받고,
+  //     - length는 refRow(원본 행)에서 그대로 가져옵니다.
+  newRow.querySelector(".phdSelect").value   = phdVal;
+  newRow.querySelector(".widthInput").value  = widthVal;
+  newRow.querySelector(".lengthInput").value = refRow.querySelector(".lengthInput")?.value || "";
+  newRow.querySelector(".adjustmentInput").value = adjustVal;
+
+
+
+  // (3) 이벤트 부착
+  attachRowEvents(newRow);
+
+  // (4) X 열만 계산하고 Quantity는 비워둠
+  const phdVal_new = newRow.querySelector(".phdSelect").value;
+  const wVal_new = parseFloat(newRow.querySelector(".widthInput").value) || 0;
+  const lVal_new = parseFloat(newRow.querySelector(".lengthInput").value) || 0;
+  const xOut_new = newRow.querySelector(".xOutput");
+  const rlOut_new = newRow.querySelector(".quantityOutput");
+
+  // X 값만 계산
+  if (phdVal_new && wVal_new > 0 && lVal_new > 0) {
+    const base_new = phdMapping[phdVal_new];
+    if (base_new) {
+      const xValue_new = lVal_new / base_new;
+      xOut_new.value = Math.round(xValue_new) + "x";
+    }
+  }
+  
+  // Quantity는 비워둠
+  rlOut_new.value = "";
+
+  // (5) DOM 배치
+  if(position === "above"){
+    refRow.parentNode.insertBefore(newRow, refRow);
+  } else {
+    // default "below"
+    refRow.parentNode.insertBefore(newRow, refRow.nextSibling);
+  }
+  return newRow;
+}
+
+  //===================================================
+  // 공통 함수: 나머지 값 처리 (공란을 0으로 처리)
+  //===================================================
+  function getRemainderValue(row) {
+    const value = row.querySelector(".remainderInput").value;
+    // 공란, null, undefined는 모두 0으로 처리
+    if (value === '' || value === null || value === undefined) {
+      return 0;
+    }
+    const parsed = parseFloat(value);
+    return isNaN(parsed) ? 0 : parsed;
+  }
+
+  //===================================================
+  // Convert Orders (새 규칙 반영)
+  //===================================================
+  document.getElementById("convert1Button").addEventListener("click", ()=>{
+    // 1) 원본행 모든 데이터 백업
+    storeOriginalData();
+
+    // 2) 기존 변환행 제거
+    const oldConvs = document.querySelectorAll("#orderTableBody tr.converted");
+    oldConvs.forEach(r=> r.remove());
+
+    // 3) (phdVal, lengthVal) 그룹핑
+    const baseRows = Array.from(document.querySelectorAll("#orderTableBody tr:not(.converted)"));
+    const groupMap = new Map();
+    baseRows.forEach(row=>{
+      const phdVal = row.querySelector(".phdSelect").value;
+      const lengthVal = parseFloat(row.querySelector(".lengthInput").value) || 0;
+      // ★ 여기가 문제였던 부분: 백틱으로 수정
+      const groupKey = `${phdVal}-${lengthVal}`;
+
+      if(!groupMap.has(groupKey)){
+        groupMap.set(groupKey, []);
+      }
+      groupMap.get(groupKey).push(row);
+    });
+
+    // 4) 그룹별 규칙 처리
+    groupMap.forEach((rows, groupKey)=>{
+      // row620/820/920 찾기
+      const row620 = rows.find(r=> parseFloat(r.querySelector(".widthInput").value)===620);
+      const row820 = rows.find(r=> parseFloat(r.querySelector(".widthInput").value)===820);
+      const row920 = rows.find(r=> parseFloat(r.querySelector(".widthInput").value)===920);
+
+      const Q_620 = row620 ? parseFloat(row620.querySelector(".quantityOutput").value)||0 : 0;
+      const Q_820 = row820 ? parseFloat(row820.querySelector(".quantityOutput").value)||0 : 0;
+      const Q_920 = row920 ? parseFloat(row920.querySelector(".quantityOutput").value)||0 : 0;
+
+      // 1안, 나머지 초기화
+      [row620, row820, row920].forEach(r=>{
+        if(r){
+          r.querySelector(".adjustmentInput").value = "";
+          r.querySelector(".remainderInput").value = "";
+        }
+      });
+
+      // 아래는 예시 규칙 처리 로직
+      function decompose3(num){
+        const a = Math.floor(num/3);
+        const b = num % 3;
+        return [a,b];
+      }
+
+      // 단일 폭 규칙 1, 2, 3,...
+      if(row620 && !row820 && !row920){
+        row620.querySelector(".adjustmentInput").value = Q_620;
+        row620.querySelector(".remainderInput").value = Q_620; // 나머지에도 동일한 값 설정
+      }
+      else if(!row620 && row820 && !row920){
+        // 820만 있는 경우 - 새로운 규칙
+        
+        // 1. 820퀀터티를 +만으로 가장 가까운 3의 배수를 만들어서 1안, 2안에다 적음
+        let adjustedQty820 = Q_820;
+        while(adjustedQty820 % 3 !== 0) {
+          adjustedQty820++;
+        }
+        row820.querySelector(".adjustmentInput").value = adjustedQty820; // 1안
+        
+        
+        // 2. 620을 추가해서 1안에 820 1안이랑 같은 값을 넣음
+        insertConvertedRow(row820,"above", row820.querySelector(".phdSelect").value, 620, adjustedQty820);
+        
+      }
+      else if(!row620 && !row820 && row920){
+        // 920만 있는 경우 - 새로운 규칙
+  
+        
+        // 1. 920퀀터티를 +만으로 가장 가까운 4의 배수를 만들어서 920 adjustment에 적음
+        let adjustedQty920 = Q_920;
+        while(adjustedQty920 % 4 !== 0) {
+          adjustedQty920++;
+        }
+        row920.querySelector(".adjustmentInput").value = adjustedQty920;
+        
+
+        
+        // 2. 위에 620행을 만들어서 620 adjustment에 920 adjustment/4를 적음
+        const adjustment620 = adjustedQty920 / 4; // 920 adjustment / 4
+        insertConvertedRow(row920,"above", row920.querySelector(".phdSelect").value, 620, adjustment620);
+        
+
+      }
+      else if(row620 && row820 && !row920){
+        // 620과 820만 있는 경우 - 새로운 규칙
+        
+        // 1. 820퀀터티를 +만으로 가장 가까운 3의 배수를 만들고 820 1안에 적음
+        let adjustedQty820 = Q_820;
+        while(adjustedQty820 % 3 !== 0) {
+          adjustedQty820++;
+        }
+        row820.querySelector(".adjustmentInput").value = adjustedQty820;
+        
+        
+        // 2. 620퀀터티가 820 1안보다 작거나 같은 경우, 620 1안에 820 1안과 같은 수를 적음
+        if(Q_620 <= adjustedQty820) {
+          row620.querySelector(".adjustmentInput").value = adjustedQty820;
+        }
+        // 3. 620 퀀터티가 820 1안보다 큰 경우, 620 1안에 620 퀀터티를 적고, 나머지에 620퀀터티-820 1안 을 적음
+        else {
+          row620.querySelector(".adjustmentInput").value = Q_620;
+          const remainder = Q_620 - adjustedQty820;
+          row620.querySelector(".remainderInput").value = remainder;
+        }
+      }
+      else if(row620 && !row820 && row920){
+        // 620과 920만 있는 경우 - 단순화된 규칙
+        
+        // 1. 920mm를 4의 배수로 올림하여 1안에 넣는다
+        let adjustedQty920 = Q_920;
+        while(adjustedQty920 % 4 !== 0) {
+          adjustedQty920++;
+        }
+        row920.querySelector(".adjustmentInput").value = adjustedQty920;
+        
+        const neededQty620 = adjustedQty920 / 4; // 920 1안 * 1/4
+        
+        // 2. 620mm 처리
+        if(Q_620 <= neededQty620) {
+          // 620 퀀터티가 920 1안*1/4보다 작거나 같은 경우
+          row620.querySelector(".adjustmentInput").value = neededQty620;
+        } else {
+          // 620 퀀터티가 920 1안*1/4보다 큰 경우
+          row620.querySelector(".adjustmentInput").value = Q_620;
+          const remainder = Q_620 - neededQty620;
+          row620.querySelector(".remainderInput").value = remainder;
+        }
+      }
+      else if(!row620 && row820 && row920){
+        // 820과 920만 있는 경우 - 새로운 규칙
+
+        
+        // 1. 820에 맞춰서 820퀀터티를 +만으로 가장 가까운 3의 배수로 만들어서 820adjustment에 적음
+        let adjustedQty820 = Q_820;
+        while(adjustedQty820 % 3 !== 0) {
+          adjustedQty820++;
+        }
+        row820.querySelector(".adjustmentInput").value = adjustedQty820;
+        
+        const neededQty920 = Math.round(adjustedQty820 * 2 / 3); // 820 adjustment * 2/3
+        
+        // 2. 920퀀터티가 820adjustment*2/3보다 작거나 같으면 920adjustment에 820adjustment*2/3을 적음
+        if(Q_920 <= neededQty920) {
+          row920.querySelector(".adjustmentInput").value = neededQty920;
+        }
+        // 3. 920퀀터티가 820adjustment*2/3보다 크면
+        else {
+          
+          // 920퀀터티-820adjustment*2/3 값을 +만으로 가장 가까운 4의 배수로 만들어서 그 값의 1/4값을 620행을 만들어서 620adjustment에 적음
+          const remainingQty920 = Q_920 - neededQty920; // 920퀀터티-820adjustment*2/3
+          let adjustedRemainingQty920 = remainingQty920;
+          while(adjustedRemainingQty920 % 4 !== 0) {
+            adjustedRemainingQty920++;
+          }
+          const neededQty620 = adjustedRemainingQty920 / 4; // 그 값의 1/4값
+          
+          
+          // 620행 생성
+          insertConvertedRow(row820,"above", row820.querySelector(".phdSelect").value, 620, neededQty620);
+          
+          // 4. 920adjustment는 조정된 920 퀀터티를 적음
+          const finalQty920 = neededQty920 + adjustedRemainingQty920; // 820adjustment*2/3 + 조정된 남은 920 퀀터티
+          row920.querySelector(".adjustmentInput").value = finalQty920;
+          
+        }
+        
+        
+      }
+      else if(row620 && row820 && row920){
+        // 620, 820, 920 모두 있는 경우 - 새로운 규칙
+        
+        // 1. 820에 맞춰서 820퀀터티를 +만으로 가장 가까운 3의 배수로 만들어서 820adjustment에 적음
+        let adjustedQty820 = Q_820;
+        while(adjustedQty820 % 3 !== 0) {
+          adjustedQty820++;
+        }
+        row820.querySelector(".adjustmentInput").value = adjustedQty820;
+        
+        const neededQty920 = Math.round(adjustedQty820 * 2 / 3); // 820 adjustment * 2/3
+        
+        // 2. 920퀀터티가 820adjustment*2/3보다 작거나 같으면 920adjustment에 820adjustment*2/3을 적음
+        if(Q_920 <= neededQty920) {
+          row920.querySelector(".adjustmentInput").value = neededQty920;
+          row620.querySelector(".adjustmentInput").value = Q_620; // 620adjustment에는 620퀀터티를 그대로 적음
+        }
+        // 3. 920퀀터티가 820adjustment*2/3보다 크면
+        else {
+          
+          // 920퀀터티-820adjustment*2/3 값을 +만으로 가장 가까운 4의 배수로 만들어서 920adjustment는 820adjustment*2/3+조정된 920 퀀터티를 적음
+          const remainingQty920 = Q_920 - neededQty920; // 920퀀터티-820adjustment*2/3
+          let adjustedRemainingQty920 = remainingQty920;
+          while(adjustedRemainingQty920 % 4 !== 0) {
+            adjustedRemainingQty920++;
+          }
+          const finalQty920 = neededQty920 + adjustedRemainingQty920; // 820adjustment*2/3+조정된 920 퀀터티
+          row920.querySelector(".adjustmentInput").value = finalQty920;
+          
+          const neededQty620 = adjustedRemainingQty920 / 4; // 조정된 920 퀀터티/4
+          
+          // 4. 조정된 920 퀀터티/4 이 620퀀터티보다 크거나 같은경우, 620adjustment에 조정된920퀀터티/4값을 적음
+          if(neededQty620 >= Q_620) {
+            row620.querySelector(".adjustmentInput").value = neededQty620;
+          }
+          // 5. 조정된920퀀터티/4보다 620퀀터티가 더 큰 경우, 620adjustment에 620퀀터티를 그대로 적고 620 나머지에 620퀀터티-조정된920퀀터티/4 값을 적음(양수인경우)
+          else {
+            row620.querySelector(".adjustmentInput").value = Q_620; // 620adjustment에 620퀀터티를 그대로 적음
+            const remainder620 = Math.max(0, Q_620 - neededQty620); // 620퀀터티-조정된920퀀터티/4 (양수인경우)
+            row620.querySelector(".remainderInput").value = remainder620;
+          }
+          
+        }
+      }
+    });
+    
+    // Convert1 완료 후 총량 업데이트
+    updateTotals();
+  });
+
+  //===================================================
+  // Convert2 (Convert 2 로직)
+  //===================================================
+  document.getElementById("convert2Button").addEventListener("click", ()=>{
+
+    
+    // 1) (phdVal, lengthVal) 그룹핑 - .converted 행도 포함
+    const baseRows = Array.from(document.querySelectorAll("#orderTableBody tr"));
+    const groupMap = new Map();
+    baseRows.forEach(row=>{
+      const phdVal = row.querySelector(".phdSelect").value;
+      const lengthVal = parseFloat(row.querySelector(".lengthInput").value) || 0;
+      const groupKey = `${phdVal}-${lengthVal}`;
+
+      if(!groupMap.has(groupKey)){
+        groupMap.set(groupKey, []);
+      }
+      groupMap.get(groupKey).push(row);
+    });
+
+    // 2) 그룹별 규칙 처리
+    groupMap.forEach((rows, groupKey)=>{
+      
+      
+      // 630 행 찾기
+      const row630 = rows.find(r=> parseFloat(r.querySelector(".widthInput").value)===630);
+      
+      if(row630){
+        // Convert2 규칙 1: 630은 퀀터티를 1안에다가 적는다
+        const Q_630 = parseFloat(row630.querySelector(".quantityOutput").value) || 0;
+        row630.querySelector(".adjustmentInput").value = Q_630;
+        
+      }
+      
+      // 850 행 찾기
+      const row850 = rows.find(r=> parseFloat(r.querySelector(".widthInput").value)===850);
+      
+      if(row850){
+        // Convert2 규칙 2: 850 퀀터티를 +만으로 가장 가까운 5의 배수로 만들어서 850 1안에 적는다
+        let Q_850 = parseFloat(row850.querySelector(".quantityOutput").value) || 0;
+        let adjustedQty850 = Q_850;
+        while(adjustedQty850 % 5 !== 0) {
+          adjustedQty850++;
+        }
+        row850.querySelector(".adjustmentInput").value = adjustedQty850;
+        
+      }
+      
+      // 750 행 찾기
+      const row750 = rows.find(r=> parseFloat(r.querySelector(".widthInput").value)===750);
+      
+      if(row750){
+        // Convert2 규칙 3: 750이 있을 경우, width를 우선 745로 바꾸고, +만으로 가장 가까운 5의 배수로 만들어서 1안에 적는다
+        
+        // 원래 750의 Quantity 값을 먼저 저장
+        let Q_750 = parseFloat(row750.querySelector(".quantityOutput").value) || 0;
+        
+        // Width를 745로 변경
+        row750.querySelector(".widthInput").value = 745;
+        
+        // Width 변경 후 Quantity 재계산 (이제 745 기준으로 계산됨)
+        recalcRow(row750);
+        
+        // Quantity를 원래 750 기준 값으로 되돌림
+        row750.querySelector(".quantityOutput").value = Q_750;
+        
+        let adjustedQty750 = Q_750;
+        while(adjustedQty750 % 5 !== 0) {
+          adjustedQty750++;
+        }
+        row750.querySelector(".adjustmentInput").value = adjustedQty750;
+        
+        const neededQty620 = adjustedQty750 / 5; // 750 1안 / 5
+        
+        
+        // 620 행 찾기 (.converted 행도 포함)
+        const row620 = rows.find(r=> parseFloat(r.querySelector(".widthInput").value)===620);
+        
+        if(!row620){
+          // 1. 620 행이 없을 경우 하나 추가해서 750 1안/5를 적는다
+          const newRow620 = insertConvertedRow(row750, "above", row750.querySelector(".phdSelect").value, 620, neededQty620);
+
+        } else {
+          // 620 행이 있는 경우
+          const currentAdjustment620 = parseFloat(row620.querySelector(".adjustmentInput").value) || 0;
+          const currentRemainder620 = getRemainderValue(row620);
+          
+          if(currentRemainder620 === 0){
+            // 2. 620 행이 있는 경우, 나머지가 공란인 경우, 620 1안에 적혀있는 값에 750 1안/5를 추가한다
+            const newAdjustment620 = currentAdjustment620 + neededQty620;
+            row620.querySelector(".adjustmentInput").value = newAdjustment620;
+            
+          } else {
+            if(neededQty620 > currentRemainder620){
+              // 3. 620 행이 있는데 나머지에 숫자가 있는경우, 나머지보다 750 1안/5가 큰 경우, 620 1안에 적혀있는 값에서 나머지를 빼고 750 1안/5를 추가한다
+              const newAdjustment620 = currentAdjustment620 - currentRemainder620 + neededQty620;
+              row620.querySelector(".adjustmentInput").value = newAdjustment620;
+              // 그리고 620의 나머지는 0이 된다
+              row620.querySelector(".remainderInput").value = 0;
+              
+            } else {
+              // 4. 620행이 있는데 나머지에 숫자가 있는데, 나머지보다 750 1안/5가 작거나 같은경우, 620 1안은 그대로 두고 나머지 현재 값에서 750 1안/5를 뺀 값을 적는다
+              const newRemainder620 = currentRemainder620 - neededQty620;
+              row620.querySelector(".remainderInput").value = newRemainder620;
+              
+            }
+          }
+        }
+      }
+      
+      // 770 행 찾기 (독립적 처리)
+      const row770 = rows.find(r=> parseFloat(r.querySelector(".widthInput").value)===770);
+      
+      if(row770){
+        // Convert2 규칙 4: 770이 있는 경우
+        let Q_770 = parseFloat(row770.querySelector(".quantityOutput").value) || 0;
+        let adjustedQty770 = Q_770;
+        while(adjustedQty770 % 4 !== 0) {
+          adjustedQty770++;
+        }
+        row770.querySelector(".adjustmentInput").value = adjustedQty770;
+        
+        const neededQty620 = adjustedQty770 / 2; // 770 1안 / 2
+
+        
+        // 620 행 찾기 (.converted 행도 포함)
+        const row620 = rows.find(r=> parseFloat(r.querySelector(".widthInput").value)===620);
+        
+        if(!row620){
+          // 1. 같은 phd length 안에 770만 있는 경우, 770 퀀터티를 +만으로 가장 가까운 4의 배수를 만들어서 770 1안에 적고, 위에 620 행을 만들어서 770 1안/2를 1안에 적는다
+          const newRow620 = insertConvertedRow(row770, "above", row770.querySelector(".phdSelect").value, 620, neededQty620);
+
+        } else {
+          // 620 행이 있는 경우
+          const currentAdjustment620 = parseFloat(row620.querySelector(".adjustmentInput").value) || 0;
+          const currentRemainder620 = getRemainderValue(row620);
+          
+          if(currentRemainder620 === 0){
+            // 2. 같은 phd length 안에 620이 있는데 나머지가 공란인 경우, 620 1안 현재값에 770 1안/2를 더한다
+            const newAdjustment620 = currentAdjustment620 + neededQty620;
+            row620.querySelector(".adjustmentInput").value = newAdjustment620;
+
+          } else {
+            if(currentRemainder620 <= neededQty620){
+              // 3. 같은 phd length 안에 620이 있는데 나머지가 있고, 그게 770 1안/2보다 작거나 같을 때 620 1안 현재값에서 나머지를 빼고 770 1안/2를 더한다
+              const newAdjustment620 = currentAdjustment620 - currentRemainder620 + neededQty620;
+              row620.querySelector(".adjustmentInput").value = newAdjustment620;
+              // 그리고 620의 나머지는 0이 된다
+              row620.querySelector(".remainderInput").value = 0;
+
+            } else {
+              // 4. 같은 phd length 안에 620이 있는데 나머지가 있고, 그게 770 1안/2 보다 클때, 620 1안은 두고 나머지에서 770 1안/2을 뺀다
+              const newRemainder620 = currentRemainder620 - neededQty620;
+              row620.querySelector(".remainderInput").value = newRemainder620;
+
+            }
+          }
+        }
+      }
+    });
+    
+    // Convert2 완료 후 총량 업데이트
+    updateTotals();
+  });
+
+  
+  // 차이 계산 헬퍼 함수
+  function calculateDifference() {
+    const rows = document.querySelectorAll("#orderTableBody tr");
+    let totalQuantityKg = 0;
+    let totalAdjustmentKg = 0;
+    
+    rows.forEach(row => {
+      const qtyVal = parseFloat(row.querySelector(".quantityOutput")?.value) || 0;
+      const adjVal = parseFloat(row.querySelector(".adjustmentInput")?.value) || 0;
+      const wVal = parseFloat(row.querySelector(".widthInput").value) || 0;
+      const xCell = row.querySelector(".xOutput");
+      
+      if (qtyVal > 0 && wVal > 0 && xCell && xCell.value) {
+        const xValue = parseInt(xCell.value.replace('x', ''));
+        if (xValue > 0) {
+          totalQuantityKg += wVal * xValue * 0.0355 * qtyVal;
+        }
+      }
+      
+      if (adjVal > 0 && wVal > 0 && xCell && xCell.value) {
+        const xValue = parseInt(xCell.value.replace('x', ''));
+        if (xValue > 0) {
+          totalAdjustmentKg += wVal * xValue * 0.0355 * adjVal;
+        }
+      }
+    });
+    
+    return (totalAdjustmentKg / 1000) - (totalQuantityKg / 1000);
+  }
+
+
+
+
+
+
+  //===================================================
+  // Opt1 버튼 (카테고리별 최적화)
+  //===================================================
+  document.getElementById("opt1Button").addEventListener("click", ()=>{
+    
+    // 전체 차이 계산 함수 (컨버트열 총무게와 kg열 총무게의 차이)
+    function calculateCurrentDifference() {
+      const rows = document.querySelectorAll("#orderTableBody tr");
+      let totalAdjustmentKg = 0;
+      let totalKg = 0;
+      
+      rows.forEach(row => {
+        const adjVal = parseFloat(row.querySelector(".adjustmentInput")?.value) || 0;
+        const kgVal = parseFloat(row.querySelector(".kgInput")?.value) || 0;
+        const wVal = parseFloat(row.querySelector(".widthInput").value) || 0;
+        const xCell = row.querySelector(".xOutput");
+        
+        if (adjVal > 0 && wVal > 0 && xCell && xCell.value) {
+          const xValue = parseInt(xCell.value.replace('x', ''));
+          if (xValue > 0) {
+            const adjustmentKg = wVal * xValue * 0.0355 * adjVal;
+            totalAdjustmentKg += adjustmentKg;
+          }
+        }
+        
+        totalKg += kgVal;
+      });
+      
+      const totalAdjustmentTon = totalAdjustmentKg / 1000;
+      const totalKgTon = totalKg / 1000;
+      return totalAdjustmentTon - totalKgTon;
+    }
+    
+    // 카테고리별 차이 계산 함수 (컨버트열 총무게와 퀀터티열 총무게의 차이)
+    function calculateCategoryDifference(rows) {
+      let totalAdjustmentKg = 0;
+      let totalQuantityKg = 0;
+      
+      rows.forEach(row => {
+        const adjVal = parseFloat(row.querySelector(".adjustmentInput")?.value) || 0;
+        const quantityVal = parseFloat(row.querySelector(".quantityOutput")?.value) || 0;
+        const wVal = parseFloat(row.querySelector(".widthInput").value) || 0;
+        const xCell = row.querySelector(".xOutput");
+        
+        if (adjVal > 0 && wVal > 0 && xCell && xCell.value) {
+          const xValue = parseInt(xCell.value.replace('x', ''));
+          if (xValue > 0) {
+            const adjustmentKg = wVal * xValue * 0.0355 * adjVal;
+            totalAdjustmentKg += adjustmentKg;
+          }
+        }
+        
+        if (quantityVal > 0 && wVal > 0 && xCell && xCell.value) {
+          const xValue = parseInt(xCell.value.replace('x', ''));
+          if (xValue > 0) {
+            const quantityKg = wVal * xValue * 0.0355 * quantityVal;
+            totalQuantityKg += quantityKg;
+          }
+        }
+      });
+      
+      const totalAdjustmentTon = totalAdjustmentKg / 1000;
+      const totalQuantityTon = totalQuantityKg / 1000;
+      return totalAdjustmentTon - totalQuantityTon;
+    }
+    
+    // 제외할 행인지 확인하는 함수
+    function shouldExcludeRow(row, rowIndex) {
+      const widthVal = parseFloat(row.querySelector(".widthInput").value) || 0;
+      const remainderVal = getRemainderValue(row);
+      const phdVal = row.querySelector(".phdSelect").value;
+      const lengthVal = parseFloat(row.querySelector(".lengthInput").value) || 0;
+      
+      // 조건 1: 620열인데 나머지가 공란이거나 0인 행
+      if (widthVal === 620 && remainderVal <= 0) {
+        return true;
+      }
+      
+      // 조건 2: 같은 PHD Length 안에 820, 920은 있고 620은 없는 경우의 920 행
+      if (widthVal === 920) {
+        const allRows = document.querySelectorAll("#orderTableBody tr");
+        const sameGroupRows = Array.from(allRows).filter(r => {
+          const rPhd = r.querySelector(".phdSelect").value;
+          const rLength = parseFloat(r.querySelector(".lengthInput").value) || 0;
+          return rPhd === phdVal && rLength === lengthVal;
+        });
+        
+        const hasRow620 = sameGroupRows.some(r => parseFloat(r.querySelector(".widthInput").value) === 620);
+        const hasRow820 = sameGroupRows.some(r => parseFloat(r.querySelector(".widthInput").value) === 820);
+        const hasRow920 = sameGroupRows.some(r => parseFloat(r.querySelector(".widthInput").value) === 920);
+        
+        if (hasRow820 && hasRow920 && !hasRow620) {
+          return true;
+        }
+      }
+      
+      return false;
+    }
+    
+    // 1. 전체 차이 확인 (전제 조건)
+    const initialDifference = calculateCurrentDifference();
+    if (initialDifference <= 1.5) {
+      return;
+    }
+    
+    // 2. 모든 행을 PHD-Length 카테고리별로 그룹화
+    const allRows = document.querySelectorAll("#orderTableBody tr");
+    const categories = new Map();
+    
+    allRows.forEach((row, index) => {
+      const phdVal = row.querySelector(".phdSelect").value;
+      const lengthVal = parseFloat(row.querySelector(".lengthInput").value) || 0;
+      const widthVal = parseFloat(row.querySelector(".widthInput").value) || 0;
+      
+      if (phdVal && lengthVal > 0 && widthVal > 0) {
+        const categoryKey = `${phdVal}-${lengthVal}`;
+        if (!categories.has(categoryKey)) {
+          categories.set(categoryKey, []);
+        }
+        categories.get(categoryKey).push({row, index});
+      }
+    });
+    
+      // 3. 각 카테고리별로 처리
+      for (const [categoryKey, categoryRows] of categories) {
+        // 현재 카테고리의 차이 계산
+        let currentDifference = calculateCategoryDifference(categoryRows.map(item => item.row));
+        
+        if (currentDifference <= 0.5) {
+          continue;
+        }
+      
+      // 카테고리 내에서 조정 가능한 행들 찾기
+      const adjustableRows = categoryRows.filter(item => {
+        const {row, index} = item;
+        return !shouldExcludeRow(row, index);
+      });
+      
+        if (adjustableRows.length === 0) {
+          continue;
+        }
+      
+      // 순환적으로 감소 버튼 클릭
+      let iterationCount = 0;
+      const maxIterations = 100; // 무한 루프 방지
+      
+      while (iterationCount < maxIterations) {
+        iterationCount++;
+        let found = false;
+        
+        // 조정 가능한 행들을 순서대로 처리
+        for (const {row, index} of adjustableRows) {
+          const downBtn = row.querySelector(".adjustDownButton");
+          if (downBtn && !downBtn.disabled) {
+            downBtn.click();
+            found = true;
+            
+            // 총량 업데이트
+            updateTotals();
+            
+            // 새로운 차이 확인
+            const newDifference = calculateCategoryDifference(categoryRows.map(item => item.row));
+            // 차이가 0.5톤 이하가 되면 종료
+            if (newDifference <= 0.5) {
+              found = false; // 루프 종료를 위해
+              break;
+            }
+            
+            // 차이가 음수가 되면 과도한 조정이므로 종료
+            if (newDifference < 0) {
+              found = false; // 루프 종료를 위해
+              break;
+            }
+            
+            break; // 한 번에 하나씩만 처리
+          }
+        }
+        
+        if (!found) {
+          break;
+        }
+      }
+      
+    }
+    
+  });
+
+  //===================================================
+  // Opt2 버튼
+  //===================================================
+  document.getElementById("opt2Button").addEventListener("click", ()=>{
+    
+    // 현재 전체 차이 계산 함수 (컨버트열 총무게와 kg열 총무게의 차이)
+    function calculateCurrentDifference() {
+      const rows = document.querySelectorAll("#orderTableBody tr");
+      let totalAdjustmentKg = 0;
+      let totalKg = 0;
+      
+      rows.forEach(row => {
+        const adjVal = parseFloat(row.querySelector(".adjustmentInput")?.value) || 0;
+        const kgVal = parseFloat(row.querySelector(".kgInput")?.value) || 0;
+        const wVal = parseFloat(row.querySelector(".widthInput").value) || 0;
+        const xCell = row.querySelector(".xOutput");
+        
+        if (adjVal > 0 && wVal > 0 && xCell && xCell.value) {
+          const xValue = parseInt(xCell.value.replace('x', ''));
+          if (xValue > 0) {
+            const adjustmentKg = wVal * xValue * 0.0355 * adjVal;
+            totalAdjustmentKg += adjustmentKg;
+          }
+        }
+        
+        totalKg += kgVal;
+      });
+      
+      const totalAdjustmentTon = totalAdjustmentKg / 1000;
+      const totalKgTon = totalKg / 1000;
+      return totalAdjustmentTon - totalKgTon;
+    }
+    
+    // 카테고리별 차이 계산 함수 (컨버트열 총무게와 퀀터티열 총무게의 차이)
+    function calculateCategoryDifference(categoryRows) {
+      let categoryAdjustmentKg = 0;
+      let categoryQuantityKg = 0;
+      
+      categoryRows.forEach(({row}) => {
+        const adjVal = parseFloat(row.querySelector(".adjustmentInput")?.value) || 0;
+        const quantityVal = parseFloat(row.querySelector(".quantityOutput")?.value) || 0;
+        const wVal = parseFloat(row.querySelector(".widthInput").value) || 0;
+        const xCell = row.querySelector(".xOutput");
+        
+        if (adjVal > 0 && wVal > 0 && xCell && xCell.value) {
+          const xValue = parseInt(xCell.value.replace('x', ''));
+          if (xValue > 0) {
+            const adjustmentKg = wVal * xValue * 0.0355 * adjVal;
+            categoryAdjustmentKg += adjustmentKg;
+          }
+        }
+        
+        if (quantityVal > 0 && wVal > 0 && xCell && xCell.value) {
+          const xValue = parseInt(xCell.value.replace('x', ''));
+          if (xValue > 0) {
+            const quantityKg = wVal * xValue * 0.0355 * quantityVal;
+            categoryQuantityKg += quantityKg;
+          }
+        }
+      });
+      
+      const categoryAdjustmentTon = categoryAdjustmentKg / 1000;
+      const categoryQuantityTon = categoryQuantityKg / 1000;
+      return categoryAdjustmentTon - categoryQuantityTon;
+    }
+    
+    // 제외할 행인지 확인하는 함수 (opt2와 동일)
+    function shouldExcludeRow(row, rowIndex) {
+      const widthVal = parseFloat(row.querySelector(".widthInput").value) || 0;
+      const remainderVal = getRemainderValue(row);
+      const phdVal = row.querySelector(".phdSelect").value;
+      const lengthVal = parseFloat(row.querySelector(".lengthInput").value) || 0;
+      
+      // 조건 1: 620열인데 나머지가 공란이거나 0인 행
+      if (widthVal === 620 && remainderVal <= 0) {
+        return true;
+      }
+      
+      // 조건 2: 같은 PHD Length 안에 820, 920은 있고 620은 없는 경우의 920 행
+      if (widthVal === 920) {
+        const allRows = document.querySelectorAll("#orderTableBody tr");
+        const sameGroupRows = Array.from(allRows).filter(r => {
+          const rPhd = r.querySelector(".phdSelect").value;
+          const rLength = parseFloat(r.querySelector(".lengthInput").value) || 0;
+          return rPhd === phdVal && rLength === lengthVal;
+        });
+        
+        const hasRow620 = sameGroupRows.some(r => parseFloat(r.querySelector(".widthInput").value) === 620);
+        const hasRow820 = sameGroupRows.some(r => parseFloat(r.querySelector(".widthInput").value) === 820);
+        const hasRow920 = sameGroupRows.some(r => parseFloat(r.querySelector(".widthInput").value) === 920);
+        
+        if (hasRow820 && hasRow920 && !hasRow620) {
+          return true;
+        }
+      }
+      
+      return false;
+    }
+    
+    // 1. 현재 전체 차이 확인
+    const initialDifference = calculateCurrentDifference();
+    if (initialDifference <= 1.5) {
+      return;
+    }
+    
+    // 2. 모든 행을 PHD-Length 카테고리별로 그룹화
+    const allRows = document.querySelectorAll("#orderTableBody tr");
+    const categories = new Map();
+    
+    allRows.forEach((row, index) => {
+      const phdVal = row.querySelector(".phdSelect").value;
+      const lengthVal = parseFloat(row.querySelector(".lengthInput").value) || 0;
+      const categoryKey = `${phdVal}-${lengthVal}`;
+      
+      if (!categories.has(categoryKey)) {
+        categories.set(categoryKey, []);
+      }
+      categories.get(categoryKey).push({row, index});
+    });
+    
+    
+    // 3. 메인 루프: 전체 차이가 1.5톤 이하가 될 때까지 반복
+    while (true) {
+      const currentDifference = calculateCurrentDifference();
+      if (currentDifference <= 1.5) {
+        break;
+      }
+      
+      // 4. 각 카테고리의 차이 계산 및 정렬
+      const categoryDifferences = [];
+      categories.forEach((categoryRows, categoryKey) => {
+        const categoryDiff = calculateCategoryDifference(categoryRows);
+        categoryDifferences.push({categoryKey, categoryRows, difference: categoryDiff});
+      });
+      
+      // 차이가 큰 순서로 정렬 (컨버트가 퀀터티보다 큰 경우만)
+      categoryDifferences.sort((a, b) => b.difference - a.difference);
+      
+      // 5. 차이가 가장 큰 카테고리에서 작업
+      let found = false;
+      for (const {categoryKey, categoryRows, difference} of categoryDifferences) {
+        if (difference <= 0) {
+          continue;
+        }
+        
+        
+        // 6. 해당 카테고리 내에서 순서대로 감소 버튼 클릭
+        for (const {row, index} of categoryRows) {
+          // 제외 조건 확인
+          if (shouldExcludeRow(row, index)) {
+            continue;
+          }
+          
+          const downBtn = row.querySelector(".adjustDownButton");
+          if (downBtn && !downBtn.disabled) {
+            downBtn.click();
+            found = true;
+            
+            // 7. 조정 후 전체 차이 다시 확인
+            const newDifference = calculateCurrentDifference();
+            if (newDifference <= 1.5) {
+              return;
+            }
+            
+            // 8. 총량 업데이트
+            updateTotals();
+            break;
+          }
+        }
+        
+        if (found) break;
+      }
+      
+      // 처리할 행이 없으면 종료
+      if (!found) {
+        break;
+      }
+    }
+    
+  });
+
+
+  //===================================================
+  // 행 번호 업데이트 함수 (전역)
+  //===================================================
+  function updateRowNumbers() {
+    const tbody = document.getElementById("orderTableBody");
+    if (!tbody) {
+      return;
+    }
+    
+    const rows = tbody.querySelectorAll("tr");
+    
+    rows.forEach((row, index) => {
+      const rowNumberSpan = row.querySelector(".row-number");
+      if (rowNumberSpan) {
+        rowNumberSpan.textContent = index + 1;
+      }
+    });
+  }
+
+  //===================================================
+  // Convert 버튼 (통합 Convert)
+  //===================================================
+  document.getElementById("convertBtn").addEventListener("click", ()=>{
+    console.log("🔄 Convert 시작");
+    console.log("📋 Convert1 시작");
+    document.getElementById("convert1Button").click();
+    
+    setTimeout(() => {
+      console.log("📋 Convert2 시작");
+      document.getElementById("convert2Button").click();
+        
+      setTimeout(() => {
+        console.log("📋 Organize 시작");
+        document.getElementById("sortPHDButton").click();
+        console.log("✅ Convert 완료");
+      }, 1000);
+    }, 1000);
+  });
+
+  //===================================================
+  // Optimize 버튼 (통합 Optimize)
+  //===================================================
+  document.getElementById("optimizeBtn").addEventListener("click", ()=>{
+    console.log("🔧 Optimize 시작");
+    console.log("📋 Opt1 시작");
+    
+    // Opt1과 Opt2를 순서대로 실행
+    document.getElementById("opt1Button").click();
+    
+    // Opt1 완료 후 Opt2 실행
+    setTimeout(() => {
+      console.log("📋 Opt2 시작");
+      document.getElementById("opt2Button").click();
+      console.log("✅ Optimize 완료");
+    }, 1000);
+  });
+
+  // Optimize 모드용 총량 계산 (자동 조정 없음)
+  function updateTotalsOnly() {
+    const rows = document.querySelectorAll("#orderTableBody tr");
+    let totalKg = 0;
+    let totalAdjustmentKg = 0;
+    let totalQuantityKg = 0;
+    
+    rows.forEach(row => {
+      const kgVal = parseFloat(row.querySelector(".kgInput")?.value) || 0;
+      const adjVal = parseFloat(row.querySelector(".adjustmentInput")?.value) || 0;
+      const qtyVal = parseFloat(row.querySelector(".quantityOutput")?.value) || 0;
+      const phdVal = row.querySelector(".phdSelect").value;
+      const wVal = parseFloat(row.querySelector(".widthInput")?.value) || 0;
+      const lVal = parseFloat(row.querySelector(".lengthInput")?.value) || 0;
+      
+      totalKg += kgVal;
+      
+      // Quantity 값이 있으면 width * x * 0.0355 * 퀀터티로 계산
+      if (qtyVal > 0 && wVal > 0) {
+        // X값 추출 (예: "4x" -> 4)
+        const xCell = row.querySelector(".xOutput");
+        if (xCell && xCell.value) {
+          const xValue = parseInt(xCell.value.replace('x', ''));
+          if (xValue > 0) {
+            const quantityKg = wVal * xValue * 0.0355 * qtyVal;
+            totalQuantityKg += quantityKg;
+          }
+        }
+      }
+      
+      // 1안 값이 있으면 width * x * 0.0355 * 1안 수량으로 계산
+      if (adjVal > 0 && wVal > 0) {
+        // X값 추출 (예: "4x" -> 4)
+        const xCell = row.querySelector(".xOutput");
+        if (xCell && xCell.value) {
+          const xValue = parseInt(xCell.value.replace('x', ''));
+          if (xValue > 0) {
+            const adjustmentKg = wVal * xValue * 0.0355 * adjVal;
+            totalAdjustmentKg += adjustmentKg;
+          }
+        }
+      }
+    });
+    
+    // kg을 ton으로 변환 (1 ton = 1000 kg)
+    const totalTon = (totalKg / 1000).toFixed(1);
+    const totalAdjustmentTon = (totalAdjustmentKg / 1000).toFixed(1);
+    const totalQuantityTon = (totalQuantityKg / 1000).toFixed(1);
+    
+    document.getElementById("totalKg").textContent = `총: ${totalTon}t`;
+    document.getElementById("totalQuantity").textContent = `총: ${totalQuantityTon}t`;
+    document.getElementById("totalAdjustment").textContent = `총: ${totalAdjustmentTon}t`;
+  }
+
+  //===================================================
+  // Unconvert (원본 복원)
+  //===================================================
+  document.getElementById("unconvertButton").addEventListener("click", ()=>{
+    // sessionStorage에서 원본 데이터 가져오기
+    const stored = sessionStorage.getItem('parsedData');
+    if(!stored){
+      return;
+    }
+
+    let exportData;
+    try {
+      exportData = JSON.parse(stored);
+    } catch(e) {
+      return;
+    }
+
+    // exportData에서 orderData 추출
+    let arr = [];
+    if (exportData.orderData && Array.isArray(exportData.orderData)) {
+      arr = exportData.orderData;
+    } else if (Array.isArray(exportData)) {
+      // 기존 형식 호환성 유지
+      arr = exportData;
+    } else {
+      return;
+    }
+
+
+    // 변환행 제거
+    const convs = document.querySelectorAll("#orderTableBody tr.converted");
+    convs.forEach(r=>r.remove());
+
+    // 원본행들을 sessionStorage의 원본 데이터로 복원
+    const baseRows = document.querySelectorAll("#orderTableBody tr:not(.converted)");
+    baseRows.forEach((row, index) => {
+      if(arr[index]) {
+        const item = arr[index];
+        row.querySelector(".phdSelect").value = item.phd || "";
+        row.querySelector(".widthInput").value = item.width || "";
+        row.querySelector(".lengthInput").value = item.length || "";
+        row.querySelector(".kgInput").value = item.kg || ""; // kg 필드 사용
+        row.querySelector(".adjustmentInput").value = ""; // 1안 초기화
+        row.querySelector(".remainderInput").value = ""; // remainder 초기화
+        
+        // X와 ReelQ 재계산 (퀀터티 값은 원본 그대로 유지)
+        const phdVal = row.querySelector(".phdSelect").value;
+        const wVal = parseFloat(row.querySelector(".widthInput").value) || 0;
+        const lVal = parseFloat(row.querySelector(".lengthInput").value) || 0;
+        const xOut = row.querySelector(".xOutput");
+        
+        // X만 재계산하고 Quantity는 원본 값 유지
+        if (phdVal && lVal > 0) {
+          const base = phdMapping[phdVal];
+          if (base) {
+            const xValue = lVal / base;
+            xOut.value = Math.round(xValue) + "x";
+          }
+        }
+        
+        // Quantity는 원본 데이터에서 가져온 값 그대로 유지 (재계산하지 않음)
+        // row.querySelector(".quantityOutput").value는 원본 데이터의 kg 값이 이미 설정됨
+      }
+    });
+    
+    
+    // 추가로 모든 행의 1안, 나머지를 한 번 더 초기화
+    const allRowsAfterRestore = document.querySelectorAll("#orderTableBody tr");
+    allRowsAfterRestore.forEach(row => {
+      row.querySelector(".adjustmentInput").value = "";
+      row.querySelector(".remainderInput").value = "";
+    });
+    
+    // Unconvert 완료 후 총량 업데이트
+    updateTotals();
+  });
+
+
+  // ===================================================
+  // Update 버튼 클릭 시 새 주문 시작
+  // ===================================================
+  function startNewOrder() {
+    
+    // 현재 테이블 데이터 초기화
+    const tbody = document.getElementById("orderTableBody");
+    tbody.innerHTML = ''; // 기존 행들 모두 제거
+    
+    // Order ID와 Date 필드 초기화
+    const orderIdInput = document.getElementById('orderIdInput');
+    const orderDateInput = document.getElementById('orderDateInput');
+    const warehouseInput = document.getElementById('warehouseInput');
+    if (orderIdInput) orderIdInput.value = '';
+    if (orderDateInput) orderDateInput.value = '';
+    if (warehouseInput) warehouseInput.value = '';
+    
+    
+    
+    // 총합 초기화
+    updateTotals();
+    
+    // 새 주문 플래그 설정
+    sessionStorage.setItem('isNewOrder', 'true');
+    sessionStorage.removeItem('originalFileName'); // originalFileName 초기화
+    
+    location.href = 'orderupdate.html';
+  }
+
+
+
+
+  // ===================================================
+  // S 버튼 관련 전역 변수 및 함수
+  // ===================================================
+  let selectedRows = new Set(); // 선택된 행들을 추적하는 Set
+
+  function handleSButtonClick(button, row) {
+    const isSelected = button.classList.contains('selected');
+    
+    if (isSelected) {
+      button.classList.remove('selected');
+      selectedRows.delete(row);
+    } else {
+      button.classList.add('selected');
+      selectedRows.add(row);
+    }
+    
+    // 강제로 스타일 적용
+    if (button.classList.contains('selected')) {
+      button.style.backgroundColor = '#007bff';
+      button.style.color = 'white';
+      button.style.borderColor = '#007bff';
+    } else {
+      button.style.backgroundColor = '#fff';
+      button.style.color = '#000';
+      button.style.borderColor = '#ccc';
+    }
+    
+    updateTotals();
+  }
+
+  // ===================================================
+  // DOMContentLoaded: isNewOrder 플래그에 따라 초기화 결정
+  // ===================================================
+  window.addEventListener('DOMContentLoaded', ()=>{
+    // isNewOrder 플래그 확인
+    const isNewOrder = sessionStorage.getItem('isNewOrder');
+    
+    const tbody = document.getElementById("orderTableBody");
+    
+    if (isNewOrder === 'true') {
+      // 새 주문 시작: 빈 테이블로 시작
+      tbody.innerHTML = ''; // 기존 행들 모두 제거
+      sessionStorage.removeItem('isNewOrder'); // 플래그 제거
+      sessionStorage.removeItem('originalFileName'); // originalFileName 초기화
+      
+      // Order ID와 Date 필드 초기화
+      const orderIdInput = document.getElementById('orderIdInput');
+      const orderDateInput = document.getElementById('orderDateInput');
+      const warehouseInput = document.getElementById('warehouseInput');
+      if (orderIdInput) orderIdInput.value = '';
+      if (orderDateInput) orderDateInput.value = '';
+      if (warehouseInput) warehouseInput.value = '';
+      
+      
+    } else {
+      // 기존 작업 계속: orderupdate.html에서 Export한 데이터 불러오기
+      
+      // sessionStorage에서 Export된 데이터 불러오기
+      const savedData = sessionStorage.getItem('parsedData');
+      const savedMode = sessionStorage.getItem('selectedMode');
+      
+      if (savedData && savedMode) {
+        
+        try {
+          const exportData = JSON.parse(savedData);
+          
+          // Order ID와 Date 설정
+          if (exportData.orderId) {
+            const orderIdInput = document.getElementById('orderIdInput');
+            if (orderIdInput) orderIdInput.value = exportData.orderId;
+          }
+          if (exportData.orderDate) {
+            const orderDateInput = document.getElementById('orderDateInput');
+            if (orderDateInput) orderDateInput.value = exportData.orderDate;
+          }
+          if (exportData.expectedDate) {
+            const warehouseInput = document.getElementById('warehouseInput');
+            if (warehouseInput) warehouseInput.value = exportData.expectedDate;
+          }
+          
+          // 모드 설정 (Export된 모드에 따라 버튼 활성화)
+          if (savedMode) {
+            const ntBtn = document.getElementById('ntBtn');
+            const smbBtn = document.getElementById('smbBtn');
+            const smcBtn = document.getElementById('smcBtn');
+            
+            // 모든 모드 버튼에서 selected 클래스 제거
+            if (ntBtn) ntBtn.classList.remove('selected');
+            if (smbBtn) smbBtn.classList.remove('selected');
+            if (smcBtn) smcBtn.classList.remove('selected');
+            
+            // 해당 모드 버튼에 selected 클래스 추가
+            if (savedMode === 'NT' && ntBtn) {
+              ntBtn.classList.add('selected');
+              selectedMode = 'NT';
+            } else if (savedMode === 'SM-B' && smbBtn) {
+              smbBtn.classList.add('selected');
+              selectedMode = 'SM-B';
+            } else if (savedMode === 'SM-C' && smcBtn) {
+              smcBtn.classList.add('selected');
+              selectedMode = 'SM-C';
+            }
+            
+          }
+          
+          // 테이블에 데이터 추가
+          if (exportData.orderData && Array.isArray(exportData.orderData)) {
+            
+            exportData.orderData.forEach((item, index) => {
+              const row = createBaseRow();
+              
+              // input 요소들을 찾아서 값 설정
+              const phdSelect = row.querySelector('.phdSelect');
+              const widthInput = row.querySelector('.widthInput');
+              const lengthInput = row.querySelector('.lengthInput');
+              const xOutput = row.querySelector('.xOutput');
+              const kgInput = row.querySelector('.kgInput');
+              const quantityOutput = row.querySelector('.quantityOutput');
+              
+              // 데이터 채우기
+              if (phdSelect) phdSelect.value = item.phd || '';
+              if (widthInput) widthInput.value = item.width || '';
+              if (lengthInput) lengthInput.value = item.length || '';
+              if (kgInput) kgInput.value = item.kg || ''; // KG에 kg 값
+              
+              attachRowEvents(row, true); // isLoading = true로 설정하여 자동 convert 방지
+              tbody.appendChild(row);
+            });
+            
+            
+            // Export 데이터 로드 완료 후 모든 행의 이벤트 리스너를 다시 등록하여 자동 계산 활성화
+            const allRows = document.querySelectorAll("#orderTableBody tr");
+            allRows.forEach(row => {
+              attachRowEvents(row, false); // isLoading = false로 설정하여 자동 계산 활성화
+              // 강제로 X와 Quantity 계산 실행
+              recalcRow(row);
+            });
+          }
+          
+        } catch (error) {
+        }
+      } else {
+      }
+    }
+    
+    // 리프레시인지 확인 (뒤로가기가 아닌 경우)
+    const isRefresh = !window.performance.navigation || window.performance.navigation.type === 1;
+    
+    if (isRefresh) {
+      // 리프레시 시에는 저장된 데이터 제거하고 빈 테이블로 초기화
+      sessionStorage.removeItem('parsedData');
+      sessionStorage.removeItem('selectedMode');
+      sessionStorage.removeItem('isNewOrder');
+      sessionStorage.removeItem('originalFileName');
+      
+      // 테이블 초기화
+      const tbody = document.getElementById("orderTableBody");
+      tbody.innerHTML = '';
+      
+      // Order ID와 Date 필드 초기화
+      const orderIdInput = document.getElementById('orderIdInput');
+      const orderDateInput = document.getElementById('orderDateInput');
+      const warehouseInput = document.getElementById('warehouseInput');
+      if (orderIdInput) orderIdInput.value = '';
+      if (orderDateInput) orderDateInput.value = '';
+      if (warehouseInput) warehouseInput.value = '';
+      
+      
+      // 총량 초기화
+      updateTotals();
+    }
+    
+    // 서버에서 불러오기 버튼 클릭 이벤트 등록
+    const openBtn = document.getElementById("openServerBtn");
+    
+    if (openBtn) {
+      openBtn.addEventListener("click", () => {
+        const modal = document.getElementById("serverFileModal");
+        const modeFilter = document.getElementById("modeFilter");
+        if (modal) {
+          modal.style.display = "block";
+          // 드롭다운 기본값을 'all'로 설정
+          if (modeFilter) {
+            modeFilter.value = 'all';
+          }
+          loadServerFileList();
+        } else {
+        }
+      });
+    } else {
+    }
+    
+    // 서버 파일 모달 닫기 이벤트 등록
+    const closeServerBtn = document.querySelector(".close-server");
+    if (closeServerBtn) {
+      closeServerBtn.addEventListener("click", () => {
+        document.getElementById("serverFileModal").style.display = "none";
+      });
+    }
+
+    // 모드 필터 변경 이벤트 등록
+    const modeFilter = document.getElementById("modeFilter");
+    if (modeFilter) {
+      modeFilter.addEventListener("change", () => {
+        loadServerFileList();
+      });
+    }
+    
+    // 서버 모달 외부 클릭 시 닫기
+    window.addEventListener("click", (event) => {
+      const modal = document.getElementById("serverFileModal");
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    });
+    
+    // 행 번호 초기 업데이트
+    setTimeout(() => {
+      updateRowNumbers();
+    }, 100);
+    
+    // 기존 행들에 S 버튼 이벤트 리스너 등록
+    const existingRows = tbody.querySelectorAll('tr');
+    existingRows.forEach(row => {
+      const sButton = row.querySelector('.s-button');
+      if (sButton) {
+        // 기존 이벤트 리스너 제거
+        sButton.replaceWith(sButton.cloneNode(true));
+        // 새로운 이벤트 리스너 등록
+        const newSButton = row.querySelector('.s-button');
+        newSButton.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleSButtonClick(newSButton, row);
+        });
+      }
+    });
+    
+    // + 버튼 이벤트 리스너 등록
+    const addRowButton = document.getElementById("addRowButton");
+    if (addRowButton) {
+      addRowButton.addEventListener("click", function() {
+        const newRow = createBaseRow();
+        if (newRow) {
+          const tbody = document.getElementById("orderTableBody");
+          tbody.appendChild(newRow);
+          attachRowEvents(newRow);
+          updateTotals();
+          // 행 번호 업데이트 (약간의 지연을 두어 DOM이 완전히 업데이트된 후 실행)
+          setTimeout(() => {
+            updateRowNumbers();
+          }, 50);
+        }
+      });
+    }
+    
+  });
+
+
+  //===================================================
+  // 확장/축소 버튼 기능
+  //===================================================
+  document.getElementById("expandButton").addEventListener("click", () => {
+    const detailArea = document.getElementById("detailButtonArea");
+    const expandBtn = document.getElementById("expandButton");
+    
+    if (detailArea.style.display === "none") {
+      // 확장
+      detailArea.style.display = "block";
+      expandBtn.classList.add("expanded");
+      expandBtn.textContent = "▲";
+    } else {
+      // 축소
+      detailArea.style.display = "none";
+      expandBtn.classList.remove("expanded");
+      expandBtn.textContent = "▼";
+    }
+  });
+
+  //===================================================
+  // 공통 함수: Order ID와 Date 필드 값 가져오기
+  //===================================================
+  function getOrderFields() {
+    const orderIdInput = document.getElementById("orderIdInput");
+    const orderDateInput = document.getElementById("orderDateInput");
+    const warehouseInput = document.getElementById("warehouseInput");
+    
+    const orderId = orderIdInput ? orderIdInput.value.trim() : '';
+    const orderDate = orderDateInput ? orderDateInput.value.trim() : '';
+    const expectedDate = warehouseInput ? warehouseInput.value.trim() : '';
+    
+    return { orderId, orderDate, expectedDate };
+  }
+
+  //===================================================
+  // Save 버튼 기능 - 바로 저장
+  //===================================================
+  document.getElementById("saveBtn").addEventListener("click", async () => {
+    
+    // Order ID와 Date 필드 값 가져오기
+    const { orderId, orderDate, expectedDate } = getOrderFields();
+    
+    if (!orderId || !orderDate) {
+      alert("Order ID와 Date를 모두 입력해주세요.");
+      return;
+    }
+    
+    // 현재 선택된 모드 확인
+    const currentMode = document.querySelector('.mode-btn.selected')?.textContent || 'NT';
+    
+    // 테이블 데이터 수집
+    const allRows = document.querySelectorAll('#orderTableBody tr');
+    const items = [];
+    
+    allRows.forEach((row, index) => {
+      const phdVal = row.querySelector('.phdSelect')?.value;
+      const widthVal = row.querySelector('.widthInput')?.value;
+      const lengthVal = row.querySelector('.lengthInput')?.value;
+      const xVal = row.querySelector('.xOutput')?.value;
+      const kgVal = row.querySelector('.kgInput')?.value;
+      const quantityVal = row.querySelector('.quantityOutput')?.value;
+      const adjustmentVal = row.querySelector('.adjustmentInput')?.value;
+      
+      // 모든 행을 items에 추가 (빈 행이어도 포함)
+      items.push({
+        rowNumber: index + 1,
+        phd: phdVal || '',
+        width: widthVal || '',
+        length: lengthVal || '',
+        x: xVal || '',
+        kg: kgVal || '',
+        quantity: quantityVal || '',
+        adjustment: adjustmentVal || ''
+      });
+    });
+    
+    // 서버에 저장
+    try {
+      const response = await fetch('/api/saveOrder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mode: currentMode,
+          orderId: orderId,
+          orderDate: orderDate,
+          expectedDate: expectedDate,
+          items: items
+        })
+      });
+      
+      if (response.ok) {
+        // 저장된 항목들을 예쁘게 표시
+        let alertMessage = `✅ 저장 완료!\n\n`;
+        alertMessage += `• Mode: ${currentMode}\n`;
+        alertMessage += `• Order ID: ${orderId}\n`;
+        alertMessage += `• Date: ${orderDate}\n`;
+        alertMessage += `• Expected Date: ${expectedDate}\n`;
+        alertMessage += `• Items: ${items.length}개\n`;
+        alertMessage += `  - PHD, Width, Length, X, KG, Quantity, Adjustment\n\n`;
+        
+        alert(alertMessage);
+        
+        // 원본 파일명 저장
+        sessionStorage.setItem('originalFileName', orderId);
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (error) {
+      alert(`❌ 서버 저장 실패: ${error.message}`);
+    }
+  });
+
+  //===================================================
+  // 서버에서 파일 불러오기 기능
+  //===================================================
+  
+  // orderData.json 구조 처리 공통 함수
+  function normalizeOrderDataStructure(orderData) {
+    if (orderData && orderData.files && Array.isArray(orderData.files)) {
+      // {files: [...]} 구조
+      return orderData.files;
+    } else if (Array.isArray(orderData)) {
+      // 직접 배열 구조 [...]
+      return orderData;
+    }
+    return [];
+  }
+  
+  // 서버에서 불러오기 버튼 클릭 - DOMContentLoaded 내부로 이동
+
+
+  // 서버 파일 목록 불러오기
+  async function loadServerFileList() {
+    const fileListDiv = document.getElementById("serverFileList");
+    const modeFilter = document.getElementById("modeFilter");
+    
+    if (!fileListDiv) {
+      return;
+    }
+    
+    fileListDiv.innerHTML = "<p>서버에서 파일 목록을 불러오는 중...</p>";
+    
+    try {
+      // orderData.json 파일 불러오기
+      const orderDataResponse = await fetch('/api/orders');
+      
+      let orderDataFiles = [];
+      if (orderDataResponse.ok) {
+        const orderData = await orderDataResponse.json();
+        
+        // 공통 함수로 구조 정규화
+        const files = normalizeOrderDataStructure(orderData);
+        
+        if (files.length > 0) {
+          orderDataFiles = files.map(file => ({
+            mode: file.mode,
+            orderId: file.orderId,
+            orderNo: file.orderNo,
+            orderDate: file.orderDate,
+            expectedDate: file.expectedDate,
+            items: file.items || []
+          }));
+        }
+      } else {
+      }
+      
+      // orderData.json 파일만 사용
+      let fileList = [...orderDataFiles];
+      
+      // 빈 객체나 잘못된 데이터 필터링
+      fileList = fileList.filter(file => {
+        if (!file || typeof file !== 'object') return false;
+        const orderId = file.orderId || '';
+        const mode = file.mode || '';
+        return orderId && orderId.trim() !== '' && mode && mode !== 'undefined';
+      });
+      
+      
+      // 모드 필터 적용 (모달이 처음 열릴 때는 전체 표시)
+      const selectedMode = modeFilter && modeFilter.value ? modeFilter.value : 'all';
+      if (selectedMode !== 'all') {
+        fileList = fileList.filter(file => file.mode === selectedMode);
+      }
+      
+      
+      if (fileList.length === 0) {
+        const modeText = selectedMode === 'all' ? '' : ` (${selectedMode} 모드)`;
+        fileListDiv.innerHTML = `<p>저장된 파일이 없습니다${modeText}.</p>`;
+        return;
+      }
+      
+      // Date 순으로 정렬 (더 일찍한 날짜가 아래로)
+      fileList.sort((a, b) => {
+        // orderDate가 있는 파일들만 정렬, 없는 파일들은 맨 아래로
+        const getDateForSorting = (file) => {
+          if (file.orderDate) {
+            // orderDate 형식에 따라 파싱 (예: "2025.02.13" → "2025-02-13")
+            const dateStr = file.orderDate.replace(/\./g, '-');
+            return new Date(dateStr);
+          }
+          return null; // orderDate가 없으면 null 반환
+        };
+        
+        const dateA = getDateForSorting(a);
+        const dateB = getDateForSorting(b);
+        
+        // orderDate가 없는 파일들을 맨 아래로
+        if (!dateA && !dateB) return 0; // 둘 다 orderDate가 없으면 순서 유지
+        if (!dateA) return 1; // a가 orderDate가 없으면 아래로
+        if (!dateB) return -1; // b가 orderDate가 없으면 아래로
+        
+        // 오름차순 정렬 (더 일찍한 날짜가 아래로)
+        return dateA - dateB;
+      });
+      
+      
+      // 파일 목록을 테이블 형태로 표시 (NT.html과 동일한 구조)
+      let html = '<table id="serverFileTable" style="width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 14px;">';
+      html += '<thead><tr>';
+      html += '<th style="background-color: #f5f5f5; padding: 8px 4px; border: 1px solid #ddd; text-align: center; font-weight: bold; width: 25%;">OrderId</th>';
+      html += '<th style="background-color: #f5f5f5; padding: 8px 4px; border: 1px solid #ddd; text-align: center; font-weight: bold; width: 25%;">OrderNo</th>';
+      html += '<th style="background-color: #f5f5f5; padding: 8px 4px; border: 1px solid #ddd; text-align: center; font-weight: bold; width: 15%;">모드</th>';
+      html += '<th style="background-color: #f5f5f5; padding: 8px 4px; border: 1px solid #ddd; text-align: center; font-weight: bold; width: 15%;">데이터 수</th>';
+      html += '<th style="background-color: #f5f5f5; padding: 8px 4px; border: 1px solid #ddd; text-align: center; font-weight: bold; width: 20%;">작업</th>';
+      html += '</tr></thead><tbody>';
+      
+      fileList.forEach(file => {
+        const orderNo = file.orderNo || '없음';
+        const orderId = file.orderId || '';
+        html += `<tr>`;
+        html += `<td style="padding: 6px 4px; border: 1px solid #ddd; text-align: center; font-size: 13px;">${orderId}</td>`;
+        html += `<td style="padding: 6px 4px; border: 1px solid #ddd; text-align: center; font-size: 13px;">${orderNo}</td>`;
+        html += `<td style="padding: 6px 4px; border: 1px solid #ddd; text-align: center; font-size: 13px;">${file.mode}</td>`;
+        html += `<td style="padding: 6px 4px; border: 1px solid #ddd; text-align: center; font-size: 13px;">${file.items ? file.items.length : 0}개</td>`;
+        html += `<td style="padding: 6px 4px; border: 1px solid #ddd; text-align: center; font-size: 13px;">`;
+        html += `<button class="top-menu-btn" onclick="loadServerFile('${orderId}')" style="padding: 3px 6px; margin: 0 2px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer; font-size: 10px; min-width: 50px; height: 24px; line-height: 1.2;">Select</button>`;
+        html += `<button class="top-menu-btn" onclick="deleteServerFile('${orderId}')" style="padding: 3px 6px; margin: 0 2px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer; font-size: 10px; min-width: 50px; height: 24px; line-height: 1.2;">Delete</button>`;
+        html += `</td></tr>`;
+      });
+      
+      html += '</tbody></table>';
+      fileListDiv.innerHTML = html;
+      
+    } catch (error) {
+      fileListDiv.innerHTML = `<p style='color: red;'>서버에서 파일 목록을 불러오는데 실패했습니다.<br>에러: ${error.message}</p>`;
+    }
+  }
+
+  // 파일 데이터를 테이블에 로드하는 함수
+  function loadFileData(data) {
+    
+    // 현재 테이블 초기화
+    const tbody = document.getElementById("orderTableBody");
+    tbody.innerHTML = "";
+    
+    // 모드 설정
+    if (data.mode) {
+      if (data.mode === "NT") {
+        document.getElementById("ntBtn").click();
+      } else if (data.mode === "SM-B") {
+        document.getElementById("smbBtn").click();
+      } else if (data.mode === "SM-C") {
+        document.getElementById("smcBtn").click();
+      }
+    }
+    
+
+    
+    // orderId 필드 확인 (없으면 공란)
+    const orderIdValue = data.orderId;
+    if (orderIdValue) {
+      const orderIdInput = document.getElementById('orderIdInput');
+      if (orderIdInput) {
+        orderIdInput.value = orderIdValue;
+      } else {
+      }
+    }
+    
+    // orderDate 필드 확인 (없으면 공란)
+    const orderDateValue = data.orderDate;
+    if (orderDateValue) {
+      const orderDateInput = document.getElementById('orderDateInput');
+      if (orderDateInput) {
+        orderDateInput.value = orderDateValue;
+      } else {
+      }
+    }
+    
+    
+    // expectedDate 필드 확인 (빈 문자열이어도 설정)
+    const expectedDateValue = data.expectedDate || '';
+    
+    const warehouseInput = document.getElementById('warehouseInput');
+    if (warehouseInput) {
+      warehouseInput.value = expectedDateValue;
+    } else {
+    }
+    
+    
+    // 원본 데이터를 sessionStorage에 복원 (Unconvert용)
+    if (data.originalData) {
+      const exportData = {
+        orderData: data.originalData,
+        orderId: data.orderId || "",
+        orderDate: data.orderDate || ""
+      };
+      sessionStorage.setItem('parsedData', JSON.stringify(exportData));
+    } else {
+    }
+    
+    
+    // 현재 데이터로 테이블 복원
+    if (data.items && data.items.length > 0) {
+      data.items.forEach((rowData, index) => {
+        const row = createBaseRow();
+        
+        // 데이터 설정
+        if (rowData.phd !== undefined) row.querySelector(".phdSelect").value = rowData.phd;
+        if (rowData.width !== undefined) row.querySelector(".widthInput").value = rowData.width;
+        if (rowData.length !== undefined) row.querySelector(".lengthInput").value = rowData.length;
+        if (rowData.kg !== undefined) row.querySelector(".kgInput").value = rowData.kg;
+        if (rowData.x !== undefined) row.querySelector(".xOutput").value = rowData.x;
+        if (rowData.quantity !== undefined) row.querySelector(".quantityOutput").value = rowData.quantity;
+        if (rowData.adjustment !== undefined) row.querySelector(".adjustmentInput").value = rowData.adjustment;
+        if (rowData.remainder !== undefined) row.querySelector(".remainderInput").value = rowData.remainder;
+        
+        
+        attachRowEvents(row, true); // isLoading = true로 설정하여 이벤트 리스너 비활성화
+        // recalcRow(row); // 불러올 때는 재계산하지 않음 (저장된 원본 값 유지)
+        tbody.appendChild(row);
+      });
+      
+      
+      // 행 번호 업데이트
+      updateRowNumbers();
+      
+      // 서버 파일 로드 완료 후 모든 행의 이벤트 리스너를 다시 등록하여 자동 계산 활성화
+      const allRows = document.querySelectorAll("#orderTableBody tr");
+      allRows.forEach(row => {
+        attachRowEvents(row, false); // isLoading = false로 설정하여 자동 계산 활성화
+      });
+    }
+    
+    // 총량 업데이트
+    updateTotals();
+    
+  }
+
+  // 서버에서 특정 파일 불러오기
+  async function loadServerFile(orderId) {
+    try {
+      
+      // orderData.json에서 주문을 찾는 경우
+      try {
+        // orderData.json 파일 불러오기
+        const orderDataResponse = await fetch('/api/orders');
+        if (orderDataResponse.ok) {
+          const orderData = await orderDataResponse.json();
+          
+          // 공통 함수로 구조 정규화
+          const files = normalizeOrderDataStructure(orderData);
+          const targetFile = files.find(file => file.orderId === orderId);
+          
+          if (targetFile) {
+            // loadFileData 함수 사용
+            loadFileData(targetFile);
+            
+            // 원본 파일명 저장 (덮어쓰기 기능을 위해)
+            sessionStorage.setItem('originalFileName', orderId);
+            
+            // 모달 닫기
+            document.getElementById("serverFileModal").style.display = "none";
+            return;
+          }
+        }
+      } catch (error) {
+      }
+      
+      // 기존 방식으로 파일 불러오기 (fallback)
+      const response = await fetch(`/api/orders?orderId=${orderId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // loadFileData 함수 사용
+      loadFileData(data);
+      
+      // 원본 파일명 저장 (덮어쓰기 기능을 위해)
+      sessionStorage.setItem('originalFileName', orderId);
+      
+      // 모달 닫기
+      document.getElementById("serverFileModal").style.display = "none";
+      
+    } catch (error) {
+      alert('파일을 불러오는데 실패했습니다.');
+    }
+  }
+
+  //===================================================
+  // 서버에서 아이템 삭제 함수
+  //===================================================
+  async function deleteItemFromServer(phd, width, length, adjustment) {
+    try {
+      // 현재 화면의 Order ID 가져오기
+      const currentOrderId = document.getElementById('orderIdInput').value;
+      
+      console.log('현재 주문 ID:', currentOrderId);
+      console.log('삭제할 아이템:', { phd, width, length, adjustment });
+      
+      if (!currentOrderId) {
+        alert('현재 주문을 찾을 수 없습니다.');
+        return;
+      }
+      
+      // 서버에 삭제 요청
+      const response = await fetch('/api/deleteItem', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          orderId: currentOrderId,
+          phd: phd,
+          width: width,
+          length: length,
+          adjustment: adjustment
+        })
+      });
+      
+      console.log('서버 응답 상태:', response.status);
+      
+      const responseData = await response.json();
+      console.log('서버 응답 데이터:', responseData);
+      
+      if (response.ok && responseData.success) {
+        console.log('아이템이 서버에서 삭제되었습니다.');
+        
+        // 삭제 후 rowNumber 동기화
+        await syncRowNumbersWithServer();
+        
+        // 삭제 후 서버에서 최신 데이터 다시 불러오기
+        await loadServerFile(currentOrderId);
+      } else {
+        console.error('아이템 삭제 실패:', responseData);
+        alert('아이템 삭제에 실패했습니다: ' + responseData.message);
+      }
+    } catch (error) {
+      console.error('아이템 삭제 중 오류:', error);
+      alert('아이템 삭제 중 오류가 발생했습니다.');
+    }
+  }
+
+  //===================================================
+  // 서버의 rowNumber를 화면 번호와 동기화
+  //===================================================
+  async function syncRowNumbersWithServer() {
+    try {
+      const currentOrderId = document.getElementById('orderIdInput').value;
+      
+      if (!currentOrderId) {
+        console.log('현재 주문을 찾을 수 없습니다.');
+        return;
+      }
+      
+      // 화면의 행들을 순서대로 읽어서 rowNumber 매핑 데이터 생성
+      const rows = document.querySelectorAll("#orderTableBody tr");
+      const rowData = [];
+      
+      rows.forEach((row, index) => {
+        const phd = row.querySelector('.phdSelect').value;
+        const width = row.querySelector('.widthInput').value;
+        const length = row.querySelector('.lengthInput').value;
+        
+        rowData.push({
+          phd: phd,
+          width: width,
+          length: length,
+          newRowNumber: index + 1  // 화면 번호 (1, 2, 3...)
+        });
+      });
+      
+      console.log('rowNumber 동기화 데이터:', rowData);
+      
+      // 서버에 rowNumber 동기화 요청
+      const response = await fetch('/api/syncRowNumbers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          orderId: currentOrderId,
+          rowData: rowData
+        })
+      });
+      
+      const responseData = await response.json();
+      
+      if (response.ok && responseData.success) {
+        console.log('rowNumber 동기화 완료');
+      } else {
+        console.error('rowNumber 동기화 실패:', responseData);
+      }
+    } catch (error) {
+      console.error('rowNumber 동기화 중 오류:', error);
+    }
+  }
+
+
+
+
+  //===================================================
+  // 파일 삭제 기능
+  //===================================================
+  
+  // 삭제 확인 모달 닫기
+  document.querySelector(".close-delete").addEventListener("click", () => {
+    document.getElementById("deleteConfirmModal").style.display = "none";
+  });
+
+  // 삭제 모달 외부 클릭 시 닫기
+  window.addEventListener("click", (event) => {
+    const modal = document.getElementById("deleteConfirmModal");
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+
+  // 삭제 취소 버튼
+  document.getElementById("cancelDeleteBtn").addEventListener("click", () => {
+    document.getElementById("deleteConfirmModal").style.display = "none";
+  });
+
+  // 서버에서 파일 삭제하기
+  async function deleteServerFile(orderId) {
+    try {
+      let fileData = null;
+      
+      // orderData.json에서 주문 정보 찾기
+      try {
+        const orderDataResponse = await fetch('/api/orders');
+        if (orderDataResponse.ok) {
+          const orderData = await orderDataResponse.json();
+          const files = normalizeOrderDataStructure(orderData);
+          const targetFile = files.find(file => file.orderId === orderId);
+          if (targetFile) {
+            fileData = targetFile;
+          }
+        }
+      } catch (error) {
+      }
+      
+      // orderData.json에서 찾지 못한 경우 기존 방식으로 시도
+      if (!fileData) {
+        const response = await fetch(`/api/orders?orderId=${orderId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        fileData = await response.json();
+      }
+      
+      // 삭제 확인 모달에 파일 정보 표시
+      document.getElementById('deleteFileName').textContent = orderId;
+      const deleteFileInfo = document.getElementById('deleteFileInfo');
+      deleteFileInfo.innerHTML = `
+        <div><strong>모드:</strong> ${fileData.mode || 'N/A'}</div>
+        <div><strong>Order ID:</strong> ${fileData.orderId || 'N/A'}</div>
+        <div><strong>Order Date:</strong> ${fileData.orderDate || 'N/A'}</div>
+        <div><strong>데이터 행 수:</strong> ${fileData.items ? fileData.items.length : 0}개</div>
+      `;
+      
+      // 모달 열기
+      document.getElementById("deleteConfirmModal").style.display = "block";
+      
+      // 삭제 확인 버튼에 orderId 저장
+      document.getElementById("confirmDeleteBtn").setAttribute('data-orderId', orderId);
+      
+    } catch (error) {
+      alert('파일 정보를 불러오는데 실패했습니다.');
+    }
+  }
+
+  // 삭제 확인 버튼
+  document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
+    const orderId = document.getElementById("confirmDeleteBtn").getAttribute('data-orderId');
+    
+    if (!orderId) {
+      alert('삭제할 주문을 찾을 수 없습니다.');
+      return;
+    }
+    
+    try {
+      
+      const response = await fetch(`/api/orders?orderId=${orderId}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      // 모달 닫기
+      document.getElementById("deleteConfirmModal").style.display = "none";
+      
+      // 파일 목록 새로고침
+      loadServerFileList();
+      
+      alert(`주문 "${orderId}"이 성공적으로 삭제되었습니다.`);
+      
+    } catch (error) {
+      alert('주문 삭제에 실패했습니다.');
+    }
+  });
+
+</script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,398 @@
+{
+  "transfers": [
+    {
+      "id": 1,
+      "description": "법률자문료",
+      "bank": "신한",
+      "accountNumber": "110-563-818736",
+      "accountHolder": "송동민",
+      "amount": 4400000,
+      "paper": false
+    },
+    {
+      "id": 2,
+      "description": "4대보험료",
+      "bank": "하나",
+      "accountNumber": "171-930670-04037",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 3,
+      "description": "사무실관리비",
+      "bank": "하나",
+      "accountNumber": "223-22-01214-8",
+      "accountHolder": "밀리아나2차오피스텔",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 4,
+      "description": "전월 근로소득세",
+      "bank": "하나",
+      "accountNumber": "191-3824-2391-03-7",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 5,
+      "description": "전월 지방소득세",
+      "bank": "하나",
+      "accountNumber": "102887-68-594537",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 6,
+      "description": "세무대행료",
+      "bank": "하나",
+      "accountNumber": "108-910026-25304",
+      "accountHolder": "세무법인 맥 서부지점",
+      "amount": 330000,
+      "paper": false
+    },
+    {
+      "id": 7,
+      "description": "법인카드대금",
+      "bank": "하나",
+      "accountNumber": "141-952764-29237",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 8,
+      "description": "사무실통신비",
+      "bank": "하나",
+      "accountNumber": "646290-74-420839",
+      "accountHolder": "LG유플러스",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 9,
+      "description": "하나은행대출이자",
+      "bank": "하나",
+      "accountNumber": "101-997639-19937",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 10,
+      "description": "사무실임차료",
+      "bank": "신한",
+      "accountNumber": "110-476-354481",
+      "accountHolder": "윤혜경",
+      "amount": 1500000,
+      "paper": true
+    },
+    {
+      "id": 11,
+      "description": "부가가치세",
+      "bank": "하나",
+      "accountNumber": "191-3156-8866-33-7",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 12,
+      "description": "하남 부가가치세",
+      "bank": "하나",
+      "accountNumber": "191-3144-9658-13-7",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 13,
+      "description": "대표이사",
+      "bank": "",
+      "accountNumber": "가지급금 상환처리",
+      "accountHolder": "김석진",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 14,
+      "description": "부사장",
+      "bank": "신한",
+      "accountNumber": "110-042-486230",
+      "accountHolder": "김성아",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 15,
+      "description": "과장",
+      "bank": "신한",
+      "accountNumber": "110-035-343049",
+      "accountHolder": "김용옥",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 16,
+      "description": "하남재산세(건물분)",
+      "bank": "농협",
+      "accountNumber": "790250-99-518320",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 17,
+      "description": "하남재산세(토지분)",
+      "bank": "농협",
+      "accountNumber": "790274-61-445848",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 18,
+      "description": "하남법인 주민세",
+      "bank": "농협",
+      "accountNumber": "790207-99-374846",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 19,
+      "description": "법인 주민세",
+      "bank": "하나",
+      "accountNumber": "117-816137-46137",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 20,
+      "description": "농업생산기반시설사용료",
+      "bank": "농협",
+      "accountNumber": "181-01-196811",
+      "accountHolder": "한국농어촌공사 양평지사",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 21,
+      "description": "하남도로사용료",
+      "bank": "농협",
+      "accountNumber": "790253-23-164442",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 22,
+      "description": "성문송금",
+      "bank": "",
+      "accountNumber": "",
+      "accountHolder": "성문",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 23,
+      "description": "뉴인텍송금",
+      "bank": "",
+      "accountNumber": "",
+      "accountHolder": "뉴인텍",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 24,
+      "description": "화환",
+      "bank": "농협",
+      "accountNumber": "565-02-056641",
+      "accountHolder": "박규천(은행화원)",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 25,
+      "description": "가지급",
+      "bank": "",
+      "accountNumber": "",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 26,
+      "description": "가수금상환",
+      "bank": "",
+      "accountNumber": "",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 27,
+      "description": "이체출금",
+      "bank": "",
+      "accountNumber": "",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 28,
+      "description": "통관료",
+      "bank": "국민",
+      "accountNumber": "651001-01-372259",
+      "accountHolder": "토탈관세법인",
+      "amount": 0,
+      "paper": false
+    },
+    {
+      "id": 29,
+      "description": "독일송금",
+      "bank": "",
+      "accountNumber": "",
+      "accountHolder": "",
+      "amount": 0,
+      "paper": false
+    }
+  ],
+  "payrolls": [
+    {
+      "id": 1,
+      "position": "대표이사",
+      "name": "김석진",
+      "monthlySalary": 10000000,
+      "bonus": 0,
+      "accountNumber": "가지급금 상환으로 상계처리"
+    },
+    {
+      "id": 2,
+      "position": "부사장",
+      "name": "김성아",
+      "monthlySalary": 10000000,
+      "bonus": 0,
+      "accountNumber": "신한은행 110-042-486230"
+    },
+    {
+      "id": 3,
+      "position": "과장",
+      "name": "김용옥",
+      "monthlySalary": 3500000,
+      "bonus": 0,
+      "accountNumber": "신한은행 110-035-343049"
+    }
+  ],
+  "deposits": [
+    {
+      "id": 1,
+      "description": "하남임대료",
+      "sender": "고구려시스템(주)",
+      "amount": 22000000,
+      "date": "매달 11일"
+    },
+    {
+      "id": 2,
+      "description": "이자",
+      "sender": "",
+      "amount": 0,
+      "date": ""
+    },
+    {
+      "id": 3,
+      "description": "이체입금",
+      "sender": "",
+      "amount": 0,
+      "date": ""
+    },
+    {
+      "id": 4,
+      "description": "예탁금이용료",
+      "sender": "한국투자증권",
+      "amount": 0,
+      "date": ""
+    },
+    {
+      "id": 5,
+      "description": "Commission",
+      "sender": "Treofan",
+      "amount": 0,
+      "date": "매달 중순"
+    },
+    {
+      "id": 6,
+      "description": "뉴인텍 매출금",
+      "sender": "뉴인텍",
+      "amount": 0,
+      "date": ""
+    },
+    {
+      "id": 7,
+      "description": "가수금",
+      "sender": "",
+      "amount": 0,
+      "date": ""
+    },
+    {
+      "id": 8,
+      "description": "가지급금회수",
+      "sender": "",
+      "amount": 0,
+      "date": ""
+    },
+    {
+      "id": 9,
+      "description": "가지급금이자",
+      "sender": "",
+      "amount": 0,
+      "date": ""
+    },
+    {
+      "id": 10,
+      "description": "성문 매출금",
+      "sender": "성문",
+      "amount": 0,
+      "date": ""
+    },
+    {
+      "id": 11,
+      "description": "부가세환급",
+      "sender": "",
+      "amount": 0,
+      "date": "분기별"
+    },
+    {
+      "id": 12,
+      "description": "하남법인세환급",
+      "sender": "",
+      "amount": 0,
+      "date": ""
+    },
+    {
+      "id": 13,
+      "description": "법인세환급",
+      "sender": "",
+      "amount": 0,
+      "date": "3월말"
+    },
+    {
+      "id": 14,
+      "description": "건보료,요양보혐금 환급",
+      "sender": "",
+      "amount": 0,
+      "date": "4월"
+    },
+    {
+      "id": 15,
+      "description": "지방세 환급",
+      "sender": "",
+      "amount": 0,
+      "date": "2월"
+    }
+  ]
+}

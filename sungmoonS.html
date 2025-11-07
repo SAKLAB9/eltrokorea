@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUNGMOON Shipment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            color: #000;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: -1;
+        }
+        
+        .page {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        
+        h1 {
+            text-align: center;
+            margin: 0;
+            padding-bottom: 10px;
+        }
+        
+        .top-menu {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .left-menu {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .right-menu {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .top-menu-btn {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            margin: 0 3px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #000;
+            border-radius: 3px;
+            min-width: 80px;
+            height: 30px;
+            line-height: 1.2;
+        }
+        
+        .top-menu-btn:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+        
+        .top-menu-btn.mode-btn.selected {
+            background: black;
+            color: white;
+            border-color: black;
+        }
+        
+        .split-btn {
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            padding: 0;
+            border: 1px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        
+        .split-btn:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+        
+        .year-display {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #000;
+            min-width: 50px;
+            text-align: center;
+            padding: 0 5px;
+            margin: 0 3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 30px;
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            border-radius: 3px;
+        }
+        
+        .week-display {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #000;
+            min-width: 50px;
+            text-align: center;
+            padding: 0 5px;
+            margin: 0 3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 30px;
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            border-radius: 3px;
+            cursor: help;
+        }
+        
+        .week-display:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
+        .year-btn {
+            min-width: 30px;
+            width: 30px;
+            padding: 5px;
+        }
+
+        .order-table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+            width: 100%;
+            max-width: 100%;
+            position: relative;
+        }
+        
+        #orderTable {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            border: 1px solid #ccc;
+            font-size: 0.9rem;
+        }
+        
+        #orderTable th,
+        #orderTable td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        #orderTable thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f5f5f5;
+            z-index: 10;
+        }
+        
+        #orderTable th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+        
+        .delivery-checkbox {
+            transform: scale(1.2);
+            cursor: pointer;
+            accent-color: white;
+        }
+        
+        .delivery-checkbox:checked {
+            background-color: white;
+            color: black;
+        }
+        
+        #orderTable td {
+            font-size: 0.9rem;
+        }
+        
+        .bottom-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-top: 1px solid #e0e0e0;
+            padding: 15px;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .expand-handle {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            z-index: 10;
+        }
+
+        .expand-btn {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background: #f8f8f8;
+            color: #666;
+            border-radius: 8px 8px 0 0;
+            min-width: 40px;
+            height: 20px;
+            line-height: 1;
+            transition: all 0.2s ease;
+            box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+        }
+
+        .expand-btn:hover {
+            background: #e8e8e8;
+            border-color: #999;
+            box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+        }
+
+        .expand-btn.expanded {
+            transform: rotate(180deg);
+            background: #e0e0e0;
+        }
+
+        .main-button-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+
+        .detail-button-area {
+            margin-top: 10px;
+            padding: 12px;
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            animation: slideDown 0.3s ease;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .detail-button-area button {
+            margin: 0;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+        .order-table-container {
+            margin-bottom: 120px;
+        }
+
+        .deleteButton {
+            font-size: 0.75rem;
+            padding: 1px 3px;
+            cursor: pointer;
+            margin: 0;
+            display: inline-block;
+            width: 22px;
+            height: 18px;
+            min-width: 22px;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #000;
+            border-radius: 3px;
+            line-height: 1.2;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .deleteButton:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+
+        
+        /* 열 폭 설정 - 12개 열 (X 버튼 열 제거) */
+        #orderTable th:nth-child(1), #orderTable td:nth-child(1) { width: 90px; max-width: 90px; min-width: 90px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(2), #orderTable td:nth-child(2) { width: 100px; max-width: 100px; min-width: 100px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(3), #orderTable td:nth-child(3) { width: 50px; max-width: 50px; min-width: 50px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(4), #orderTable td:nth-child(4) { width: 100px; max-width: 100px; min-width: 100px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(5), #orderTable td:nth-child(5) { width: 30px; max-width: 30px; min-width: 30px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(6), #orderTable td:nth-child(6) { width: 30px; max-width: 30px; min-width: 30px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(7), #orderTable td:nth-child(7) { width: 30px; max-width: 30px; min-width: 30px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(8), #orderTable td:nth-child(8) { width: 30px; max-width: 30px; min-width: 30px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(9), #orderTable td:nth-child(9) { width: 30px; max-width: 30px; min-width: 30px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(10) { width: 70px; max-width: 70px; min-width: 70px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable td:nth-child(10) { width: 70px; max-width: 70px; min-width: 70px; text-align: right; white-space: nowrap; overflow: hidden; }
+        #orderTable th:nth-child(11) { width: 70px; max-width: 70px; min-width: 70px; text-align: center; white-space: nowrap; overflow: hidden; }
+        #orderTable td:nth-child(11) { width: 70px; max-width: 70px; min-width: 70px; text-align: right; white-space: nowrap; overflow: hidden; }
+        
+        /* 체크박스 스타일 - 체크되지 않으면 흰색, 체크되면 파란색 */
+        .row-checkbox {
+          transform: scale(1.2);
+          cursor: pointer;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          width: 12px;
+          height: 12px;
+          border: 1px solid #ccc;
+          border-radius: 2px;
+          background-color: white; /* 기본 상태: 흰색 */
+          position: relative;
+        }
+        
+        /* 체크된 상태: 파란색 */
+        .row-checkbox:checked {
+          background-color: #007bff;
+          border-color: #007bff;
+        }
+        
+        /* 체크마크 표시 */
+        .row-checkbox:checked::after {
+          content: '✓';
+          position: absolute;
+          top: -1px;
+          left: 1px;
+          color: white;
+          font-size: 10px;
+          font-weight: bold;
+        }
+        
+        /* 호버 효과 */
+        .row-checkbox:hover {
+          border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <h1>SUNGMOON Shipment</h1>
+
+    <div class="top-menu">
+        <div class="left-menu">
+            <button type="button" onclick="location.href='sungmoon.html'" class="top-menu-btn">Home</button>
+            
+            <button type="button" id="yearDownBtn" class="top-menu-btn year-btn">▼</button>
+            <span id="yearDisplay" class="year-display">2025</span>
+            <button type="button" id="yearUpBtn" class="top-menu-btn year-btn">▲</button>
+            
+            <div class="week-display" id="weekDisplay" title="">
+                <span id="weekNumber">W</span>
+            </div>
+        </div>
+        
+        <div class="right-menu">
+            <button id="smBtn" class="top-menu-btn mode-btn selected">SM</button>
+        </div>
+    </div>
+
+    <div class="order-table-container">
+        <table id="orderTable">
+            <thead>
+                 <tr>
+                     <th>Delivery No</th>
+                     <th>Order No</th>
+                    <th>Item No</th>
+                    <th>Item</th>
+                    <th>주문R</th>
+                <th>선적R</th>
+                <th>남은R</th>
+                <th>완료</th>
+                <th>Split</th>
+                    <th>DeliveredKG</th>
+                    <th>Shipment</th>
+                </tr>
+            </thead>
+            <tbody id="orderTableBody">
+                <!-- 빈 테이블 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 하단 버튼 영역 -->
+<div class="bottom-buttons">
+    <div class="expand-handle">
+        <button id="expandButton" type="button" class="expand-btn">▼</button>
+    </div>
+    
+    <div class="main-button-group">
+        <button id="emailBtn2" class="top-menu-btn">Email</button>
+    </div>
+
+    <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+        <!-- 필요시 추가 버튼들 -->
+    </div>
+</div>
+
+<script>
+    // 년도 선택 초기화
+    let currentYear = new Date().getFullYear();
+
+    // DOM 요소 캐싱
+    const yearDisplay = document.getElementById("yearDisplay");
+    const yearUpBtn = document.getElementById("yearUpBtn");
+    const yearDownBtn = document.getElementById("yearDownBtn");
+
+    yearDisplay.textContent = currentYear;
+
+    // 년도 변경 공통 함수
+    function changeYear(delta) {
+        const newYear = currentYear + delta;
+        if (newYear >= 2020) {
+            currentYear = newYear;
+            yearDisplay.textContent = currentYear;
+            loadOrderDataAndFillTable();
+        }
+    }
+
+    // 년도 증가 버튼
+    yearUpBtn.addEventListener("click", () => {
+        changeYear(1);
+    });
+
+    // 년도 감소 버튼
+    yearDownBtn.addEventListener("click", () => {
+        changeYear(-1);
+    });
+
+    // ISO 8601 표준에 따른 주차 계산 함수
+    function getWeekNumber(date) {
+        const targetDate = new Date(date.valueOf());
+        const dayNumber = (date.getUTCDay() + 6) % 7;
+        targetDate.setUTCDate(targetDate.getUTCDate() - dayNumber + 3);
+        const firstThursday = targetDate.valueOf();
+        targetDate.setUTCMonth(0, 1);
+        if (targetDate.getUTCDay() !== 4) {
+            targetDate.setUTCMonth(0, 1 + ((4 - targetDate.getUTCDay()) + 7) % 7);
+        }
+        return 1 + Math.ceil((firstThursday - targetDate) / 604800000);
+    }
+    
+    // 주차 표시 업데이트 함수 (DOM 요소 캐싱)
+    function updateWeekDisplay() {
+        const now = new Date();
+        const weekNumber = getWeekNumber(now);
+        const year = now.getFullYear();
+        const dateStr = now.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        });
+        
+        // DOM 요소 캐싱 (한 번만 쿼리)
+        if (!updateWeekDisplay.weekDisplay) {
+            updateWeekDisplay.weekDisplay = document.getElementById('weekDisplay');
+            updateWeekDisplay.weekNumberSpan = document.getElementById('weekNumber');
+        }
+        
+        updateWeekDisplay.weekNumberSpan.textContent = `W${weekNumber}`;
+        updateWeekDisplay.weekDisplay.title = `${dateStr} (${year}년 ${weekNumber}주차)`;
+    }
+    
+    // ========================================
+    // Email 버튼 관련 기능들
+    // ========================================
+    
+    // 체크된 deliveryNo들을 효율적으로 수집하는 함수
+    function getCheckedDeliveryNos() {
+        const checkboxes = document.querySelectorAll('.delivery-checkbox:checked');
+        return Array.from(checkboxes).map(checkbox => 
+            checkbox.getAttribute('data-deliveryNo')
+        );
+    }
+
+    // 클립보드에 텍스트 복사
+    async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (err) {
+            // fallback for older browsers
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                const result = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                return result;
+            } catch (err) {
+                document.body.removeChild(textArea);
+                return false;
+            }
+        }
+    }
+
+    // 이메일 텍스트 생성
+    function generateEmailText() {
+        const checkedDeliveryNos = getCheckedDeliveryNos();
+        
+        if (checkedDeliveryNos.length === 0) {
+            return { success: false, message: "선택된 아이템이 없습니다." };
+        }
+        
+        // Set을 사용하여 중복 제거 및 빠른 검색
+        const deliveryNoSet = new Set(checkedDeliveryNos);
+        const invoiceInfo = [];
+        
+        if (window.allOrdersData) {
+            for (const order of window.allOrdersData) {
+                if (order.items) {
+                    for (const item of order.items) {
+                        if (deliveryNoSet.has(item.deliveryNo)) {
+                            const pino = item['p/ino'] || '';
+                            const invoiceno = item['invoiceno'] || '';
+                            
+                            if (pino) {
+                                invoiceInfo.push(`Proforma Invoice No. ${pino}`);
+                            } else if (invoiceno) {
+                                invoiceInfo.push(`Invoice No. ${invoiceno}`);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (invoiceInfo.length === 0) {
+            return { success: false, message: "선택된 아이템의 정보를 찾을 수 없습니다." };
+        }
+        
+        // 중복 제거
+        const uniqueInvoiceInfo = [...new Set(invoiceInfo)];
+        
+        // 이메일 텍스트 생성
+        let emailText = "안녕하세요.\n\n다음 선적의 현재 상세 정보를 보내주시기 바랍니다\n";
+        
+        if (checkedDeliveryNos.length === 1) {
+            emailText += checkedDeliveryNos[0];
+        } else {
+            emailText += checkedDeliveryNos.join("\n");
+        }
+        
+        emailText += "\n\n감사합니다.";
+        
+        return { success: true, text: emailText };
+    }
+        
+    // Email 버튼 이벤트 리스너
+    function setupEmailButton() {
+        document.getElementById("emailBtn2").addEventListener("click", async () => {
+            try {
+                const result = generateEmailText();
+                
+                if (!result.success) {
+                    alert(result.message + (result.message.includes("선택된 아이템이 없습니다") ? "\n\n체크박스를 선택한 후 다시 시도해주세요." : ""));
+                    return;
+                }
+                
+                const success = await copyToClipboard(result.text);
+                
+                if (success) {
+                    alert('Email 내용이 클립보드에 복사되었습니다.\n바로 붙여넣기(Ctrl+V)를 사용할 수 있습니다.');
+                } else {
+                    alert('클립보드 복사에 실패했습니다. 브라우저 권한을 확인해주세요.');
+                }
+            } catch (error) {
+                console.error("이메일 텍스트 생성 중 오류:", error);
+                alert("이메일 텍스트 생성 중 오류가 발생했습니다.");
+            }
+        });
+    }
+
+    // ========================================
+    // 체크박스 관련 기능들
+    // ========================================
+    
+    // 현재 선택된 모드 (SM만)
+    let currentMode = 'SM';
+    
+
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+        // 주차 표시 업데이트 및 데이터 로드
+        updateWeekDisplay();
+        loadOrderDataAndFillTable();
+        setupExpandButton();
+        
+        // 모드 버튼 이벤트 리스너 (SM 모드 고정)
+        const smBtn = document.getElementById('smBtn');
+        
+        // SM 모드는 고정이므로 이벤트 리스너 제거
+        
+        
+        // Email 버튼 설정
+        setupEmailButton();
+    });
+    
+    // 모드 버튼 상태 업데이트 (SM 모드 고정)
+    function updateModeButtons() {
+        const smBtn = document.getElementById('smBtn');
+        
+        // SM 모드 고정
+        smBtn.classList.add('selected');
+    }
+    
+    // 모드 매칭 함수
+    function isModeMatch(order) {
+        return order.mode === 'SM-B' || order.mode === 'SM-C';
+    }
+    
+    // 아이템 데이터 변환 함수
+    function createItemData(order, item) {
+        const orderR = parseFloat(item.adjustment || item.quantity || '0');
+        const completedR = parseFloat(item.deliveredR || '0');
+        const leftoverR = orderR - completedR;
+        
+        // 같은 orderNo의 모든 아이템 번호 수집
+        const allItemNos = order.items.map(i => i.itemNo);
+        
+        // 현재 아이템 번호에 .1이 붙은 아이템이 있는지 확인
+        const hasSplitItem = allItemNos.includes(item.itemNo + '.1');
+        
+        return {
+            orderNo: order.orderNo,
+            itemNo: item.itemNo,
+            item: `PHD-${item.phd}(${item.width})${item.x}`,
+            orderR: item.adjustment || item.quantity || '',
+            completedR: item.deliveredR || '',
+            leftoverR: leftoverR.toString(),
+            status: item.deliveredkg || '',
+            'd/nno': item['d/nno'] || '',
+            'd/ndate': item['d/ndate'] || '',
+            'p/ino': item['p/ino'] || '',
+            'p/idate': item['p/idate'] || '',
+            'invoiceno': item.invoiceno || '',
+            'invoicedate': item.invoicedate || '',
+            phd: item.phd,
+            mode: order.mode,
+            deliveredkg: item.deliveredkg || '0',
+            'U/P': item['U/P'] || '',
+            hasSplitItem: hasSplitItem,
+            vessel: item.vessel || '',
+            etd: item.etd || '',
+            eta: item.eta || ''
+        };
+    }
+    
+    // orderData 로드 및 테이블 채우기
+    async function loadOrderDataAndFillTable() {
+        try {
+            const response = await fetch('/api/orders');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const orderData = await response.json();
+            console.log('OrderData 로드됨:', orderData);
+            
+            // 전역 변수에 데이터 저장 (Email 기능용)
+            window.allOrdersData = orderData;
+            
+            
+            // Delivery No별로 아이템들을 그룹화
+            const deliveryGroups = {};
+            
+            // 효율적인 단일 루프로 필터링 및 그룹화
+            for (const order of orderData) {
+                if (!isModeMatch(order) || !order.items?.length) continue;
+                
+                for (const item of order.items) {
+                    const deliveryNo = item.deliveryNo;
+                    if (!deliveryNo) continue;
+                    
+                    // 년도 필터링
+                    const oldestDate = getOldestDateFromItem(item);
+                    if (oldestDate && oldestDate.getFullYear() !== currentYear) continue;
+                    
+                    // 그룹 초기화
+                    if (!deliveryGroups[deliveryNo]) {
+                        deliveryGroups[deliveryNo] = [];
+                    }
+                    
+                    // 아이템 데이터 추가
+                    deliveryGroups[deliveryNo].push(createItemData(order, item));
+                }
+            }
+            
+            console.log('Delivery Groups:', deliveryGroups);
+            
+            // 테이블 채우기
+            await fillTable(deliveryGroups);
+            
+        } catch (error) {
+            console.error('OrderData 로드 실패:', error);
+        }
+    }
+    
+
+    // 날짜 문자열을 Date 객체로 파싱하는 함수
+    function parseDateString(dateStr) {
+        if (!dateStr) return null;
+        
+        // DD.MM.YYYY 형식 파싱
+        const parts = dateStr.split('.');
+        if (parts.length >= 3) {
+            const day = parseInt(parts[0]);
+            const month = parseInt(parts[1]) - 1; // JavaScript 월은 0부터 시작
+            const year = parseInt(parts[2]);
+            return new Date(year, month, day);
+        }
+        
+        return null;
+    }
+    
+    // 아이템에서 가장 오래된 날짜(Date 객체)를 반환하는 함수
+    function getOldestDateFromItem(item) {
+        const dates = [];
+        
+        // 각 날짜를 파싱하여 Date 객체로 변환
+        if (item['d/ndate']) {
+            const parsedDate = parseDateString(item['d/ndate']);
+            if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
+        }
+        if (item['p/idate']) {
+            const parsedDate = parseDateString(item['p/idate']);
+            if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
+        }
+        if (item['p/i2date']) {
+            const parsedDate = parseDateString(item['p/i2date']);
+            if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
+        }
+        if (item['invoicedate']) {
+            const parsedDate = parseDateString(item['invoicedate']);
+            if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
+        }
+        
+        // 날짜가 없으면 null 반환
+        if (dates.length === 0) return null;
+        
+        // 가장 오래된 날짜 반환
+        return dates.reduce((oldest, current) => {
+            return current < oldest ? current : oldest;
+        });
+    }
+    
+    
+    // Delivery No를 날짜 기준으로 정렬하는 함수
+    function sortDeliveryNosByDate(deliveryGroups) {
+        return Object.keys(deliveryGroups).sort((a, b) => {
+            const aItems = deliveryGroups[a];
+            const bItems = deliveryGroups[b];
+            
+            // 각 delivery group의 첫 번째 아이템에서 날짜 정보 가져오기
+            const aFirstItem = aItems[0];
+            const bFirstItem = bItems[0];
+            
+            // 각 delivery group의 가장 오래된 날짜 찾기
+            const aOldestDate = getOldestDateFromItem(aFirstItem);
+            const bOldestDate = getOldestDateFromItem(bFirstItem);
+            
+            // 가장 오래된 날짜 기준으로 내림차순 정렬 (최신이 위로)
+            if (aOldestDate && bOldestDate) {
+                return bOldestDate.getTime() - aOldestDate.getTime();
+            } else if (aOldestDate) {
+                return -1; // a가 날짜가 있으면 a가 위로
+            } else if (bOldestDate) {
+                return 1; // b가 날짜가 있으면 b가 위로
+            } else {
+                // 둘 다 날짜가 없으면 EK-번호 기준으로 정렬
+                const aNum = parseInt(a.replace('EK-', '')) || 0;
+                const bNum = parseInt(b.replace('EK-', '')) || 0;
+                return bNum - aNum;
+            }
+        });
+    }
+
+    // 테이블 채우기 함수
+    async function fillTable(deliveryGroups) {
+        const tbody = document.getElementById('orderTableBody');
+        tbody.innerHTML = '';
+        
+        
+        // Delivery No를 날짜 기준으로 정렬
+        const sortedDeliveryNos = sortDeliveryNosByDate(deliveryGroups);
+        
+        for (const deliveryNo of sortedDeliveryNos) {
+            const items = deliveryGroups[deliveryNo];
+            
+            for (let index = 0; index < items.length; index++) {
+                const item = items[index];
+                const row = document.createElement('tr');
+                
+                let deliveryNoCell = '';
+                if (index === 0) {
+                    // 첫 번째 아이템에서만 모든 정보를 표시하고 rowspan 설정
+                    const firstItem = items[0];
+                    const dnnno = firstItem['d/nno'] || '';
+                    const dndate = firstItem['d/ndate'] || '';
+                    const pino = firstItem['p/ino'] || '';
+                    const pidate = firstItem['p/idate'] || '';
+                    const invoiceno = firstItem['invoiceno'] || '';
+                    const invoicedate = firstItem['invoicedate'] || '';
+                    console.log(`[DEBUG] Delivery: ${deliveryNo}, d/nno: ${dnnno}, d/ndate: ${dndate}, pino: ${pino}, pidate: ${pidate}, invoiceno: ${invoiceno}, invoicedate: ${invoicedate}`);
+                    
+                    // 체크박스와 deliveryNo, d/nno, (d/ndate), p/ino, (p/idate), invoiceno, (invoicedate) 일곱 줄로 표시
+                    let deliveryInfo = `<input type="checkbox" class="delivery-checkbox" data-deliveryNo="${deliveryNo}" style="margin-right: 8px;">${deliveryNo}`;
+                    if (dnnno) {
+                        deliveryInfo += `<br>${dnnno}`;
+                    }
+                    if (dndate) {
+                        deliveryInfo += `<br>(${dndate})`;
+                    }
+                    if (pino) {
+                        deliveryInfo += `<br>${pino}`;
+                    }
+                    if (pidate) {
+                        deliveryInfo += `<br>(${pidate})`;
+                    }
+                    if (invoiceno) {
+                        deliveryInfo += `<br>${invoiceno}`;
+                    }
+                    if (invoicedate) {
+                        deliveryInfo += `<br>(${invoicedate})`;
+                    }
+                    
+                    // NT 모드일 때만 price 합계 박스 추가
+                    if (firstItem.mode === 'NT') {
+                        // 해당 deliveryNo의 모든 아이템들의 price 합계 계산
+                        let totalPrice = 0;
+                        items.forEach(item => {
+                            const kgValue = item.mode === 'NT' ? (item.status || '') : '';
+                            const upValue = item.mode === 'NT' ? (item['U/P'] || '') : '';
+                            if (upValue && kgValue) {
+                                const up = parseFloat(upValue) || 0;
+                                const kg = parseFloat(kgValue) || 0;
+                                totalPrice += up * kg;
+                            }
+                        });
+                        
+                        const totalPriceFormatted = totalPrice > 0 ? 
+                            `$${totalPrice.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : 
+                            '$0.00';
+                        
+                        deliveryInfo += `<br><div style="border: 1px solid #ccc; padding: 5px 10px; margin-top: 4px; text-align: center; background-color: white; font-weight: bold; width: 80px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; min-width: 80px; line-height: 1.2;">${totalPriceFormatted}</div>`;
+                    }
+                    
+                    deliveryNoCell = `<td rowspan="${items.length}">${deliveryInfo}</td>`;
+                }
+                
+                // 선적 체크박스 생성 (남은R <= 0일 때 자동 체크, 읽기 전용)
+                const leftoverR = parseFloat(item.leftoverR || '0');
+                const isChecked = leftoverR <= 0 ? 'checked' : '';
+                const deliveredCheckbox = `<input type="checkbox" class="row-checkbox" onchange="toggleDeliveredStatus(this)" disabled ${isChecked}>`;
+                
+                // KG 열과 Shipment 열 값 설정
+                const kgValue = item.status || ''; // KG 값
+                
+                // Shipment 셀 생성 (첫 번째 행에만 rowspan 적용)
+                let shipmentCell = '';
+                if (index === 0) {
+                    // 해당 deliveryNo를 가진 첫 번째 아이템의 vessel, etd, eta 정보 가져오기
+                    const firstItem = items[0];
+                    const vessel = firstItem.vessel || '';
+                    const etd = firstItem.etd || '';
+                    const eta = firstItem.eta || '';
+                    
+                    // Shipment 정보 포맷팅
+                    let shipmentInfo = '';
+                    if (vessel || etd || eta) {
+                        shipmentInfo = '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 6px;">';
+                        shipmentInfo += '<div style="font-size: 0.9rem; font-weight: bold;">Vessel</div>';
+                        shipmentInfo += vessel ? `<div style="font-size: 0.8rem; text-align: center;">${vessel}</div>` : '<div style="font-size: 0.8rem; text-align: center;">&nbsp;</div>';
+                        shipmentInfo += '<div style="font-size: 0.9rem; font-weight: bold;">ETD</div>';
+                        shipmentInfo += etd ? `<div style="font-size: 0.8rem; text-align: center;">${etd}</div>` : '<div style="font-size: 0.8rem; text-align: center;">&nbsp;</div>';
+                        shipmentInfo += '<div style="font-size: 0.9rem; font-weight: bold;">ETA</div>';
+                        shipmentInfo += eta ? `<div style="font-size: 0.8rem; text-align: center;">${eta}</div>` : '<div style="font-size: 0.8rem; text-align: center;">&nbsp;</div>';
+                        shipmentInfo += '</div>';
+                    }
+                    
+                    shipmentCell = `<td rowspan="${items.length}" style="text-align: center; vertical-align: middle; padding: 8px; width: 70px;">${shipmentInfo}</td>`;
+                }
+                
+                 row.innerHTML = `
+                     ${deliveryNoCell}
+                     <td>${item.orderNo}</td>
+                    <td>${item.itemNo}</td>
+                    <td>${item.item}</td>
+                    <td>${item.orderR}</td>
+                    <td>${item.completedR}</td>
+                    <td>${item.leftoverR}</td>
+                    <td style="text-align: center;">${deliveredCheckbox}</td>
+                    <td style="text-align: center;"><button class="split-btn" ${item.hasSplitItem ? 'style="background-color: black; color: white; border-color: black;"' : ''} onclick="return false;" style="cursor: not-allowed;">S</button></td>
+                    <td style="text-align: right;">${kgValue}</td>
+                    ${shipmentCell}
+                `;
+                
+                tbody.appendChild(row);
+            }
+        }
+        
+    }
+    
+    
+    
+    
+
+    
+    // 선적 완료 체크박스 상태 변경 시 호출되는 함수
+    // 남은R <= 0일 때만 체크박스가 체크됨 (읽기 전용)
+    // 서버 저장 없음, 수동 체크/해제 불가능
+    function toggleDeliveredStatus(checkbox) {
+        const row = checkbox.closest('tr');
+        
+        // 남은R 값 계산하여 체크 여부 확인
+        const orderRCell = row.querySelector('td:nth-child(5)'); // 주문R 열
+        const completedRCell = row.querySelector('td:nth-child(6)'); // 완료R 열
+        
+        const orderR = parseFloat(orderRCell?.textContent.trim() || '0');
+        const completedR = parseFloat(completedRCell?.textContent.trim() || '0');
+        const leftoverR = orderR - completedR;
+        
+        // 남은R <= 0이면 체크, 아니면 해제
+        checkbox.checked = leftoverR <= 0;
+    }
+    
+    // 확장/축소 기능
+    function setupExpandButton() {
+        const expandButton = document.getElementById("expandButton");
+        if (expandButton) {
+            expandButton.addEventListener("click", () => {
+                const detailArea = document.getElementById("detailButtonArea");
+                
+                if (detailArea.style.display === "none") {
+                    detailArea.style.display = "flex";
+                    expandButton.classList.add("expanded");
+                    expandButton.textContent = "▲";
+                } else {
+                    detailArea.style.display = "none";
+                    expandButton.classList.remove("expanded");
+                    expandButton.textContent = "▼";
+                }
+            });
+        }
+    }
+    
+    
+    
+</script>
+</body>
+</html>

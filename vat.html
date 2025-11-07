@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+    <title>세금계산서</title>
+  <!-- PDF 생성을 위한 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      color: #000;
+      line-height: 1.5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      margin: 20px;
+      padding: 0;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+
+    /* 메인 페이지 컨테이너 */
+    .page-container {
+      max-width: 210mm; /* A4 가로 사이즈 */
+      margin: 20px auto;
+      padding: 0;
+    }
+
+    .page {
+      width: 210mm; /* A4 가로 사이즈 고정 */
+      min-height: 297mm; /* A4 세로 최소 높이 */
+      margin: 0 auto 20px auto;
+      padding: 10mm 25mm 25mm 25mm;
+      box-sizing: border-box;
+      background: #fff;
+      position: relative;
+      border: 1px solid #ddd;
+    }
+
+    /* 상단 타이틀 */
+    .document-title {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    /* 날짜 선택 영역 */
+    .date-selection {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding: 10px;
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+
+    .date-selection select {
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      background: #fff;
+      font-size: 0.9rem;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .date-selection select:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 3px rgba(0, 123, 255, 0.3);
+    }
+
+    /* 공통 버튼 스타일 */
+    .common-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    .common-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+
+    /* 숫자 입력 필드 스피너 제거 */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    /* 입력 필드 하이라이트 제거 - PDF용 강화 */
+    .transfer-table td input,
+    .transfer-table td input[type="text"],
+    .transfer-table td input[type="number"] {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      -webkit-border-radius: 0;
+      -moz-border-radius: 0;
+      border-radius: 0;
+      margin: 0;
+      width: 100%;
+      line-height: inherit;
+      font-size: inherit;
+      color: inherit;
+      padding-top: 0; /* 세로 padding 제거 */
+      padding-bottom: 0; /* 세로 padding 제거 */
+      height: 100%; /* td 높이에 맞춤 */
+      box-sizing: border-box;
+      /* 가로 padding은 각 열별 스타일에서 설정 */
+    }
+
+    .transfer-table td input:focus,
+    .transfer-table td input:active,
+    .transfer-table td input:hover {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+
+    /* 텍스트 잘림 방지 */
+    .transfer-table td {
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
+    }
+
+    .transfer-table input {
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
+      min-width: 100%;
+    }
+
+    /* 입금내역 테이블 */
+    .transfer-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+      border: 1px solid #ddd;
+      table-layout: fixed; /* 열 폭 고정 */
+    }
+    
+    /* 첫 번째 테이블만 margin-bottom 제거 (두 번째 테이블과의 간격 조정) */
+    .transfer-table:not(.additional-table) {
+      margin-bottom: 0;
+    }
+    
+    /* 추가 테이블은 margin-top만 설정하고 margin-bottom은 환급 계좌번호 영역용으로 설정 */
+    .transfer-table.additional-table {
+      margin-top: 30px;
+      margin-bottom: 30px; /* 테이블 1과 2 사이 간격과 동일 */
+    }
+    
+    /* 환급 계좌번호 표시 영역 */
+    .refund-account-section {
+      margin-top: 30px;
+      margin-bottom: 200px; /* 하단 메뉴바 높이 + 충분한 여백 */
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .refund-account-section label {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #333;
+      white-space: nowrap;
+    }
+    
+    .refund-account-section span {
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    .transfer-table th {
+      background-color: #f5f5f5;
+      padding: 8px 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-weight: bold;
+      font-size: 0.7rem;
+      color: #333;
+    }
+    
+    /* 추가 테이블 헤더만 가운데 정렬 (transfer-table th보다 우선순위 높게) */
+    table.additional-table th:nth-child(1),
+    table.additional-table th:nth-child(2),
+    table.additional-table th:nth-child(3),
+    table.additional-table th:nth-child(4),
+    table.additional-table th:nth-child(5),
+    table.additional-table th:nth-child(6),
+    table.additional-table th:nth-child(7) {
+      text-align: center;
+    }
+    
+    /* 합계 행 스타일 */
+    .transfer-table .total-row {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    
+    .transfer-table .total-row td {
+      padding: 8px 8px; /* 헤더와 동일한 padding */
+      border: 1px solid #ddd;
+      background-color: #f5f5f5;
+      font-weight: bold;
+      font-size: 0.7rem; /* 일반 행과 동일한 폰트 크기 */
+      font-family: inherit; /* 일반 행과 동일한 폰트 */
+    }
+
+    .transfer-table td {
+      padding: 8px 8px; /* 헤더와 동일한 padding */
+      border: 1px solid #ddd;
+      text-align: center;
+      font-size: 0.7rem;
+    }
+    
+    /* 추가 테이블 td는 transfer-table td 스타일을 오버라이드 */
+    table.additional-table td {
+      padding: 8px 8px; /* 헤더와 동일한 padding */
+      border: 1px solid #ddd;
+      font-size: 0.7rem;
+      text-align: inherit; /* 기본 정렬 제거, 각 열의 개별 설정 사용 */
+      line-height: inherit; /* 테이블 1과 동일한 line-height */
+    }
+
+    .transfer-table tr {
+      background-color: #fff;
+    }
+
+    .transfer-table tr:hover {
+      background-color: #fff;
+    }
+
+    /* 컬럼 너비 설정 - 절대값 (1~6열 모두 동일한 폭) */
+    .transfer-table th:nth-child(1),
+    .transfer-table td:nth-child(1),
+    .transfer-table th:nth-child(2),
+    .transfer-table td:nth-child(2),
+    .transfer-table th:nth-child(3),
+    .transfer-table td:nth-child(3),
+    .transfer-table th:nth-child(4),
+    .transfer-table td:nth-child(4),
+    .transfer-table th:nth-child(5),
+    .transfer-table td:nth-child(5),
+    .transfer-table th:nth-child(6),
+    .transfer-table td:nth-child(6) {
+      width: 75px; /* 동일한 폭 (기존 150px의 반) */
+    }
+    
+    /* 추가 테이블 (두 번째 테이블) 컬럼 너비 설정 */
+    .additional-table th:nth-child(1),
+    .additional-table td:nth-child(1) {
+      width: 75px; /* 1열 */
+    }
+    
+    .additional-table th:nth-child(2),
+    .additional-table td:nth-child(2) {
+      width: 30px; /* 2열 */
+    }
+    
+    .additional-table th:nth-child(3),
+    .additional-table td:nth-child(3) {
+      width: 75px; /* 3열 */
+    }
+    
+    .additional-table th:nth-child(4),
+    .additional-table td:nth-child(4) {
+      width: 60px; /* 4열 */
+    }
+    
+    .additional-table th:nth-child(5),
+    .additional-table td:nth-child(5) {
+      width: 30px; /* 5열 */
+    }
+    
+    .additional-table th:nth-child(6),
+    .additional-table td:nth-child(6) {
+      width: 75px; /* 6열 */
+    }
+    
+    .additional-table th:nth-child(7),
+    .additional-table td:nth-child(7) {
+      width: 60px; /* 7열 */
+    }
+    
+    
+    /* 추가 테이블 행: 1, 2, 5열 가운데 정렬 - 더 구체적인 선택자 사용 */
+    table.additional-table td:nth-child(1),
+    table.additional-table td:nth-child(2),
+    table.additional-table td:nth-child(5) {
+      text-align: center;
+      padding: 8px 0; /* 세로는 8px 유지, 가로는 0 */
+    }
+    
+    table.additional-table td:nth-child(1) input,
+    table.additional-table td:nth-child(2) input,
+    table.additional-table td:nth-child(5) input {
+      text-align: center;
+      padding: 0 8px; /* 세로 padding 제거 */
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%; /* td 높이에 맞춤 */
+    }
+    
+    /* 추가 테이블 행: 3, 4, 6, 7열 오른쪽 정렬 - 더 구체적인 선택자 사용 */
+    table.additional-table td:nth-child(3),
+    table.additional-table td:nth-child(4),
+    table.additional-table td:nth-child(6),
+    table.additional-table td:nth-child(7) {
+      text-align: right;
+      padding: 8px 0; /* 세로는 8px 유지, 가로는 0 */
+    }
+    
+    table.additional-table td:nth-child(3) input,
+    table.additional-table td:nth-child(4) input,
+    table.additional-table td:nth-child(6) input,
+    table.additional-table td:nth-child(7) input {
+      text-align: right;
+      padding: 0 12px 0 8px; /* 세로 padding 제거 */
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%; /* td 높이에 맞춤 */
+    }
+    
+    /* 추가 테이블 합계 행 스타일 */
+    .additional-total-row,
+    .additional-refund-row {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    
+    .additional-total-row td,
+    .additional-refund-row td {
+      background-color: #f5f5f5;
+      font-weight: bold;
+      padding: 8px 8px; /* 헤더와 동일한 padding */
+      border: 1px solid #ddd;
+      font-size: 0.7rem; /* 일반 행과 동일한 폰트 크기 */
+      font-family: inherit; /* 일반 행과 동일한 폰트 */
+    }
+    
+    /* 추가 테이블 합계 행 및 예상 환급세액 행: 1, 2, 5열 가운데 정렬 - 더 구체적인 선택자 사용 */
+    table.additional-table tr.additional-total-row td:nth-child(1),
+    table.additional-table tr.additional-total-row td:nth-child(2),
+    table.additional-table tr.additional-total-row td:nth-child(5),
+    table.additional-table tr.additional-refund-row td:nth-child(1),
+    table.additional-table tr.additional-refund-row td:nth-child(2),
+    table.additional-table tr.additional-refund-row td:nth-child(5) {
+      text-align: center;
+      padding: 8px 0; /* 세로는 8px 유지, 가로는 0 */
+    }
+    
+    /* 추가 테이블 합계 행 및 예상 환급세액 행: 3, 4, 6, 7열 오른쪽 정렬 - 더 구체적인 선택자 사용 */
+    table.additional-table tr.additional-total-row td:nth-child(3),
+    table.additional-table tr.additional-total-row td:nth-child(4),
+    table.additional-table tr.additional-total-row td:nth-child(6),
+    table.additional-table tr.additional-total-row td:nth-child(7),
+    table.additional-table tr.additional-refund-row td:nth-child(3),
+    table.additional-table tr.additional-refund-row td:nth-child(4),
+    table.additional-table tr.additional-refund-row td:nth-child(6),
+    table.additional-table tr.additional-refund-row td:nth-child(7) {
+      text-align: right;
+      padding: 8px 0; /* 세로는 8px 유지, 가로는 0 */
+    }
+    
+    table.additional-table tr.additional-total-row td:nth-child(1) span,
+    table.additional-table tr.additional-total-row td:nth-child(2) span,
+    table.additional-table tr.additional-total-row td:nth-child(5) span,
+    table.additional-table tr.additional-refund-row td:nth-child(1) span,
+    table.additional-table tr.additional-refund-row td:nth-child(2) span,
+    table.additional-table tr.additional-refund-row td:nth-child(5) span {
+      display: inline-block;
+      padding: 0 8px; /* 세로 padding 제거 */
+      width: 100%;
+      text-align: center;
+      box-sizing: border-box;
+      height: 100%; /* td 높이에 맞춤 */
+    }
+    
+    table.additional-table tr.additional-total-row td:nth-child(3) span,
+    table.additional-table tr.additional-total-row td:nth-child(4) span,
+    table.additional-table tr.additional-total-row td:nth-child(6) span,
+    table.additional-table tr.additional-total-row td:nth-child(7) span,
+    table.additional-table tr.additional-refund-row td:nth-child(3) span,
+    table.additional-table tr.additional-refund-row td:nth-child(4) span,
+    table.additional-table tr.additional-refund-row td:nth-child(6) span,
+    table.additional-table tr.additional-refund-row td:nth-child(7) span {
+      display: inline-block;
+      padding: 0 12px 0 8px; /* 세로 padding 제거 */
+      width: 100%;
+      text-align: right;
+      box-sizing: border-box;
+      height: 100%; /* td 높이에 맞춤 */
+    }
+    
+    /* 1열(날짜) 입력 필드 스타일 */
+    .transfer-table td:nth-child(1) input {
+      text-align: center;
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 0;
+      padding-bottom: 0;
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* 2, 3열 가운데 정렬 - 헤더와 동일한 세로 padding 유지 */
+    .transfer-table td:nth-child(2),
+    .transfer-table td:nth-child(3) {
+      text-align: center;
+      padding: 8px 0; /* 세로는 8px 유지, 가로는 0 */
+    }
+    
+    /* 2, 3열의 입력 필드도 가운데 정렬 및 패딩 통일 */
+    .transfer-table td:nth-child(2) input,
+    .transfer-table td:nth-child(3) input {
+      text-align: center;
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 0; /* 세로 padding 제거 */
+      padding-bottom: 0; /* 세로 padding 제거 */
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%; /* td 높이에 맞춤 */
+    }
+    
+    /* 금액 열 오른쪽 정렬 (4, 5, 6열) - 헤더와 동일한 세로 padding 유지 */
+    .transfer-table td:nth-child(4),
+    .transfer-table td:nth-child(5),
+    .transfer-table td:nth-child(6) {
+      text-align: right;
+      padding: 8px 0; /* 세로는 8px 유지, 가로는 0 */
+    }
+    
+    /* 금액 열의 입력 필드도 오른쪽 정렬 및 패딩 통일 */
+    .transfer-table td:nth-child(4) input,
+    .transfer-table td:nth-child(5) input,
+    .transfer-table td:nth-child(6) input {
+      text-align: right;
+      padding-left: 8px;
+      padding-right: 12px;
+      padding-top: 0; /* 세로 padding 제거 */
+      padding-bottom: 0; /* 세로 padding 제거 */
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%; /* td 높이에 맞춤 */
+    }
+    
+    /* 합계 행의 금액 열도 동일한 패딩 적용 */
+    .transfer-table .total-row td:nth-child(4),
+    .transfer-table .total-row td:nth-child(5),
+    .transfer-table .total-row td:nth-child(6) {
+      padding: 8px 0; /* 세로는 8px 유지, 가로는 0 */
+      text-align: right;
+    }
+    
+    .transfer-table .total-row td:nth-child(4) span,
+    .transfer-table .total-row td:nth-child(5) span,
+    .transfer-table .total-row td:nth-child(6) span {
+      display: inline-block;
+      padding-left: 8px;
+      padding-right: 12px;
+      padding-top: 0; /* 세로 padding 제거 */
+      padding-bottom: 0; /* 세로 padding 제거 */
+      width: 100%;
+      text-align: right;
+      box-sizing: border-box;
+      height: 100%; /* td 높이에 맞춤 */
+    }
+    
+    /* 버튼 컨테이너 */
+    .button-container {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    
+
+    /* 하단 버튼 영역 전체 */
+    .bottom-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+
+    /* 확장 손잡이 (서랍 손잡이처럼 위쪽에 튀어나옴) */
+    .expand-handle {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    /* 확장/축소 버튼 */
+    .expand-btn {
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #f8f8f8;
+      color: #666;
+      border-radius: 8px 8px 0 0;
+      min-width: 40px;
+      height: 20px;
+      line-height: 1;
+      transition: all 0.2s ease;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    .expand-btn:hover {
+      background: #e8e8e8;
+      border-color: #999;
+      box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    }
+
+    .expand-btn.expanded {
+      transform: rotate(180deg);
+      background: #e0e0e0;
+    }
+
+    /* 기본 버튼 그룹 레이아웃 */
+    .main-button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+    }
+    
+    .left-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .right-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .main-button-group button {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+    
+    .main-button-group button:hover {
+      background: #f0f0f0;
+    }
+
+    /* 상세 버튼 영역 */
+    .detail-button-area {
+      margin-top: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      animation: slideDown 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    /* 계좌번호 수정 영역 스타일 */
+    .account-edit-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 600px;
+    }
+    
+    .account-edit-section label {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #333;
+      white-space: nowrap;
+    }
+    
+    .account-edit-section input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      font-size: 0.9rem;
+    }
+    
+    .account-edit-section input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 3px rgba(0, 123, 255, 0.3);
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+  <body>
+    <div class="page-container">
+      <div class="page">
+    <h1 class="document-title">세금계산서</h1>
+    
+    <!-- 선택된 년도/분기 표시 영역 -->
+    <div id="selectedPeriodDisplay" style="text-align: right; margin-bottom: 10px; font-size: 0.9rem; color: #666; display: none;">
+      <!-- Apply 버튼을 누르면 여기에 년도/분기가 표시됩니다 -->
+    </div>
+    
+    <!-- 세금계산서 테이블 -->
+    <table class="transfer-table">
+      <thead>
+        <tr>
+          <th>날짜</th>
+          <th>내역</th>
+          <th>공급자/구입자</th>
+          <th>매입 금액</th>
+          <th>매입 세액</th>
+          <th>매입 총액</th>
+        </tr>
+      </thead>
+      <tbody id="transferTableBody">
+        <!-- 데이터가 여기에 동적으로 추가됩니다 -->
+      </tbody>
+    </table>
+    
+    <!-- 추가 입력 테이블 -->
+    <table class="transfer-table additional-table">
+      <thead>
+        <tr>
+          <th>구분</th>
+          <th>매수</th>
+          <th>매입 금액</th>
+          <th>매입 세액</th>
+          <th>매수</th>
+          <th>매출 금액</th>
+          <th>매출 세액</th>
+        </tr>
+      </thead>
+      <tbody id="additionalTableBody">
+        <tr>
+          <td>종이 세금 계산서</td>
+          <td><input type="text" value="" style="width: 100%; border: none;" oninput="formatAmountInput(this); updateAdditionalTableTotal()" onkeydown="handleEnterKey(event, this)"></td>
+          <td><input type="text" value="" style="width: 100%; border: none;" oninput="formatAmountInput(this); updateAdditionalTableTotal()" onkeydown="handleEnterKey(event, this)"></td>
+          <td><input type="text" value="" style="width: 100%; border: none;" oninput="formatAmountInput(this); updateAdditionalTableTotal()" onkeydown="handleEnterKey(event, this)"></td>
+          <td><input type="text" value="" style="width: 100%; border: none;" oninput="formatAmountInput(this); updateAdditionalTableTotal()" onkeydown="handleEnterKey(event, this)"></td>
+          <td><input type="text" value="" style="width: 100%; border: none;" oninput="formatAmountInput(this); updateAdditionalTableTotal()" onkeydown="handleEnterKey(event, this)"></td>
+          <td><input type="text" value="" style="width: 100%; border: none;" oninput="formatAmountInput(this); updateAdditionalTableTotal()" onkeydown="handleEnterKey(event, this)"></td>
+        </tr>
+        <tr>
+          <td>전자 세금 계산서</td>
+          <td><input type="text" value="" style="width: 100%; border: none;" oninput="formatAmountInput(this); updateAdditionalTableTotal()" onkeydown="handleEnterKey(event, this)"></td>
+          <td><input type="text" value="" style="width: 100%; border: none;" oninput="formatAmountInput(this); updateAdditionalTableTotal()" onkeydown="handleEnterKey(event, this)"></td>
+          <td><input type="text" value="" style="width: 100%; border: none;" oninput="formatAmountInput(this); updateAdditionalTableTotal()" onkeydown="handleEnterKey(event, this)"></td>
+          <td><input type="text" value="" style="width: 100%; border: none;" oninput="formatAmountInput(this); updateAdditionalTableTotal()" onkeydown="handleEnterKey(event, this)"></td>
+          <td><input type="text" value="" style="width: 100%; border: none;" oninput="formatAmountInput(this); updateAdditionalTableTotal()" onkeydown="handleEnterKey(event, this)"></td>
+          <td><input type="text" value="" style="width: 100%; border: none;" oninput="formatAmountInput(this); updateAdditionalTableTotal()" onkeydown="handleEnterKey(event, this)"></td>
+        </tr>
+        <tr class="total-row additional-total-row">
+          <td>합계</td>
+          <td><span>0</span></td>
+          <td><span>0</span></td>
+          <td><span>0</span></td>
+          <td><span>0</span></td>
+          <td><span>0</span></td>
+          <td><span>0</span></td>
+        </tr>
+        <tr class="total-row additional-refund-row">
+          <td>예상 환급세액</td>
+          <td><span></span></td>
+          <td><span></span></td>
+          <td><span></span></td>
+          <td><span></span></td>
+          <td><span></span></td>
+          <td><span>0</span></td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <!-- 환급받을 계좌번호 표시 영역 -->
+    <div class="refund-account-section">
+      <label>환급받을 계좌번호 =></label>
+      <span id="refundAccountNumber">KB저축은행 280-890080-75404, 엘트로코리아㈜</span>
+    </div>
+  </div>
+
+  <!-- 하단 버튼 영역 -->
+  <div class="bottom-buttons">
+    <!-- 확장/축소 버튼 (서랍 손잡이처럼 위쪽에 튀어나옴) -->
+    <div class="expand-handle">
+      <button id="expandButton" type="button" class="expand-btn">▼</button>
+    </div>
+    
+    <!-- 기본 버튼 영역 (항상 보임) -->
+    <div class="main-button-group">
+      <div class="left-buttons">
+        <!-- 분기 선택 영역 -->
+        <div class="date-selection" style="margin: 0; padding: 0; background: transparent; border: none; gap: 10px;">
+          <select id="yearSelect" style="padding: 5px 8px; border: 1px solid #ccc; border-radius: 3px; background: #fff; font-size: 0.9rem; min-width: 80px; text-align: center;">
+            <!-- JavaScript로 동적 생성 -->
+          </select>
+          <select id="quarterSelect" style="padding: 5px 8px; border: 1px solid #ccc; border-radius: 3px; background: #fff; font-size: 0.9rem; min-width: 80px; text-align: center;">
+            <option value="1">1분기</option>
+            <option value="2">2분기</option>
+            <option value="3">3분기</option>
+            <option value="4">4분기</option>
+          </select>
+          <button type="button" onclick="applyQuarterFilter()" class="common-btn apply-btn" id="applyBtn">Apply</button>
+          <button type="button" id="pdfBtn" class="common-btn">PDF</button>
+        </div>
+      </div>
+      <div class="right-buttons">
+        <button type="button" onclick="location.href='eltrokorea9.html'" class="common-btn">Home</button>
+        <button type="button" onclick="location.href='transfer.html'" class="common-btn">송금내역</button>
+      </div>
+    </div>
+
+    <!-- 확장 가능한 상세 버튼 영역 (기본적으로 숨김) -->
+    <div id="detailButtonArea" class="detail-button-area" style="display: none;">
+      <!-- 계좌번호 수정 영역 -->
+      <div class="account-edit-section">
+        <label>환급받을 계좌번호 =></label>
+        <input type="text" id="refundAccountNumberEdit" placeholder="계좌번호를 입력하세요" />
+        <button type="button" id="updateAccountBtn" class="common-btn">수정</button>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <script>
+    // 계좌번호 기본값 전역 변수 (localStorage에서 불러오기)
+    const defaultAccountNumber = 'KB저축은행 280-890080-75404, 엘트로코리아㈜';
+    let refundAccountNumber = localStorage.getItem('refundAccountNumber') || defaultAccountNumber;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // DOM 요소 한 번만 가져오기
+      const mainAccount = document.getElementById('refundAccountNumber');
+      const expandButton = document.getElementById('expandButton');
+      const detailArea = document.getElementById('detailButtonArea');
+      const editInput = document.getElementById('refundAccountNumberEdit');
+      const updateAccountBtn = document.getElementById('updateAccountBtn');
+      const pdfBtn = document.getElementById('pdfBtn');
+      const yearSelect = document.getElementById('yearSelect');
+      const quarterSelect = document.getElementById('quarterSelect');
+      
+      // 페이지 로드 시 localStorage에서 계좌번호 불러오기
+      if (mainAccount) {
+        mainAccount.textContent = refundAccountNumber;
+      }
+      
+      // 확장 버튼 이벤트
+      expandButton.addEventListener('click', function() {
+        const isExpanded = detailArea.style.display !== 'none';
+        
+        detailArea.style.display = isExpanded ? 'none' : 'flex';
+        expandButton.classList.toggle('expanded', !isExpanded);
+        expandButton.textContent = isExpanded ? '▼' : '▲';
+        
+        // 확장 시 현재 메인 계좌번호 값을 확장 영역 입력 필드에 복사
+        if (!isExpanded && mainAccount && editInput) {
+          editInput.value = mainAccount.textContent;
+        }
+      });
+      
+      // 계좌번호 수정 버튼 이벤트
+      if (updateAccountBtn) {
+        updateAccountBtn.addEventListener('click', function() {
+          if (!editInput || !mainAccount) {
+            return;
+          }
+          
+          const newAccountNumber = editInput.value.trim();
+          if (!newAccountNumber) {
+            alert('계좌번호를 입력해주세요.');
+            return;
+          }
+          
+          // 전역 변수 업데이트 및 localStorage에 저장
+          refundAccountNumber = newAccountNumber;
+          localStorage.setItem('refundAccountNumber', refundAccountNumber);
+          
+          // 화면 업데이트
+          mainAccount.textContent = refundAccountNumber;
+          alert('계좌번호가 업데이트되었습니다.');
+        });
+      }
+      
+      // 년도 드롭다운 초기화
+      initYearSelect(yearSelect);
+      
+      // 분기 드롭다운 초기화 (현재 날짜 기준)
+      initQuarterSelect(quarterSelect);
+      
+      // PDF 버튼 이벤트 리스너
+      if (pdfBtn) {
+        pdfBtn.addEventListener('click', () => {
+          generatePDF();
+        });
+      }
+      
+      // 초기 데이터 로드 (1차: paper: true인 항목)
+      loadVatData();
+      
+      // 추가 테이블 합계 초기화
+      updateAdditionalTableTotal();
+    });
+    
+    // 년도 드롭다운 초기화 함수
+    function initYearSelect(yearSelect) {
+      if (!yearSelect) return;
+      
+      const currentYear = new Date().getFullYear();
+      const previousYear = currentYear - 1;
+      const nextYear = currentYear + 1;
+      
+      // 기존 옵션 제거
+      yearSelect.innerHTML = '';
+      
+      // 전년도, 현재년도, 다음년도 추가
+      const years = [previousYear, currentYear, nextYear];
+      years.forEach(year => {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year + '년';
+        if (year === currentYear) {
+          option.selected = true; // 현재 년도를 기본 선택
+        }
+        yearSelect.appendChild(option);
+      });
+    }
+    
+    // 분기 드롭다운 초기화 함수 (현재 날짜 기준)
+    function initQuarterSelect(quarterSelect) {
+      if (!quarterSelect) return;
+      
+      const currentMonth = new Date().getMonth() + 1; // 1-12
+      const currentQuarter = Math.ceil(currentMonth / 3); // 1-4
+      
+      // 현재 분기를 기본 선택
+      quarterSelect.value = currentQuarter.toString();
+    }
+    
+    // 1차 로드: transfer.json에서 paper: true인 항목 로드
+    async function loadVatData() {
+      try {
+        const response = await fetch('/api/transfers');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const transfers = data.transfers || [];
+        
+        // paper: true인 항목만 필터링
+        const paperTransfers = transfers.filter(t => t.paper);
+        
+        // 테이블 렌더링
+        renderVatTable(paperTransfers);
+      } catch (error) {
+        alert('데이터 로드 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+    
+    // 세금계산서 테이블 렌더링
+    function renderVatTable(transfers) {
+      const tableBody = document.getElementById('transferTableBody');
+      tableBody.innerHTML = '';
+      
+      if (transfers.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="6" style="text-align: center; padding: 20px; color: #666;">Paper가 true인 항목이 없습니다.</td>';
+        tableBody.appendChild(row);
+      } else {
+        transfers.forEach(transfer => {
+          const row = document.createElement('tr');
+          row.innerHTML = createDepositRowHTML(transfer);
+          tableBody.appendChild(row);
+        });
+        
+        // 합계 행 추가
+        addTotalRow(tableBody);
+      }
+    }
+    
+    // 합계 계산 헬퍼 함수
+    function calculateTotals(tableBody) {
+      const rows = tableBody.querySelectorAll('tr:not(.total-row)');
+      let totalAmount = 0;      // 매입 금액 (5열)
+      let totalTax = 0;         // 매입 세액 (6열)
+      let totalTotal = 0;       // 매입 총액 (7열)
+      
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        if (inputs.length >= 6) {
+          const amount = parseFloat(inputs[3].value.replace(/,/g, '')) || 0;  // 매입 금액 (4열, input 인덱스 3)
+          const tax = parseFloat(inputs[4].value.replace(/,/g, '')) || 0;      // 매입 세액 (5열, input 인덱스 4)
+          const total = parseFloat(inputs[5].value.replace(/,/g, '')) || 0;   // 매입 총액 (6열, input 인덱스 5)
+          
+          totalAmount += amount;
+          totalTax += tax;
+          totalTotal += total;
+        }
+      });
+      
+      return { totalAmount, totalTax, totalTotal };
+    }
+    
+    // 합계 행 추가 함수
+    function addTotalRow(tableBody) {
+      if (!tableBody) {
+        tableBody = document.getElementById('transferTableBody');
+      }
+      
+      // 기존 합계 행 제거 (있다면)
+      const existingTotalRow = tableBody.querySelector('.total-row');
+      if (existingTotalRow) {
+        existingTotalRow.remove();
+      }
+      
+      // 합계 계산
+      const { totalAmount, totalTax, totalTotal } = calculateTotals(tableBody);
+      
+      // 공통 스타일 정의
+      const cellStyle = 'width: 75px;';
+      const emptyCellStyle = cellStyle;
+      const numberCellStyle = `text-align: right; padding: 0; ${cellStyle}`;
+      const numberSpanStyle = 'display: inline-block; padding: 0 12px 0 8px; width: 100%; text-align: right; box-sizing: border-box;';
+      
+      // 합계 행 생성
+      const totalRow = document.createElement('tr');
+      totalRow.className = 'total-row';
+      totalRow.innerHTML = `
+        <td style="text-align: center; ${cellStyle}">합계</td>
+        <td style="${emptyCellStyle}"></td>
+        <td style="${emptyCellStyle}"></td>
+        <td style="${numberCellStyle}"><span style="${numberSpanStyle}">${formatNumber(totalAmount)}</span></td>
+        <td style="${numberCellStyle}"><span style="${numberSpanStyle}">${formatNumber(totalTax)}</span></td>
+        <td style="${numberCellStyle}"><span style="${numberSpanStyle}">${formatNumber(totalTotal)}</span></td>
+      `;
+      
+      tableBody.appendChild(totalRow);
+      return totalRow;
+    }
+    
+    // 종이 세금 계산서 행 자동 채우기 함수
+    function updatePaperInvoiceRow() {
+      // 테이블 1의 총합 행 찾기
+      const table1Body = document.getElementById('transferTableBody');
+      const totalRow = table1Body.querySelector('.total-row');
+      
+      if (!totalRow) return;
+      
+      // 테이블 1의 행 수 계산 (헤더 제외, 총합행 제외)
+      const allRows = table1Body.querySelectorAll('tr:not(.total-row)');
+      const rowCount = allRows.length;
+      
+      // 테이블 1 총합행의 4열, 5열 값 가져오기
+      const totalRowCells = totalRow.querySelectorAll('td');
+      let purchaseAmount = 0; // 매입 금액 (4열)
+      let purchaseTax = 0; // 매입 세액 (5열)
+      
+      if (totalRowCells.length >= 6) {
+        // totalRow의 구조: 1열(합계), 2열(날짜), 3열(내역), 4열(매입 금액), 5열(매입 세액), 6열(매입 총액)
+        const amountSpan = totalRowCells[3].querySelector('span'); // 4열
+        const taxSpan = totalRowCells[4].querySelector('span'); // 5열
+        
+        if (amountSpan) {
+          purchaseAmount = parseFloat(amountSpan.textContent.replace(/,/g, '')) || 0;
+        }
+        if (taxSpan) {
+          purchaseTax = parseFloat(taxSpan.textContent.replace(/,/g, '')) || 0;
+        }
+      }
+      
+      // 추가 테이블에서 "종이 세금 계산서" 행 찾기
+      const additionalTableBody = document.getElementById('additionalTableBody');
+      const paperRow = Array.from(additionalTableBody.querySelectorAll('tr:not(.additional-total-row)')).find(row => {
+        const firstCell = row.querySelector('td');
+        return firstCell && firstCell.textContent.trim() === '종이 세금 계산서';
+      });
+      
+      if (paperRow) {
+        const inputs = paperRow.querySelectorAll('input');
+        // 2열: 행 수
+        if (inputs.length > 0) {
+          inputs[0].value = formatNumber(rowCount);
+        }
+        // 3열: 매입 금액
+        if (inputs.length > 1) {
+          inputs[1].value = formatNumber(purchaseAmount);
+        }
+        // 4열: 매입 세액
+        if (inputs.length > 2) {
+          inputs[2].value = formatNumber(purchaseTax);
+        }
+      }
+      
+      // 추가 테이블 합계 업데이트
+      updateAdditionalTableTotal();
+    }
+    
+    // 추가 테이블 합계 업데이트 함수
+    function updateAdditionalTableTotal() {
+      const tableBody = document.getElementById('additionalTableBody');
+      const totalRow = tableBody.querySelector('.additional-total-row');
+      if (!totalRow) return;
+      
+      const rows = tableBody.querySelectorAll('tr:not(.additional-total-row):not(.additional-refund-row)');
+      const totals = [0, 0, 0, 0, 0, 0]; // 2~7열 합계
+      
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        inputs.forEach((input, index) => {
+          if (index < 6) { // 2~7열 (인덱스 0~5)
+            const value = parseFloat(input.value.replace(/,/g, '')) || 0;
+            totals[index] += value;
+          }
+        });
+      });
+      
+      // 합계 행 업데이트
+      const spans = totalRow.querySelectorAll('span');
+      spans.forEach((span, index) => {
+        if (index < totals.length) {
+          span.textContent = formatNumber(totals[index]);
+        }
+      });
+      
+      // 예상 환급세액 계산 및 업데이트 (4열 - 7열)
+      const refundRow = tableBody.querySelector('.additional-refund-row');
+      if (refundRow) {
+        const column4Value = totals[2] || 0; // 4열은 인덱스 2 (매입 세액)
+        const column7Value = totals[5] || 0; // 7열은 인덱스 5 (매출 세액)
+        const refundAmount = column4Value - column7Value;
+        
+        const refundSpans = refundRow.querySelectorAll('span');
+        if (refundSpans.length > 5) {
+          refundSpans[5].textContent = formatNumber(refundAmount); // 7열 (마지막 열)
+        }
+      }
+    }
+    
+    // 합계 업데이트 함수 (데이터 변경 시 호출)
+    function updateTotalRow(tableBody) {
+      if (!tableBody) {
+        tableBody = document.getElementById('transferTableBody');
+      }
+      let totalRow = tableBody.querySelector('.total-row');
+      
+      // total 행이 없으면 추가
+      if (!totalRow) {
+        totalRow = addTotalRow(tableBody);
+        if (!totalRow) return;
+      }
+      
+      // total 행이 마지막 행이 아니면 마지막으로 이동
+      const lastChild = tableBody.lastElementChild;
+      if (totalRow !== lastChild) {
+        tableBody.appendChild(totalRow);
+      }
+      
+      // 합계 계산
+      const { totalAmount, totalTax, totalTotal } = calculateTotals(tableBody);
+      
+      // 합계 행 업데이트
+      const cells = totalRow.querySelectorAll('td');
+      if (cells.length >= 6) {
+        // 합계 행의 4, 5, 6열은 span 안의 텍스트를 업데이트
+        const amountSpan = cells[3].querySelector('span');
+        const taxSpan = cells[4].querySelector('span');
+        const totalSpan = cells[5].querySelector('span');
+        
+        if (amountSpan) amountSpan.textContent = formatNumber(totalAmount);
+        if (taxSpan) taxSpan.textContent = formatNumber(totalTax);
+        if (totalSpan) totalSpan.textContent = formatNumber(totalTotal);
+      }
+    }
+    
+    
+    // 세금계산서 행 HTML 생성
+    function createDepositRowHTML(transfer) {
+      const inputStyle = "width: 100%; border: none; box-sizing: border-box;";
+      
+      // 날짜 형식 변환 (YYYY-MM-DD를 YYYY/MM/DD로)
+      let dateValue = '';
+      if (transfer.date) {
+        dateValue = transfer.date.replace(/-/g, '/');
+      }
+      
+      // 매입 총액에서 매입 금액과 매입 세액 계산
+      const purchaseTotal = transfer.purchaseTotal || 0;
+      const purchaseAmount = Math.round(purchaseTotal * 10 / 11);
+      const purchaseTax = purchaseTotal - purchaseAmount;
+      
+      return `
+        <td><input type="text" value="${dateValue}" style="${inputStyle}" onkeydown="handleEnterKey(event, this)"></td>
+        <td><input type="text" value="${transfer.description || ''}" style="${inputStyle}" readonly></td>
+        <td><input type="text" value="${transfer.accountHolder || ''}" style="${inputStyle}" readonly></td>
+        <td><input type="text" value="${formatNumber(purchaseAmount)}" style="${inputStyle}; text-align: right;" oninput="formatAmountInput(this); calculateTotal(this)" onkeydown="handleEnterKey(event, this)"></td>
+        <td><input type="text" value="${formatNumber(purchaseTax)}" style="${inputStyle}; text-align: right;" oninput="formatAmountInput(this); calculateTotal(this)" onkeydown="handleEnterKey(event, this)"></td>
+        <td><input type="text" value="${formatNumber(purchaseTotal)}" style="${inputStyle}; text-align: right;" oninput="formatAmountInput(this); calculateAmountAndTaxFromTotal(this)" onkeydown="handleEnterKey(event, this)"></td>
+      `;
+    }
+    
+    // 엔터키 처리 함수 - 같은 열의 아래 행으로 이동
+    function handleEnterKey(event, currentInput) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        
+        const currentRow = currentInput.closest('tr');
+        const currentCell = currentInput.closest('td');
+        const currentCellIndex = currentCell.cellIndex;
+        
+        // 같은 열의 아래 행 찾기
+        const nextRow = currentRow.nextElementSibling;
+        if (nextRow) {
+          const sameColumnCell = nextRow.cells[currentCellIndex];
+          if (sameColumnCell) {
+            const sameColumnInput = sameColumnCell.querySelector('input');
+            if (sameColumnInput) {
+              sameColumnInput.focus();
+              sameColumnInput.select();
+              return;
+            }
+          }
+        }
+        
+        // 아래 행이 없는 경우, 아무 동작 안함
+      }
+    }
+    
+    // 숫자 포맷팅 함수 (콤마 추가)
+    function formatNumber(num) {
+      if (num === null || num === undefined || num === '') return '0';
+      return Number(num).toLocaleString();
+    }
+    
+    // 금액 입력 필드 포맷팅
+    function formatAmountInput(input) {
+      let value = input.value.replace(/[^0-9]/g, ''); // 숫자만 추출
+      if (value === '') {
+        input.value = '0';
+      } else {
+        input.value = formatNumber(value);
+      }
+    }
+    
+    // 매입 총액에서 매입 금액과 매입 세액 계산 (매입 총액 * 10/11, 매입 총액 * 1/11)
+    function calculateAmountAndTaxFromTotal(totalInput) {
+      const row = totalInput.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      
+      if (inputs.length >= 6) {
+        // 실제 input 인덱스: 0=날짜, 1=내역, 2=공급자/구입자, 3=매입금액, 4=매입세액, 5=매입총액
+        const purchaseTotal = parseFloat(inputs[5].value.replace(/,/g, '')) || 0;
+        
+        // 매입 금액 = 매입 총액 * 10/11
+        const purchaseAmount = Math.round(purchaseTotal * 10 / 11);
+        // 매입 세액 = 매입 총액 * 1/11
+        const purchaseTax = purchaseTotal - purchaseAmount; // 정확한 계산을 위해 총액에서 금액을 빼기
+        
+        inputs[3].value = formatNumber(purchaseAmount);
+        inputs[4].value = formatNumber(purchaseTax);
+      }
+      
+      // 합계 행 업데이트
+      updateTotalRow();
+    }
+    
+    // 매입 총액 계산 (매입 금액 + 매입 세액) - 매입 금액/세액을 수동으로 변경할 때 사용
+    function calculateTotal(input) {
+      const row = input.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      
+      if (inputs.length >= 6) {
+        // 실제 input 인덱스: 0=날짜, 1=내역, 2=공급자/구입자, 3=매입금액, 4=매입세액, 5=매입총액
+        const purchaseAmount = parseFloat(inputs[3].value.replace(/,/g, '')) || 0;
+        const purchaseTax = parseFloat(inputs[4].value.replace(/,/g, '')) || 0;
+        const purchaseTotal = purchaseAmount + purchaseTax;
+        
+        inputs[5].value = formatNumber(purchaseTotal);
+      }
+      
+      // 합계 행 업데이트
+      updateTotalRow();
+    }
+    
+    
+    // 분기 필터 적용 함수
+    async function applyQuarterFilter() {
+      // 년도와 분기 선택값 가져오기
+      const year = parseInt(document.getElementById('yearSelect').value);
+      const quarter = parseInt(document.getElementById('quarterSelect').value);
+      console.log('선택한 년도:', year, '선택한 분기:', quarter);
+      
+      // 선택된 년도/분기 표시 영역 업데이트
+      const periodDisplay = document.getElementById('selectedPeriodDisplay');
+      if (periodDisplay) {
+        periodDisplay.textContent = `${year}년 ${quarter}분기`;
+        periodDisplay.style.display = 'block';
+      }
+      
+      // 분기별 월 계산
+      const startMonth = (quarter - 1) * 3 + 1;
+      const targetMonths = [startMonth, startMonth + 1, startMonth + 2].map(m => 
+        m.toString().padStart(2, '0')
+      );
+      console.log('대상 월:', targetMonths);
+      
+      try {
+        // accounting.json 로드
+        const accountingResponse = await fetch('/api/accounting');
+        if (!accountingResponse.ok) {
+          throw new Error('accounting.json 로드 실패');
+        }
+        const accountingData = await accountingResponse.json();
+        const withdrawalData = accountingData.transaction?.withdrawal || {};
+        
+        // 현재 화면에 로드된 행들 가져오기
+        const tableBody = document.getElementById('transferTableBody');
+        const rows = tableBody.querySelectorAll('tr');
+        const newRows = [];
+        let hasMatchedData = false; // 매칭된 데이터가 있는지 추적
+        
+        rows.forEach((row, rowIndex) => {
+          const inputs = row.querySelectorAll('input');
+          console.log(`행 ${rowIndex}: input 개수 = ${inputs.length}`);
+          
+          if (inputs.length >= 6) {
+            // 테이블 구조 확인: createDepositRowHTML에서 (1열 제거됨)
+            // inputs[0] = 날짜 (1열)
+            // inputs[1] = 내역 (2열) - readonly
+            // inputs[2] = 공급자/구입자 (3열) - readonly
+            // inputs[3] = 매입 금액 (4열)
+            // inputs[4] = 매입 세액 (5열)
+            // inputs[5] = 매입 총액 (6열)
+            const description = inputs[1].value.trim(); // 내역 (2열)
+            const accountHolder = inputs[2].value.trim(); // 공급자/구입자 (3열)
+            
+            console.log(`행 ${rowIndex}: description="${description}", accountHolder="${accountHolder}"`);
+            
+            if (!description) {
+              console.log(`행 ${rowIndex}: description이 비어있어서 스킵`);
+              return;
+            }
+            
+            // accounting.json에서 해당 description을 가진 데이터 찾기
+            const matchingItems = [];
+            
+            // 모든 날짜를 순회하며 description 일치하는 항목 찾기
+            for (const dateStr in withdrawalData) {
+              const dateParts = dateStr.split('-');
+              const dateYear = dateParts[0];
+              const month = dateParts[1];
+              
+              // 선택한 분기의 월과 선택한 년도인지 확인
+              if (dateYear === year.toString() && targetMonths.includes(month)) {
+                const items = withdrawalData[dateStr];
+                if (Array.isArray(items)) {
+                  items.forEach(item => {
+                    if (item.description === description) {
+                      console.log(`매칭 발견: ${dateStr}, description="${item.description}", amount=${item.amount}`);
+                      matchingItems.push({
+                        date: dateStr,
+                        amount: item.amount || 0
+                      });
+                    }
+                  });
+                }
+              }
+            }
+            
+            console.log(`행 ${rowIndex}: 매칭된 항목 개수 = ${matchingItems.length}`);
+            
+            // 매칭된 항목이 있으면 행 추가
+            if (matchingItems.length > 0) {
+              hasMatchedData = true; // 매칭된 데이터가 있음을 표시
+              matchingItems.forEach((item, index) => {
+                // 날짜 형식 변환 (YYYY-MM-DD -> YYYY/MM/DD)
+                const dateFormatted = item.date.replace(/-/g, '/');
+                
+                console.log(`행 ${rowIndex}: 매칭 항목 ${index} - 날짜=${dateFormatted}, 금액=${item.amount}, inputs 개수=${inputs.length}`);
+                console.log(`행 ${rowIndex}: inputs 배열 내용:`, Array.from(inputs).map((inp, idx) => `[${idx}]="${inp.value || inp.placeholder || 'empty'}"`).join(', '));
+                
+                if (index === 0) {
+                  // 첫 번째 항목은 기존 행에 데이터 채우기
+                  // inputs[0] = 날짜, inputs[5] = 매입 총액
+                  const dateInput = inputs[0];
+                  const totalInput = inputs[5];
+                  
+                  console.log(`행 ${rowIndex}: 날짜 입력 전 - inputs[0].value="${dateInput?.value || 'null'}"`);
+                  console.log(`행 ${rowIndex}: 금액 입력 전 - inputs[5].value="${totalInput?.value || 'null'}"`);
+                  
+                  if (dateInput) {
+                    dateInput.value = dateFormatted; // 날짜 (1열)
+                    // 값 변경 이벤트 트리거
+                    dateInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    console.log(`행 ${rowIndex}: 날짜 입력 후 - inputs[0].value="${dateInput.value}"`);
+                  } else {
+                    console.error(`행 ${rowIndex}: inputs[0]이 존재하지 않음`);
+                  }
+                  
+                  if (totalInput) {
+                    totalInput.value = formatNumber(item.amount); // 매입 총액 (6열)
+                    // 값 변경 이벤트 트리거
+                    totalInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    // 매입 총액에서 매입 금액과 매입 세액 자동 계산
+                    calculateAmountAndTaxFromTotal(totalInput);
+                    console.log(`행 ${rowIndex}: 금액 입력 후 - inputs[5].value="${totalInput.value}"`);
+                  } else {
+                    console.error(`행 ${rowIndex}: inputs[5]이 존재하지 않음`);
+                  }
+                  
+                  console.log(`행 ${rowIndex}: 기존 행에 데이터 채움 완료`);
+                } else {
+                  // 추가 항목들은 새 행으로 추가
+                  const newRow = document.createElement('tr');
+                  newRow.innerHTML = createDepositRowHTML({
+                    date: item.date,
+                    description: description,
+                    accountHolder: accountHolder,
+                    purchaseAmount: 0,
+                    purchaseTax: 0,
+                    purchaseTotal: item.amount
+                  });
+                  newRows.push(newRow);
+                  console.log(`행 ${rowIndex}: 새 행 추가 - 날짜=${item.date}, 금액=${item.amount}`);
+                }
+              });
+            }
+          }
+        });
+        
+        console.log('추가할 새 행 개수:', newRows.length);
+        
+        // 새 행들을 테이블에 추가 (total 행 앞에 추가)
+        const totalRow = tableBody.querySelector('.total-row');
+        
+        // 새 행들을 추가한 후, 각 행의 input이 제대로 생성되었는지 확인
+        if (totalRow) {
+          // total 행이 있으면, total 행 앞에 새 행들을 추가
+          newRows.forEach(row => {
+            tableBody.insertBefore(row, totalRow);
+          });
+        } else {
+          // total 행이 없으면 마지막에 추가
+          newRows.forEach(row => {
+            tableBody.appendChild(row);
+          });
+        }
+        
+        // 새로 추가된 행들의 input이 제대로 생성되었는지 확인
+        newRows.forEach((row, idx) => {
+          const rowInputs = row.querySelectorAll('input');
+          console.log(`새로 추가된 행 ${idx}: input 개수 = ${rowInputs.length}`);
+        });
+        
+        // 합계 행 업데이트 (total 행은 마지막에 유지됨)
+        updateTotalRow();
+        
+        // 종이 세금 계산서 행 자동 채우기
+        updatePaperInvoiceRow();
+        
+        // 매칭된 데이터가 없는 경우에만 alert 표시
+        if (!hasMatchedData && rows.length > 0) {
+          alert('매칭되는 데이터가 없습니다. description이 일치하는지 확인해주세요.');
+        } else if (hasMatchedData) {
+          console.log('매칭된 데이터 적용 완료');
+        }
+        
+      } catch (error) {
+        console.error('분기 필터 적용 오류:', error);
+        alert('분기 필터 적용 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+    
+    // PDF 생성 함수
+    async function generatePDF() {
+      try {
+        // 페이지 요소와 메뉴들 가져오기
+        const page = document.querySelector('.page');
+        const bottomMenu = document.querySelector('.bottom-buttons');
+        const applyBtn = document.getElementById('applyBtn');
+        const pdfBtn = document.getElementById('pdfBtn');
+        const yearSelect = document.getElementById('yearSelect');
+        const quarterSelect = document.getElementById('quarterSelect');
+        
+        // 파일명 생성 - 선택한 년도와 분기 사용
+        const year = yearSelect ? yearSelect.value : new Date().getFullYear();
+        const quarter = quarterSelect ? quarterSelect.value : '1';
+        const fileName = `세금계산서_${year}년${quarter}분기.pdf`;
+        
+        const originalBottomDisplay = bottomMenu?.style.display;
+        const originalApplyDisplay = applyBtn?.style.display;
+        const originalPdfDisplay = pdfBtn?.style.display;
+        const originalYearDisplay = yearSelect?.style.display;
+        const originalQuarterDisplay = quarterSelect?.style.display;
+        
+        // 하단 메뉴와 상단 버튼들 숨기기
+        if (bottomMenu) bottomMenu.style.display = 'none';
+        if (applyBtn) applyBtn.style.display = 'none';
+        if (pdfBtn) pdfBtn.style.display = 'none';
+        if (yearSelect) yearSelect.style.display = 'none';
+        if (quarterSelect) quarterSelect.style.display = 'none';
+        
+        // PDF 생성
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+        
+        // A4 크기에 맞춰서 캡처 (가로: 210mm, 세로: 297mm)
+        const a4WidthPx = page.offsetWidth; // 가로는 그대로
+        const a4HeightPx = (a4WidthPx * 297) / 210; // A4 비율에 맞춘 세로 길이
+        
+        const canvas = await html2canvas(page, {
+          scale: 1.5,
+          useCORS: true,
+          letterRendering: true,
+          backgroundColor: '#ffffff',
+          width: a4WidthPx,
+          height: a4HeightPx // A4 세로 길이에 맞춰서 캡처
+        });
+        
+        // A4 페이지에 이미지 추가 (정확한 A4 크기)
+        doc.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, 297);
+        
+        // 메뉴들 다시 표시
+        if (bottomMenu) bottomMenu.style.display = originalBottomDisplay;
+        if (applyBtn) applyBtn.style.display = originalApplyDisplay;
+        if (pdfBtn) pdfBtn.style.display = originalPdfDisplay;
+        if (yearSelect) yearSelect.style.display = originalYearDisplay;
+        if (quarterSelect) quarterSelect.style.display = originalQuarterDisplay;
+        
+        // PDF 저장
+        doc.save(fileName);
+        
+      } catch (error) {
+        alert('PDF 생성에 실패했습니다: ' + error.message);
+      }
+    }
+    
+  </script>
+</body>
+</html>

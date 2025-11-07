@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Production Update</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      color: #000;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: -1;
+    }
+    .page {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    h1 {
+      text-align: center;
+      margin: 0;
+      padding-bottom: 10px;
+    }
+    .top-menu {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .left-menu {
+      display: flex;
+      gap: 3px;
+    }
+    .right-menu {
+      display: flex;
+      gap: 3px;
+    }
+    .top-menu-btn {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+    }
+    .top-menu-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    .top-menu-btn.doc-btn.selected {
+      background: black;
+      color: white;
+      border-color: black;
+    }
+    .top-menu-btn.doc-btn {
+      background: #fff;
+      color: #000;
+      border-color: #ccc;
+    }
+    .top-menu-btn.doc-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    .flex-container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      box-sizing: border-box;
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 15px;
+      margin-bottom: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      resize: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+      white-space: pre;
+      word-wrap: break-word;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 2px 12px rgba(0,123,255,0.2);
+    }
+    /* 모든 버튼 기본 스타일 - Export와 동일 */
+    button {
+      font-size: 0.9rem;
+      padding: 5px 10px;
+      margin: 0 3px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      border-radius: 3px;
+      min-width: 80px;
+      height: 30px;
+      line-height: 1.2;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    .button-area {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #outputArea[readonly] {
+      background-color: #f9f9f9;
+      color: #444;
+    }
+    /* Order Header 스타일 */
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 10px;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    /* 왼쪽/중앙/오른쪽 영역에 input 사용 */
+    .order-header .left, .order-header .center, .order-header .right {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex: 1;
+      justify-content: center;
+    }
+    .order-header .left input,
+    .order-header .center input,
+    .order-header .right input {
+      font-size: 1rem;
+      width: 120px;
+      padding: 4px 4px;
+      height: 24px;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1>Production Update</h1>
+
+  <div class="top-menu">
+    <!-- 왼쪽: Production -->
+    <div class="left-menu">
+      <button type="button" onclick="location.href='production.html'" class="top-menu-btn">Production</button>
+    </div>
+    <!-- 오른쪽: O/C, OIP, A, C -->
+    <div class="right-menu">
+      <button id="ocBtn" class="top-menu-btn doc-btn selected">O/C</button>
+      <button id="oipBtn" class="top-menu-btn doc-btn">OIP</button>
+      <button id="cBtn" class="top-menu-btn doc-btn">분석표</button>
+    </div>
+  </div>
+
+  <!-- Order No, TF NO, Date 입력 영역 -->
+  <div class="order-header">
+    <div class="left">
+      <span>ORDER NO :</span>
+      <input type="text" id="orderNoInput" autocomplete="off" />
+    </div>
+    <div class="center">
+      <span>TF NO :</span>
+      <input type="text" id="tfNoInput" autocomplete="off" />
+    </div>
+    <div class="right">
+      <span>DATE :</span>
+      <input type="text" id="orderDateInput" autocomplete="off" />
+    </div>
+  </div>
+
+  <div class="flex-container">
+    <div class="box">
+      <textarea id="inputArea" placeholder="O/C 모드:
+ORDER NO/ TF NO/ DATE 입력 후
+
+전체선택: Ctrl+A
+복사: Ctrl+C
+여기에 붙여넣기: Ctrl+V"></textarea>
+    </div>
+    <div class="box">
+      <textarea id="outputArea" readonly placeholder=""></textarea>
+    </div>
+  </div>
+
+  <div class="button-area">
+    <button id="organizeBtn">Organize</button>
+    <button id="convertBtn">Convert</button>
+    <button id="exportBtn">Export</button>
+  </div>
+</div>
+
+<script>
+  // ========================================
+  // 전역 변수 선언
+  // ========================================
+  let globalParsedData = []; // Convert된 데이터 저장
+  let selectedDoc = "O/C";   // 현재 선택된 모드 (O/C, OIP, C)
+
+  // ========================================
+  // Order No, TF NO, Date 필드 가져오기 공통 함수
+  // ========================================
+  function getOrderFields() {
+    return {
+      orderNoInput: document.getElementById("orderNoInput"),
+      tfNoInput: document.getElementById("tfNoInput"),
+      orderDateInput: document.getElementById("orderDateInput")
+    };
+  }
+
+  // Order No, TF NO, Date 초기화 함수
+  function initializeOrderFields() {
+    const { orderNoInput, tfNoInput, orderDateInput } = getOrderFields();
+    
+    if (orderNoInput) {
+      orderNoInput.value = '';
+    }
+    
+    if (tfNoInput) {
+      tfNoInput.value = '';
+    }
+    
+    if (orderDateInput) {
+      orderDateInput.value = '';
+    }
+  }
+
+  // ========================================
+  // 모드에 따른 placeholder 설정 함수
+  // - 선택된 모드(O/C, OIP, C)에 따라 inputArea의 placeholder 텍스트 변경
+  // ========================================
+  function updatePlaceholder() {
+    const inputArea = document.getElementById("inputArea");
+    if (!inputArea) return;
+    
+    switch (selectedDoc) {
+      case "O/C":
+        // O/C 모드: ORDER NO, TF NO, DATE 입력 필요
+        inputArea.placeholder = `O/C 모드:
+ORDER NO/ TF NO/ DATE 입력 후
+
+전체선택: Ctrl+A
+복사: Ctrl+C
+여기에 붙여넣기: Ctrl+V`;
+        break;
+        
+      case "OIP":
+        // OIP 모드: ORDER NO, TF NO, DATE 입력 불필요 (데이터에서 자동 추출)
+        inputArea.placeholder = `OIP 모드:
+ORDER NO/ TF NO/ DATE 불필요
+
+전체선택: Ctrl+A
+복사: Ctrl+C
+여기에 붙여넣기: Ctrl+V`;
+        break;
+        
+        
+      case "C":
+        // 분석표 모드: 특정 형식의 분석표 데이터 입력
+        inputArea.placeholder = `분석표 모드:
+Order No.: 71428736.30
+Tot. weight (kg): 1.838,532
+Width: 620,0
+Type: PHD 7.0
+Customer Order No.: SM-2025-01`;
+        break;
+        
+      default:
+        inputArea.placeholder = "Production data input area\nEnter your production information here...";
+    }
+  }
+
+  // ========================================
+  // 모드 버튼 이벤트 리스너 등록 함수
+  // - O/C, OIP, C 버튼 클릭 시 모드 변경 및 UI 업데이트
+  // ========================================
+  function setupDocButtons() {
+    const ocBtn = document.getElementById("ocBtn");
+    const oipBtn = document.getElementById("oipBtn");
+    const cBtn = document.getElementById("cBtn");
+
+    // O/C 모드 버튼 클릭 이벤트
+    if (ocBtn) {
+      ocBtn.addEventListener("click", () => {
+        selectedDoc = "O/C"; // O/C 모드로 변경
+        ocBtn.classList.add("selected");
+        oipBtn.classList.remove("selected");
+        cBtn.classList.remove("selected");
+        updatePlaceholder(); // placeholder 업데이트
+        saveInputData(); // DOC 변경 시 저장
+      });
+    }
+
+    // OIP 모드 버튼 클릭 이벤트
+    if (oipBtn) {
+      oipBtn.addEventListener("click", () => {
+        selectedDoc = "OIP"; // OIP 모드로 변경
+        oipBtn.classList.add("selected");
+        ocBtn.classList.remove("selected");
+        cBtn.classList.remove("selected");
+        updatePlaceholder(); // placeholder 업데이트
+        saveInputData(); // DOC 변경 시 저장
+      });
+    }
+
+    // 분석표(C) 모드 버튼 클릭 이벤트
+    if (cBtn) {
+      cBtn.addEventListener("click", () => {
+        selectedDoc = "C"; // 분석표 모드로 변경
+        cBtn.classList.add("selected");
+        ocBtn.classList.remove("selected");
+        oipBtn.classList.remove("selected");
+        updatePlaceholder(); // placeholder 업데이트
+        saveInputData(); // DOC 변경 시 저장
+      });
+    }
+  }
+
+  // Convert 버튼 이벤트 리스너 등록 함수
+  function setupConvertButton() {
+    const convertBtn = document.getElementById("convertBtn");
+    if (!convertBtn) {
+      return;
+    }
+    
+    convertBtn.removeEventListener("click", handleConvertClick);
+    convertBtn.addEventListener("click", handleConvertClick);
+  }
+
+  // ========================================
+  // Convert 버튼 클릭 핸들러
+  // ========================================
+  function handleConvertClick() {
+    const inputText = document.getElementById("inputArea").value;
+    
+    if (!inputText.trim()) {
+      alert("입력 데이터가 없습니다.");
+      return;
+    }
+    
+    try {
+      // DOC 모드에 따라 다른 변환 로직 적용
+      if (selectedDoc === "O/C") {
+        convertOCMode(inputText);
+      } else if (selectedDoc === "OIP") {
+        convertOIPMode(inputText);
+      } else if (selectedDoc === "C") {
+        convertCMode(inputText);
+      }
+    } catch (error) {
+      alert("데이터 변환 중 오류가 발생했습니다: " + error.message);
+    }
+  }
+  
+  // ========================================
+  // 1. O/C 모드 Convert
+  // ========================================
+  function convertOCMode(inputText) {
+    // 입력 텍스트에서 필요한 정보 추출
+    const extractedData = extractProductionData(inputText);
+    
+    // 추출된 데이터를 포맷팅하여 출력
+    const formattedOutput = formatProductionOutput(extractedData);
+    
+    document.getElementById("outputArea").value = formattedOutput;
+    globalParsedData = [extractedData];
+  }
+  
+  // 입력 텍스트에서 production 데이터 추출 (새로운 구조)
+  function extractProductionData(inputText) {
+    const lines = inputText.split('\n').map(line => line.trim()).filter(line => line);
+    
+    // PHD가 있는 순서대로 아이템 번호 자동 생성
+    const phdIndices = [];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.toUpperCase().includes('PHD')) {
+        phdIndices.push(i);
+      }
+    }
+    
+    if (phdIndices.length === 0) {
+      throw new Error('PHD 정보를 찾을 수 없습니다.');
+    }
+    
+    // 각 PHD별로 데이터 추출 (순서대로 0001, 0002... 번호 부여)
+    const items = [];
+    for (let i = 0; i < phdIndices.length; i++) {
+      const phdIndex = phdIndices[i];
+      const itemNo = String(i + 1).padStart(4, '0'); // 0001, 0002, 0003...
+      const itemData = extractItemDataByIndex(lines, phdIndex, itemNo);
+      items.push(itemData);
+    }
+    
+    return items;
+  }
+
+  // PHD 인덱스로 데이터 추출 (새로운 구조)
+  function extractItemDataByIndex(lines, phdIndex, itemNo) {
+    const data = {
+      no: itemNo,
+      phd: '',
+      width: '',
+      length: '',
+      tfkg: '',
+      w: ''
+    };
+    
+    // 다음 PHD 위치 찾기
+    let nextPhdIndex = lines.length;
+    for (let i = phdIndex + 1; i < lines.length; i++) {
+      if (lines[i].trim().toUpperCase().includes('PHD')) {
+        nextPhdIndex = i;
+        break;
+      }
+    }
+    
+    const searchEnd = nextPhdIndex;
+    
+    // 해당 범위에서 데이터 추출
+    for (let i = phdIndex; i < searchEnd; i++) {
+      const line = lines[i].trim();
+      
+      // PHD 추출 (PHD 6.0)
+      const phdMatch = line.match(/PHD\s+([\d.]+)/i);
+      if (phdMatch && !data.phd) {
+        data.phd = phdMatch[1];
+        continue;
+      }
+      
+      // Width 추출 (단독 숫자 라인)
+      if (/^\d+$/.test(line) && !data.width && i > phdIndex) {
+        data.width = line;
+        continue;
+      }
+      
+      
+      // Length 추출 (Length 다음 줄의 40.500 m → 40500)
+      if (line === 'Length' && i + 1 < searchEnd && !data.length) {
+        const nextLine = lines[i + 1].trim();
+        const lengthMatch = nextLine.match(/^(\d+(?:\.\d+)?)\s*m$/i);
+        if (lengthMatch) {
+          const lengthStr = lengthMatch[1];
+          const length = parseFloat(lengthStr) * 1000; // m를 mm로 변환
+          data.length = Math.round(length).toString();
+        }
+        continue;
+      }
+      
+      
+      // O/Ckg 추출 (Reels 다음 줄의 첫 번째 숫자)
+      if (line.toUpperCase() === 'REELS' && i + 1 < searchEnd && !data.tfkg) {
+        const nextLine = lines[i + 1].trim();
+        const tfkgMatch = nextLine.match(/^([^\s]+)/);
+        if (tfkgMatch) {
+          // 점은 제거하고 쉼표는 점으로 변경
+          const cleanedValue = tfkgMatch[1].replace(/\./g, '').replace(/,/g, '.');
+          data.tfkg = cleanedValue;
+        }
+        continue;
+      }
+      
+      // w 추출 (27. WK 2025 → 27w)
+      const wMatch = line.match(/(\d+)\.\s*WK\s*\d{4}/i);
+      if (wMatch && !data.w) {
+        data.w = wMatch[1] + 'w';
+        continue;
+      }
+    }
+    
+    return data;
+  }
+
+  // 추출된 데이터를 포맷팅하여 출력
+  function formatProductionOutput(items) {
+    let output = "";
+    
+    items.forEach((item, index) => {
+      output += `itemno - ${item.no}\n`;
+      output += `PHD - ${item.phd || ''}\n`;
+      output += `width - ${item.width || ''}\n`;
+      output += `length - ${item.length || ''}\n`;
+      output += `tfkg - ${item.tfkg || ''}\n`;
+      output += `w - ${item.w || ''}\n`;
+      
+      if (index < items.length - 1) {
+        output += '\n';
+      }
+    });
+    
+    return output;
+  }
+  
+  // ========================================
+  // 2. OIP 모드 Convert
+  // ========================================
+  function convertOIPMode(inputText) {
+    // 입력 텍스트에서 탭으로 구분된 데이터 추출
+    const extractedData = extractOIPData(inputText);
+    
+    // 추출된 데이터를 포맷팅하여 출력
+    const formattedOutput = formatOIPOutput(extractedData);
+    
+    document.getElementById("outputArea").value = formattedOutput;
+    
+    // 🔧 OIP 모드: 데이터 누적 방식으로 변경 (순차적 업로드 지원)
+    if (!globalParsedData || globalParsedData.length === 0) {
+      globalParsedData = [extractedData];
+    } else {
+      // 기존 데이터에 새 데이터 추가
+      globalParsedData.push(extractedData);
+    }
+    
+    console.log(`🔍 OIP Convert 완료: 총 ${globalParsedData.length}개 데이터 세트 누적됨`);
+  }
+  
+  // ========================================
+  // OIP 모드: 누적된 데이터 초기화 함수
+  // ========================================
+  function clearOIPData() {
+    globalParsedData = [];
+    document.getElementById("outputArea").value = "";
+    console.log("🔍 OIP 데이터 초기화 완료");
+  }
+  
+  // producedkg 소수점 첫째자리까지 포맷팅 함수
+  function formatProducedkg(value) {
+    if (!value || value === '') return '';
+    
+    // 숫자로 변환
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) return value;
+    
+    // 소수점 첫째자리까지 표시 (000. → 000.0, 112. → 112.0)
+    return numValue.toFixed(1);
+  }
+
+  // OIP 데이터 추출 함수
+  function extractOIPData(inputText) {
+    const lines = inputText.split('\n').map(line => line.trim()).filter(line => line);
+    const items = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      // 탭으로 구분된 데이터인지 확인
+      if (line.includes('\t')) {
+        const columns = line.split('\t');
+        
+        if (columns.length >= 10) { // 최소 10개 열이 있어야 함 (organize 후)
+          const item = {
+            orderno: columns[0] || '', // 1열: 주문번호 (EK-2025-01)
+            tfno: columns[3] || '', // 4열: TF번호 (71430617)
+            no: '', // 아이템번호 (5열에서 추출)
+            phd: '', // PHD (3열에서 추출)
+            width: columns[1] || '', // 2열: 폭 (620)
+            length: '', // length (6열에서 추출)
+            tfkg: (columns[6] || '').replace(/,/g, ''), // 7열: tfkg (265) - 콤마 제거
+            w: '', // W (10열에서 추출)
+            producedkg: formatProducedkg((columns[7] || '').replace(/,/g, '')), // 8열: producedkg (266.5) - 콤마 제거 후 소수점 첫째자리까지
+            deliveredkg: (columns[8] || '').replace(/,/g, '') // 9열: deliveredkg (0.0) - 콤마 제거
+          };
+          
+          // 아이템번호 처리 (5열: "10" → "0001")
+          if (columns[4]) {
+            const itemNo = columns[4].replace(/0$/, ''); // 마지막 0만 제거
+            item.no = itemNo.padStart(4, '0'); // 4자리로 패딩
+          }
+          
+          // PHD 처리 (3열: "PHD 6.0" → "6.0")
+          if (columns[2]) {
+            const phdMatch = columns[2].match(/PHD\s+([\d.]+)/i);
+            if (phdMatch) {
+              item.phd = phdMatch[1];
+            }
+          }
+          
+          // length 처리 (6열: "40,500" → "40500")
+          if (columns[5]) {
+            item.length = columns[5].replace(/,/g, '');
+          }
+          
+          // W 처리 (10열: "12.2025" → "12w")
+          if (columns[9]) {
+            const wMatch = columns[9].match(/^(\d+)\.\d+$/);
+            if (wMatch) {
+              item.w = wMatch[1] + 'w';
+            }
+          }
+          
+          items.push(item);
+        }
+      }
+    }
+    
+    return items;
+  }
+  
+  // OIP 출력 포맷팅 함수
+  function formatOIPOutput(items) {
+    let output = "";
+    
+    items.forEach((item, index) => {
+      output += `orderno - ${item.orderno || ''}\n`;
+      output += `tfno - ${item.tfno || ''}\n`;
+      output += `itemno - ${item.no}\n`;
+      output += `PHD - ${item.phd || ''}\n`;
+      output += `width - ${item.width || ''}\n`;
+      output += `length - ${item.length || ''}\n`;
+      output += `tfkg - ${item.tfkg || ''}\n`;
+      output += `W - ${item.w || ''}\n`;
+      output += `producedkg - ${item.producedkg || ''}\n`;
+      output += `deliveredkg - ${item.deliveredkg || ''}\n`;
+      
+      if (index < items.length - 1) {
+        output += '\n';
+      }
+    });
+    
+    return output;
+  }
+  
+
+  // ========================================
+  // 3. 분석표 모드 Convert
+  // ========================================
+  function convertCMode(inputText) {
+    
+    // 입력 텍스트에서 필요한 정보 추출
+    const extractedData = extractCModeData(inputText);
+    
+    if (!extractedData) {
+      alert("분석표 모드 데이터를 올바르게 추출할 수 없습니다.");
+      return;
+    }
+    
+    // 추출된 데이터를 포맷팅하여 출력
+    const formattedOutput = formatCModeOutput(extractedData);
+    document.getElementById("outputArea").value = formattedOutput;
+    
+    // 전역 변수에 저장 (Export 시 사용)
+    globalParsedData = [extractedData];
+    
+  }
+  
+  // 분석표 모드 데이터 추출 함수
+  function extractCModeData(inputText) {
+    try {
+      const lines = inputText.split('\n').map(line => line.trim()).filter(line => line);
+      
+      let tfno = '';
+      let itemno = '';
+      let orderno = '';
+      let phd = '';
+      let width = '';
+      let tfkg = '';
+      
+      for (const line of lines) {
+        // Customer Order No.: EK-2024-04 (더 구체적인 조건을 먼저 확인)
+        if (line.includes('Customer Order No.:')) {
+          // 더 간단한 방법: "Customer Order No.: " 이후의 모든 텍스트 추출
+          const colonIndex = line.indexOf('Customer Order No.:');
+          if (colonIndex !== -1) {
+            orderno = line.substring(colonIndex + 'Customer Order No.:'.length).trim();
+          }
+        }
+        // Order No.: 71424414.20
+        else if (line.includes('Order No.:')) {
+          const match = line.match(/Order No\.:\s*(\d+)\.(\d+)/);
+          if (match) {
+            tfno = match[1]; // 71424414
+            const itemPart = match[2]; // 20
+            
+            // 20에서 0을 1개만 빼고 4자리로 만들기 (A 모드와 동일)
+            let itemNoStr = itemPart;
+            if (itemNoStr.endsWith('0') && itemNoStr.length > 1) {
+              itemNoStr = itemNoStr.slice(0, -1);
+            }
+            itemno = itemNoStr.padStart(4, '0'); // 0002
+          }
+        }
+        // Tot. weight (kg): 549.845
+        else if (line.includes('Tot. weight (kg):')) {
+          const match = line.match(/Tot\. weight \(kg\):\s*([\d.,]+)/);
+          if (match) {
+            // 점(.)과 콤마(,)를 모두 제거한 후 뒤에서 3자리 앞에 점(.) 추가
+            let rawValue = match[1];
+            
+            // 점(.)과 콤마(,) 모두 제거
+            rawValue = rawValue.replace(/[.,]/g, '');
+            
+            // 뒤에서 3자리 앞에 점(.) 추가
+            if (rawValue.length > 3) {
+              rawValue = rawValue.slice(0, -3) + '.' + rawValue.slice(-3);
+            }
+            
+            // 숫자 유효성 검사만 하고 원본 문자열 유지 (맨 마지막 0 보존)
+            const numericValue = parseFloat(rawValue);
+            tfkg = isNaN(numericValue) ? '' : rawValue;
+          }
+        }
+        // Width: 770.0
+        else if (line.includes('Width:')) {
+          const match = line.match(/Width:\s*([\d.,]+)/);
+          if (match) {
+            width = match[1].replace(/,0$/, '').replace(/,/g, '');
+          }
+        }
+        // Type: PHD 5.0
+        else if (line.includes('Type: PHD')) {
+          const match = line.match(/Type: PHD\s*([\d.]+)/);
+          if (match) {
+            phd = match[1];
+          }
+        }
+      }
+      
+      // 필수 데이터 검증
+      if (!tfno || !itemno || !orderno) {
+        return null;
+      }
+      
+      return {
+        tfno: tfno,
+        itemno: itemno,
+        orderno: orderno,
+        phd: phd,
+        width: width,
+        tfkg: tfkg,
+        producedkg: tfkg // Tot. weight (kg) 값을 producedkg로 사용 (분석표 모드)
+      };
+      
+    } catch (error) {
+      return null;
+    }
+  }
+  
+  // 분석표 모드 출력 포맷팅 함수
+  function formatCModeOutput(data) {
+    return `tfno - ${data.tfno}
+itemno - ${data.itemno}
+orderno - ${data.orderno}
+PHD: ${data.phd}
+Width: ${data.width}
+producedkg: ${data.tfkg}`;
+  }
+
+
+
+
+  // Export 버튼 이벤트 리스너 등록 함수
+  function setupExportButton() {
+    const exportBtn = document.getElementById("exportBtn");
+    if (!exportBtn) {
+      return;
+    }
+    
+    exportBtn.removeEventListener("click", handleExportClick);
+    exportBtn.addEventListener("click", handleExportClick);
+  }
+  
+
+  // ========================================
+  // Export 버튼 클릭 핸들러 (O/C, OIP, 분석표 모드 공통)
+  // ========================================
+  function handleExportClick() {
+    if (!globalParsedData || globalParsedData.length === 0) {
+      alert("먼저 Convert를 실행하세요.");
+      return;
+    }
+    
+    // Order No, TF NO, Date 필드 값 가져오기
+    const { orderNoInput, tfNoInput, orderDateInput } = getOrderFields();
+    const orderNo = orderNoInput ? orderNoInput.value.trim() : '';
+    const tfNo = tfNoInput ? tfNoInput.value.trim() : '';
+    const orderDate = orderDateInput ? orderDateInput.value.trim() : '';
+    
+    // DOC 모드에 따라 다른 저장 로직 적용
+    if (selectedDoc === "OIP") {
+      // ========================================
+      // OIP 모드 Export: 주문별 그룹화 처리 (주문 복사 방지)
+      // ========================================
+      saveOIPDataToOrderData();
+    } else if (selectedDoc === "O/C") {
+      // ========================================
+      // O/C 모드 Export: Order No 필수, 기존 주문 업데이트
+      // ========================================
+      if (!orderNo) {
+        alert("Order No를 입력해주세요.");
+        return;
+      }
+      saveOCDataToOrderData(orderNo, tfNo, orderDate, globalParsedData);
+    } else if (selectedDoc === "C") {
+      // ========================================
+      // 분석표 모드 Export: 단일 분석표 데이터 처리
+      // ========================================
+      if (!globalParsedData || globalParsedData.length === 0) {
+        alert("분석표 모드 데이터가 없습니다. 먼저 Convert를 실행하세요.");
+        return;
+      }
+      saveCModeDataToOrderData(globalParsedData);
+    }
+  }
+
+  // ========================================
+  // O/C 모드 Export: order.html 방식으로 저장 로직 수정
+  // ========================================
+  async function saveOCDataToOrderData(orderNo, tfNo, tfDate, parsedData) {
+    try {
+      
+      // 1. parsedData 처리
+      let actualParsedData;
+      if (Array.isArray(parsedData) && parsedData.length > 0 && Array.isArray(parsedData[0])) {
+        actualParsedData = parsedData[0];
+      } else if (Array.isArray(parsedData)) {
+        actualParsedData = parsedData;
+      } else {
+        actualParsedData = [parsedData];
+      }
+      
+      // 2. 데이터 검증 및 정리
+      console.log("🔍 O/C Export - 원본 데이터:", actualParsedData);
+      
+      const validItems = actualParsedData.filter(data => {
+        const phd = parseFloat(data.phd);
+        return !isNaN(phd) && data.width && data.length;
+      }).map(data => {
+        const processedItem = {
+          phd: parseFloat(data.phd).toString(), // "4.0" -> "4"
+          width: data.width,
+          length: data.length,
+          itemNo: data.no || '',
+          w: data.w || '',
+          tfkg: data.tfkg || ''
+        };
+        console.log("🔍 O/C Export - 처리된 아이템:", processedItem);
+        return processedItem;
+      });
+
+      const invalidItemsCount = actualParsedData.length - validItems.length;
+      
+      if (validItems.length === 0) {
+        alert("유효한 아이템이 없습니다. PHD, Width, Length가 모두 필요합니다.");
+        return;
+      }
+
+      // 3. 서버에 직접 업데이트 요청 (서버에서 주문/아이템 찾기 및 매칭 처리)
+      const saveResponse = await fetch('/api/updateOrder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          searchOrderBy: 'orderNo',
+          orderNo: orderNo,
+          searchMethod: 'phdWidthLength',
+          updateFields: ['tfNo', 'tfDate'],
+          tfNo: tfNo,
+          tfDate: tfDate,
+          itemUpdateFields: ['itemNo', 'w', 'tfkg'],
+          items: validItems
+        })
+      });
+      
+      let serverProcessedItems = 0;
+      let skippedItems = 0;
+      
+      if (!saveResponse.ok) {
+        // 404 에러가 발생해도 일부 업데이트가 성공했을 수 있음
+        if (saveResponse.status === 404) {
+          // 404 에러의 경우, 서버에서 일부 처리되었을 가능성이 있음
+          // 기본값으로 처리
+          serverProcessedItems = 0;
+          skippedItems = validItems.length;
+        } else {
+          // 다른 에러의 경우 에러 메시지 표시
+          const errorText = await saveResponse.text();
+          let errorMessage = `HTTP error! status: ${saveResponse.status}`;
+          
+          if (errorText) {
+            try {
+              const errorData = JSON.parse(errorText);
+              errorMessage += `, message: ${errorData.message || errorData.error || errorText}`;
+            } catch {
+              errorMessage += `, message: ${errorText}`;
+            }
+          }
+          
+          throw new Error(errorMessage);
+        }
+      } else {
+        // 성공한 경우 서버 응답에서 정보 가져오기
+        const saveResult = await saveResponse.json();
+        serverProcessedItems = saveResult.updatedItems || 0;
+        skippedItems = saveResult.skippedItems || 0;
+      }
+      
+      // 4. 성공 메시지 표시
+      let message = `O/C 모드 데이터가 성공적으로 저장되었습니다.\n업데이트된 아이템: ${serverProcessedItems}개`;
+      
+      if (skippedItems > 0) {
+        message += `\n매칭되지 않은 아이템: ${skippedItems}개 (업데이트되지 않음)`;
+      }
+      
+      if (invalidItemsCount > 0) {
+        message += `\n유효하지 않은 아이템: ${invalidItemsCount}개 (PHD/Width/Length 누락)`;
+      }
+      
+      alert(message);
+      
+      // production.html로 이동
+      window.location.href = 'production.html';
+      
+    } catch (error) {
+      alert("O/C 모드 저장 중 오류가 발생했습니다: " + error.message);
+    }
+  }
+
+  // ========================================
+  // OIP 모드 Export: 최적화된 배치 처리
+  // ========================================
+  async function saveOIPDataToOrderData() {
+    try {
+      console.log("🔍 OIP Export 시작 - 최적화 모드");
+      
+      // 1. 데이터 정리 및 검증
+      let allItems = [];
+      if (Array.isArray(globalParsedData)) {
+        globalParsedData.forEach((dataArray) => {
+          if (Array.isArray(dataArray)) {
+            allItems = allItems.concat(dataArray);
+          } else {
+            allItems.push(dataArray);
+          }
+        });
+      } else {
+        allItems.push(globalParsedData);
+      }
+      
+      console.log(`📊 총 ${allItems.length}개 아이템 처리 시작`);
+      
+      // 2. orderNo로 카테고라이즈 (배치 처리용)
+      const orderGroups = {};
+      allItems.forEach((item) => {
+        const orderNo = item.orderno;
+        if (!orderGroups[orderNo]) {
+          orderGroups[orderNo] = [];
+        }
+        orderGroups[orderNo].push(item);
+      });
+      
+      console.log(`📋 주문별 그룹화 완료: ${Object.keys(orderGroups).length}개 주문`);
+      
+      // 3. 각 주문별로 직접 서버에 배치 요청 (전체 주문 데이터 로드 제거)
+      let totalUpdated = 0;
+      let totalSkipped = 0;
+      let totalInvalid = 0;
+      
+      for (const [orderNo, items] of Object.entries(orderGroups)) {
+        console.log(`📝 주문 처리 중: ${orderNo} (${items.length}개 아이템)`);
+        
+        const result = await processOIPOrderOptimized(orderNo, items);
+        totalUpdated += result.updatedItems;
+        totalSkipped += result.skippedItems;
+        totalInvalid += result.invalidItems;
+      }
+      
+      // 4. 결과 메시지 표시
+      let message = `OIP 모드 Export 완료!\n업데이트된 아이템: ${totalUpdated}개`;
+      
+      if (totalSkipped > 0) {
+        message += `\n매칭되지 않은 아이템: ${totalSkipped}개`;
+      }
+      
+      if (totalInvalid > 0) {
+        message += `\n유효하지 않은 아이템: ${totalInvalid}개`;
+      }
+      
+      alert(message);
+      
+      // 5. 데이터 초기화
+      globalParsedData = [];
+      document.getElementById("outputArea").value = "";
+      document.getElementById("inputArea").value = "";
+      
+      const { orderNoInput, tfNoInput, orderDateInput } = getOrderFields();
+      if (orderNoInput) orderNoInput.value = "";
+      if (tfNoInput) tfNoInput.value = "";
+      if (orderDateInput) orderDateInput.value = "";
+      
+      // production.html로 이동
+      window.location.href = 'production.html';
+      
+    } catch (error) {
+      console.error("❌ OIP Export 오류:", error);
+      alert("OIP 모드 저장 중 오류가 발생했습니다: " + error.message);
+    }
+  }
+
+  // ========================================
+  // OIP 모드 Export: 최적화된 개별 주문 처리
+  // ========================================
+  async function processOIPOrderOptimized(orderNo, items) {
+    try {
+      console.log(`🔍 주문 ${orderNo} 처리 시작 (${items.length}개 아이템)`);
+      
+      // 1. 데이터 검증 및 정리
+      const validItems = items.filter(item => {
+        const phd = parseFloat(item.phd);
+        return !isNaN(phd) && item.width && item.length;
+      }).map(item => {
+        const processedItem = {
+          phd: parseFloat(item.phd).toString(),
+          width: item.width,
+          length: item.length,
+          itemNo: item.no || '',
+          w: item.w || '',
+          tfkg: item.tfkg || '',
+          producedkg: item.producedkg || ''
+        };
+        
+        // deliveredkg 조건부 처리: 값이 있고 0이 아닐 때만 포함
+        if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
+          processedItem.deliveredkg = item.deliveredkg;
+        }
+        
+        return processedItem;
+      });
+
+      const invalidItemsCount = items.length - validItems.length;
+      
+      if (validItems.length === 0) {
+        console.log(`❌ 주문 ${orderNo}: 유효한 아이템이 없습니다.`);
+        return { updatedItems: 0, skippedItems: 0, invalidItems: invalidItemsCount };
+      }
+
+      // 2. tfNo 추출 (첫 번째 아이템의 tfno 사용)
+      const tfNo = items[0].tfno;
+      console.log(`🔍 tfNo 업데이트: ${tfNo}`);
+
+      // 3. deliveredkg가 포함된 아이템이 있는지 확인하여 itemUpdateFields 동적 설정
+      const hasDeliveredkg = validItems.some(item => item.deliveredkg !== undefined);
+      const itemUpdateFields = ['itemNo', 'w', 'tfkg', 'producedkg'];
+      if (hasDeliveredkg) {
+        itemUpdateFields.push('deliveredkg');
+      }
+      
+      console.log(`🔍 itemUpdateFields: ${itemUpdateFields.join(', ')}`);
+      console.log(`🔍 deliveredkg 포함 아이템: ${hasDeliveredkg ? '있음' : '없음'}`);
+
+      // 4. 서버에 직접 배치 요청 (서버에서 매칭 처리)
+      const saveResponse = await fetch('/api/updateOrder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          searchOrderBy: 'orderNo',
+          orderNo: orderNo,
+          searchMethod: 'phdWidthLength',
+          updateFields: ['tfNo'],
+          tfNo: tfNo,
+          itemUpdateFields: itemUpdateFields,
+          items: validItems
+        })
+      });
+
+      let updatedItems = 0;
+      let skippedItems = 0;
+
+      if (!saveResponse.ok) {
+        // 404 에러가 발생해도 일부 업데이트가 성공했을 수 있음
+        if (saveResponse.status === 404) {
+          updatedItems = 0;
+          skippedItems = validItems.length;
+        } else {
+          const errorText = await saveResponse.text();
+          let errorMessage = `HTTP error! status: ${saveResponse.status}`;
+          
+          if (errorText) {
+            try {
+              const errorData = JSON.parse(errorText);
+              errorMessage += `, message: ${errorData.message || errorData.error || errorText}`;
+            } catch {
+              errorMessage += `, message: ${errorText}`;
+            }
+          }
+          
+          throw new Error(errorMessage);
+        }
+      } else {
+        const saveResult = await saveResponse.json();
+        updatedItems = saveResult.updatedItems || 0;
+        skippedItems = saveResult.skippedItems || 0;
+      }
+
+      console.log(`✅ 주문 ${orderNo} 처리 완료: 업데이트 ${updatedItems}개, 스킵 ${skippedItems}개, 무효 ${invalidItemsCount}개`);
+
+      return {
+        updatedItems: updatedItems,
+        skippedItems: skippedItems,
+        invalidItems: invalidItemsCount
+      };
+
+    } catch (error) {
+      console.error(`❌ 주문 ${orderNo} 처리 오류:`, error);
+      throw error;
+    }
+  }
+
+  // ========================================
+  // 분석표 모드 Export:
+  // ========================================
+  async function saveCModeDataToOrderData(parsedData) {
+    try {
+      console.log("🔍 분석표 모드 Export 시작 - 최적화 모드");
+      
+      if (!parsedData || parsedData.length === 0) {
+        alert("분석표 모드 데이터가 없습니다.");
+        return;
+      }
+      
+      const data = parsedData[0];
+      const orderno = data.orderno;
+      const itemno = data.itemno;
+      
+      console.log("🔍 분석표 데이터:", data);
+      console.log("🔍 producedkg 값:", data.producedkg);
+      
+      if (!orderno || !itemno) {
+        alert("분석표 모드: Order No 또는 Item No가 없습니다.");
+        return;
+      }
+      
+      // 1. 데이터 검증 및 정리
+      const validItem = {
+        itemNo: itemno,
+        producedkg: data.producedkg || ''
+      };
+      
+      console.log("🔍 처리할 아이템:", validItem);
+      console.log("🔍 producedkg 최종 값:", validItem.producedkg);
+      
+      // 2. 서버에 직접 업데이트 요청 (서버에서 주문/아이템 찾기 및 매칭 처리)
+      const requestData = {
+        searchOrderBy: 'orderNo',
+        orderNo: orderno,
+        searchMethod: 'itemNo',
+        itemUpdateFields: ['producedkg'],
+        items: [validItem]
+      };
+      
+      console.log("🔍 서버로 전송할 데이터:", requestData);
+      
+      const saveResponse = await fetch('/api/updateOrder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+      });
+      
+      let updatedItems = 0;
+      let skippedItems = 0;
+      
+      if (!saveResponse.ok) {
+        // 404 에러가 발생해도 일부 업데이트가 성공했을 수 있음
+        if (saveResponse.status === 404) {
+          updatedItems = 0;
+          skippedItems = 1;
+        } else {
+          const errorText = await saveResponse.text();
+          let errorMessage = `HTTP error! status: ${saveResponse.status}`;
+          
+          if (errorText) {
+            try {
+              const errorData = JSON.parse(errorText);
+              errorMessage += `, message: ${errorData.message || errorData.error || errorText}`;
+            } catch {
+              errorMessage += `, message: ${errorText}`;
+            }
+          }
+          
+          throw new Error(errorMessage);
+        }
+      } else {
+        const saveResult = await saveResponse.json();
+        updatedItems = saveResult.updatedItems || 0;
+        skippedItems = saveResult.skippedItems || 0;
+      }
+      
+      // 3. 결과 메시지 표시
+      let message = `분석표 모드 데이터가 성공적으로 저장되었습니다!\n업데이트된 아이템: ${updatedItems}개`;
+      
+      if (skippedItems > 0) {
+        message += `\n매칭되지 않은 아이템: ${skippedItems}개 (업데이트되지 않음)`;
+      }
+      
+      alert(message);
+      
+      // production.html로 이동
+      window.location.href = 'production.html';
+      
+    } catch (error) {
+      console.error("❌ 분석표 모드 Export 오류:", error);
+      alert("분석표 모드 저장 중 오류가 발생했습니다: " + error.message);
+    }
+  }
+
+  // ========================================
+  // Organize 버튼 이벤트 리스너 등록 함수
+  // ========================================
+  function setupOrganizeButton() {
+    const organizeBtn = document.getElementById("organizeBtn");
+    if (!organizeBtn) {
+      return;
+    }
+    
+    organizeBtn.removeEventListener("click", handleOrganizeClick);
+    organizeBtn.addEventListener("click", handleOrganizeClick);
+  }
+  
+  // ========================================
+  // Organize 버튼 클릭 핸들러 - 선택된 모드에 따라 다른 organize 로직 실행
+  // ========================================
+  function handleOrganizeClick() {
+    
+    // 선택된 모드에 따라 다른 organize 함수 호출
+    if (selectedDoc === "O/C") {
+      // O/C 모드: 기존 룰들 적용 (Reels 재배치, PHD 줄 앞 빈 줄 추가 등)
+      organizeOCMode();
+    } else if (selectedDoc === "OIP") {
+      // OIP 모드: 엑셀 데이터 열 제거 룰 적용
+      organizeOIPMode();
+    } else if (selectedDoc === "C") {
+      // 분석표 모드: organize 불필요 (바로 Convert 사용)
+      organizeCMode();
+    }
+  }
+  
+  // ========================================
+  // O/C 모드 Organize: 기존 룰들 적용
+  // - Reels 정보 재배치 (미완성 주문에 Reels 정보 붙이기)
+  // - PHD 줄 앞에 빈 줄 추가
+  // - 기타 데이터 정리 룰들
+  // ========================================
+  function organizeOCMode() {
+    const inputArea = document.getElementById("inputArea");
+    const currentText = inputArea.value;
+    
+    if (currentText.trim() !== "") {
+      // 줄바꿈을 기준으로 각 줄을 분리
+      const lines = currentText.split('\n');
+      
+      // 1번 룰: 특정 헤더 라인들만 삭제 (나머지는 그대로 유지)
+      const headerLinesToRemove = [
+        'ITEM PRODUCT DESCRIPTION QUANTITY',
+        'UNIT',
+        'DELIVERY DATE'
+      ];
+      
+      // 2번 룰: 추가로 삭제할 라인들
+      const additionalLinesToRemove = [
+        'Treatment',
+        'TREATMENT OUTSIDE',
+        'Packing type',
+        'horizontal',
+        'Country of origin',
+        'Germany',
+        'ELTRO KOREA CO',
+        'BUSAN, KOREA',
+        'MADE IN GERMANY',
+        'CUSTOMER MATERIAL',
+        'USD 1',
+        'per',
+        'KG',
+        'ex plant',
+        'Treofan Group',
+        'Sitz der Gesellschaft: 66539 Neunkirchen/Germany · Handelsregister:Saarbrücken HRA 11639 · Komplementärin: Treofan Zweite Holdings GmbH,Neunkirchen;',
+        // 회사 정보 삭제
+        'SUNGMOON ELECTRONICS CO., LTD',
+        '61, SEGYOSANDAN-RO, PYEONGTAEK-SI',
+        'GYEONGGI-DO 450-818',
+        '- Amendment',
+        'Invoice address Delivery address',
+        'SUNGMOON ELECTRONICS CO., LTD.',
+        'ATTN.: KIM, JUNG-HYUN',
+        'Please replace the preceding order confirmation.',
+        // 추가 회사 정보 삭제
+        '61, SEGYOSANDAN-RO',
+        'PYEONGTAEK-SI',
+        'GYEONGGI-DO',
+        'Within 90 days net from invoice date'
+      ];
+      
+      // 2번 룰 추가: 정규식으로 매칭할 라인들
+      const additionalPatternsToRemove = [
+        /^Printed on \d{2}\.\d{2}\.\d{4} Page \d+ of \d+$/,
+        /^Handelsregister: Saarbrücken HRB \d+ · Geschäftsführer: .+ · USt-ID-Nr\.: DE \d+ \d+ \d+$/,
+        /^In enquiries please quote:$/,
+        /^Order number: \d+$/,
+        /^Customer number: \d+$/,
+        /^Order date: \d{2}\.\d{2}\.\d{4}$/,
+        /^Your contact:$/,
+        /^Claudia Müller$/,
+        /^Tel\.:$/,
+        /^Fax:$/,
+        /^email: .+@.+$/,
+        /^Treofan Germany GmbH & Co\. KG · Bergstraße · \d+ Neunkirchen · GERMANY$/,
+        /^ELTRO KOREA CO\. LTD\.$/,
+        /^#\d+, \d+, SONGPA-DAERO \d+-GIL$/,
+        /^SONGPA-GU$/,
+        /^SEOUL \d+$/,
+        /^SÜDKOREA$/,
+        /^Type of order: Standard Order [A-Z]{2}$/,
+        /^VAT No\. Supplier: [A-Z]{2}\d+$/,
+        /^Product type: [A-Z]+$/,
+        /^Order confirmation$/,
+        /^\d{8}$/,
+        /^We thank you for your order which we hereby accept on the basis of our General Terms and Conditions which are attached\.$/,
+        /^Our General Terms and Conditions are also available on our website at: treofan\.com\/terms-a-conditions\.$/,
+        /^The quality of the products is detailed in the attached Technical Specifications\.$/,
+        /^Your order number: [A-Z]{2}-\d{4}-\d{2} dated \d{2}\.\d{2}\.\d{4}$/,
+        /^Invoice address$/,
+        /^Customer No\.: \d+$/,
+        /^SOUTH KOREA$/,
+        /^Delivery terms$/,
+        /^Shipping type$/,
+        /^Payment terms$/,
+        /^CIF$/,
+        /^by Sea$/,
+        /^[A-Z]{2}\d{2}$/,
+        /^Costs, insurance & freight, [A-Z]+$/,
+        /^Payment in advance before delivery$/,
+        /^\d{4}$/
+      ];
+      
+      // 3번 룰: MATERIAL과 그 다음 숫자 라인 삭제
+      // 5번 룰: Core와 그 다음 숫자+mm 라인 삭제
+      // 7번 룰: Reels 다음 4줄 삭제 (Reels는 유지)
+      let filteredLines = [];
+      let skipNext = false;
+      let skipCount = 0;
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmedLine = line.trim();
+        
+        // MATERIAL 라인인지 확인
+        if (trimmedLine.toUpperCase() === 'MATERIAL') {
+          // MATERIAL 라인은 건너뛰기
+          skipNext = true;
+          continue;
+        }
+        
+        // MATERIAL 다음 라인이 숫자인지 확인
+        if (skipNext && /^\d+$/.test(trimmedLine)) {
+          // 숫자 라인도 건너뛰기
+          skipNext = false;
+          continue;
+        }
+        
+        // Core 라인인지 확인
+        if (trimmedLine.toUpperCase() === 'CORE') {
+          // Core 라인은 건너뛰기
+          skipNext = true;
+          continue;
+        }
+        
+        // Core 다음 라인이 숫자+mm인지 확인
+        if (skipNext && /^\d+\s*mm$/i.test(trimmedLine)) {
+          // 숫자+mm 라인도 건너뛰기
+          skipNext = false;
+          continue;
+        }
+        
+        // Reels 라인인지 확인
+        if (trimmedLine.toUpperCase() === 'REELS') {
+          // Reels 라인은 유지
+          filteredLines.push(line);
+          
+          // 다음 줄에서 첫 번째 숫자(띄어쓰기 전)만 추출
+          if (i + 1 < lines.length) {
+            const nextLine = lines[i + 1].trim();
+            const firstNumberMatch = nextLine.match(/^([^\s]+)/);
+            if (firstNumberMatch) {
+              filteredLines.push(firstNumberMatch[1]);
+            }
+          }
+          
+          // 그 다음 4줄은 건너뛰기 (총 5줄 중 첫 번째는 처리했으므로 4줄만 건너뛰기)
+          skipCount = 4;
+          continue;
+        }
+        
+        // Reels 다음 4줄 건너뛰기
+        if (skipCount > 0) {
+          skipCount--;
+          continue;
+        }
+        
+        // skipNext가 true인데 조건에 맞지 않으면 그냥 건너뛰기
+        if (skipNext) {
+          skipNext = false;
+          continue;
+        }
+        
+        // 1번, 2번 룰에 해당하는 라인인지 확인
+        if (headerLinesToRemove.includes(trimmedLine) || additionalLinesToRemove.includes(trimmedLine)) {
+          continue;
+        }
+        
+        // 2번 룰 추가: 정규식 패턴 매칭
+        let shouldSkip = false;
+        for (const pattern of additionalPatternsToRemove) {
+          if (pattern.test(trimmedLine)) {
+            shouldSkip = true;
+            break;
+          }
+        }
+        if (shouldSkip) {
+          continue;
+        }
+        
+        // 나머지는 그대로 추가
+        filteredLines.push(line);
+      }
+      
+      // Reels 정보 재배치 (미완성 주문에 Reels 정보 붙이기) - 먼저 실행
+      const reelsOrganizedLines = organizeReelsDistribution(filteredLines);
+      
+      // PHD 줄 앞에 빈 줄 추가 - 나중에 실행
+      const linesArray = reelsOrganizedLines.split('\n');
+      let finalLines = [];
+      for (let i = 0; i < linesArray.length; i++) {
+        const line = linesArray[i];
+        const trimmedLine = line.trim();
+        
+        // PHD가 포함된 줄인지 확인
+        if (trimmedLine.toUpperCase().includes('PHD')) {
+          // PHD 줄 앞에 빈 줄 추가 (이미 빈 줄이 아닌 경우에만)
+          if (finalLines.length > 0 && finalLines[finalLines.length - 1].trim() !== '') {
+            finalLines.push('');
+          }
+        }
+        
+        finalLines.push(line);
+      }
+      
+      // 최종 결과
+      const finalResult = finalLines.join('\n');
+      
+      // 결과를 입력 영역에 설정
+      inputArea.value = finalResult;
+      
+    }
+    
+    // 포커스 설정
+    inputArea.focus();
+  }
+  
+  // Reels 정보 재배치 함수 (위에서부터 순차적으로 미완성 주문에 Reels 정보 붙이기)
+  function organizeReelsDistribution(lines) {
+    let resultLines = [...lines];
+    
+    // 1단계: 모든 Reels 정보를 미리 수집 (위에서부터 순서대로)
+    const allReelsBlocks = [];
+    
+    for (let i = 0; i < resultLines.length; i++) {
+      const line = resultLines[i].trim();
+      
+      if (line.toUpperCase().includes('REELS')) {
+        // 이 Reels가 이미 주문에 붙어있는지 확인
+        let alreadyAttached = false;
+        
+        // 이 Reels 바로 앞에 PHD가 있는지 확인 (즉시 붙어있는 Reels인지)
+        if (i > 0 && resultLines[i - 1].trim().toUpperCase().includes('PHD')) {
+          // 바로 앞에 PHD가 있으면 이미 붙어있는 것
+              alreadyAttached = true;
+        }
+        
+        // 아직 붙지 않은 Reels라면 수집
+        if (!alreadyAttached) {
+          // REELS 블록을 4줄 세트로 수집 (수량, Reels, 값, WK 정보)
+          if (i > 0 && i < resultLines.length - 2) {
+          const reelsBlock = [
+              resultLines[i - 1],  // 수량
+              resultLines[i],      // Reels
+              resultLines[i + 1],  // 값
+              resultLines[i + 2]   // WK 정보
+          ];
+          allReelsBlocks.push({ index: i, block: reelsBlock });
+          }
+        }
+      }
+    }
+    
+    // 2단계: 모든 Reels 블록을 원래 위치에서 제거 (뒤에서부터 제거하여 인덱스 변화 방지)
+    for (let i = allReelsBlocks.length - 1; i >= 0; i--) {
+      const reelsInfo = allReelsBlocks[i];
+      if (reelsInfo.index > 0 && reelsInfo.index < resultLines.length - 2) {
+        resultLines.splice(reelsInfo.index - 1, 4);
+      }
+    }
+    
+    // 3단계: 위에서부터 순차적으로 미완성 주문을 찾고, 순서대로 Reels 정보 붙이기
+    let reelsBlockIndex = 0;
+    
+    while (reelsBlockIndex < allReelsBlocks.length) {
+      // 위에서부터 첫 번째 미완성 주문 찾기
+      let incompleteOrderIndex = -1;
+      for (let i = 0; i < resultLines.length; i++) {
+        const line = resultLines[i].trim();
+        if (line.toUpperCase().includes('PHD')) {
+          // 이 PHD 주문이 완성되었는지 확인 (Reels 정보가 있는지)
+          let hasReels = false;
+          let nextPhdIndex = resultLines.length;
+          
+          // 다음 PHD 위치 찾기
+          for (let j = i + 1; j < resultLines.length; j++) {
+            if (resultLines[j].trim().toUpperCase().includes('PHD')) {
+              nextPhdIndex = j;
+              break;
+            }
+          }
+          
+          // 이 PHD와 다음 PHD 사이에 Reels가 있는지 확인
+          for (let j = i; j < nextPhdIndex; j++) {
+            if (resultLines[j].trim().toUpperCase().includes('REELS')) {
+              hasReels = true;
+              break;
+            }
+          }
+          
+          // 완성되지 않은 주문이면 이것이 첫 번째 미완성 주문
+          if (!hasReels) {
+            incompleteOrderIndex = i;
+            break;
+          }
+        }
+      }
+      
+      // 미완성 주문이 없으면 종료
+      if (incompleteOrderIndex === -1) {
+        break;
+      }
+      
+      // 현재 순서의 Reels 블록 가져오기
+      const currentReelsBlock = allReelsBlocks[reelsBlockIndex].block;
+      
+      // 미완성 주문의 Length 다음 다음 줄에 Reels 블록 삽입
+      let insertIndex = resultLines.length; // 기본값: 맨 끝
+      
+      // 이 미완성 주문에서 Length 찾기
+      for (let i = incompleteOrderIndex; i < resultLines.length; i++) {
+        const line = resultLines[i].trim();
+        if (line.toUpperCase().includes('LENGTH')) {
+          // Length 다음 줄이 값이므로, 그 다음 다음 줄에 삽입
+          insertIndex = i + 2;
+          break;
+        }
+        // 다음 PHD를 만나면 중단
+        if (i > incompleteOrderIndex && line.toUpperCase().includes('PHD')) {
+          break;
+        }
+      }
+      
+      // Reels 블록 삽입
+      resultLines.splice(insertIndex, 0, ...currentReelsBlock);
+      
+      // 다음 Reels 블록으로 이동
+      reelsBlockIndex++;
+    }
+    
+    return resultLines.join('\n');
+  }
+  
+  // ========================================
+  // OIP 모드 Organize: 엑셀 데이터 열 제거 룰 적용
+  // - 불필요한 열 제거 (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z)
+  // - 데이터 정리 및 포맷팅
+  // ========================================
+  function organizeOIPMode() {
+    const inputArea = document.getElementById("inputArea");
+    const currentText = inputArea.value;
+    
+    if (currentText.trim() !== "") {
+      // 줄바꿈을 기준으로 각 줄을 분리
+      const lines = currentText.split('\n');
+      const processedLines = [];
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        // 헤더 라인 삭제 (Sold-to-party name으로 시작하는 줄)
+        if (line.startsWith('Sold-to-party name')) {
+          continue;
+        }
+        
+        // 탭으로 구분된 데이터인지 확인
+        if (line.includes('\t')) {
+          const columns = line.split('\t');
+          
+          // 유지할 열들만 추출 (1-based 인덱스)
+          const keepColumns = [
+            2,  // 2열: 주문번호
+            3,  // 3열: 폭
+            5,  // 5열: PHD
+            7,  // 7열: TF번호
+            8,  // 8열: 아이템번호 (뒤의 0 제거)
+            15, // 15열: length
+            16, // 16열: tfkg
+            17, // 17열: producedkg
+            18, // 18열: deliveredkg
+            21  // 21열: W
+          ];
+          
+          const processedColumns = [];
+          
+          for (let j = 0; j < keepColumns.length; j++) {
+            const columnIndex = keepColumns[j] - 1; // 0-based로 변환
+            
+            if (columnIndex < columns.length) {
+              let value = columns[columnIndex];
+              
+              // 8열 (아이템번호): 뒤의 0 제거 후 4자리로 패딩
+              if (j === 7) { // keepColumns에서 8번째 (인덱스 7)
+                // 뒤의 0들 제거 (마지막 0만 제거)
+                value = value.replace(/0$/, '');
+                if (value === '') value = '0'; // 모든 0이 제거되면 0으로 설정
+                // 4자리로 패딩
+                value = value.padStart(4, '0');
+              }
+              
+              // 17열, 18열: 새로 생성 (빈 값)
+              if (j === 10 || j === 11) { // keepColumns에서 17, 18번째 (인덱스 10, 11)
+                value = '';
+              }
+              
+              processedColumns.push(value);
+            } else {
+              // 열이 존재하지 않으면 빈 값 추가
+              processedColumns.push('');
+            }
+          }
+          
+          const processedLine = processedColumns.join('\t');
+          processedLines.push(processedLine);
+        } else {
+          // 탭으로 구분되지 않은 일반 텍스트는 그대로 유지
+          processedLines.push(line);
+        }
+      }
+      
+      // 결과를 입력 영역에 설정
+      inputArea.value = processedLines.join('\n');
+    }
+    
+    // 포커스 설정
+    inputArea.focus();
+  }
+  
+
+
+
+  // ========================================
+  // 분석표 모드 Organize: 필요없음
+  // - 분석표 모드는 organize 단계가 불필요
+  // - 바로 Convert 단계로 진행
+  // ========================================
+  function organizeCMode() {
+    alert("분석표 모드는 organize가 필요없습니다. 바로 Convert를 사용하세요.");
+  }
+
+  // 입력값 저장 함수
+  function saveInputData() {
+    const inputArea = document.getElementById("inputArea");
+    const { orderNoInput, tfNoInput, orderDateInput } = getOrderFields();
+    
+    if (inputArea && orderNoInput && tfNoInput && orderDateInput) {
+      const inputData = {
+        inputText: inputArea.value,
+        orderNo: orderNoInput.value,
+        tfNo: tfNoInput.value,
+        orderDate: orderDateInput.value,
+        selectedDoc: selectedDoc
+      };
+      
+      sessionStorage.setItem("productionuploadData", JSON.stringify(inputData));
+    }
+  }
+  
+  // 입력값 복원 함수
+  function restoreInputData() {
+    const savedData = sessionStorage.getItem("productionuploadData");
+    if (savedData) {
+      try {
+        const inputData = JSON.parse(savedData);
+        
+        const inputArea = document.getElementById("inputArea");
+        const { orderNoInput, tfNoInput, orderDateInput } = getOrderFields();
+        
+        if (inputArea && inputData.inputText) {
+          inputArea.value = inputData.inputText;
+        }
+        
+        if (orderNoInput && inputData.orderNo) {
+          orderNoInput.value = inputData.orderNo;
+        }
+        
+        if (tfNoInput && inputData.tfNo) {
+          tfNoInput.value = inputData.tfNo;
+        }
+        
+        if (orderDateInput && inputData.orderDate) {
+          orderDateInput.value = inputData.orderDate;
+        }
+        
+        if (inputData.selectedDoc) {
+          selectedDoc = inputData.selectedDoc;
+          updateDocButtonStates();
+        }
+        
+      } catch (error) {
+      }
+    }
+  }
+  
+  // DOC 버튼 상태 업데이트 함수
+  function updateDocButtonStates() {
+    const ocBtn = document.getElementById("ocBtn");
+    const oipBtn = document.getElementById("oipBtn");
+    const cBtn = document.getElementById("cBtn");
+    
+    // 모든 버튼에서 selected 클래스 제거
+    [ocBtn, oipBtn, cBtn].forEach(btn => {
+      if (btn) btn.classList.remove("selected");
+    });
+    
+    // 선택된 DOC에 따라 버튼 상태 설정
+    if (selectedDoc === "O/C" && ocBtn) {
+      ocBtn.classList.add("selected");
+    } else if (selectedDoc === "OIP" && oipBtn) {
+      oipBtn.classList.add("selected");
+    } else if (selectedDoc === "C" && cBtn) {
+      cBtn.classList.add("selected");
+    }
+  }
+
+  // 페이지 로드 시 초기화
+  document.addEventListener('DOMContentLoaded', function() {
+    // Order No와 Date 초기화
+    initializeOrderFields();
+    
+    // 초기 placeholder 설정
+    updatePlaceholder();
+    
+    // 버튼 이벤트 리스너 등록
+    setupDocButtons();
+    setupConvertButton();
+    setupExportButton();
+    setupOrganizeButton();
+    
+    // 초기 버튼 상태 설정 (O/C가 기본 선택)
+    updateDocButtonStates();
+    
+    // 저장된 입력값 복원 (버튼 상태 설정 후)
+    restoreInputData();
+    
+    // 입력값 변경 시 자동 저장을 위한 이벤트 리스너
+    const inputArea = document.getElementById("inputArea");
+    const { orderNoInput, tfNoInput, orderDateInput } = getOrderFields();
+    
+    if (inputArea) {
+      inputArea.addEventListener("input", saveInputData);
+    }
+    if (orderNoInput) {
+      orderNoInput.addEventListener("input", saveInputData);
+    }
+    if (tfNoInput) {
+      tfNoInput.addEventListener("input", saveInputData);
+    }
+    if (orderDateInput) {
+      orderDateInput.addEventListener("input", saveInputData);
+    }
+  });
+</script>
+</body>
+</html>

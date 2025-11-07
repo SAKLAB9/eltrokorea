@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Uploads (선택사항 - Volume 사용 시 포함 가능)
+# uploads/
+
+# JSON 백업 파일
+* copy.json
+* copy 2.json
+
+# Temporary files
+*.tmp
+*.temp
+

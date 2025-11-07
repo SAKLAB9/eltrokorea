@@ -1,0 +1,147 @@
+[
+  {
+    "l/pno": "29308692",
+    "l/pdate": "24.06.2025",
+    "l/pdollar": "109.07",
+    "isused": true
+  },
+  {
+    "o/pno": "93063467",
+    "o/pdate": "03.03.2025",
+    "o/pdollar": 2010.69,
+    "isused": true
+  },
+  {
+    "o/pno": "93066728",
+    "o/pdate": "09.07.2025",
+    "o/pdollar": 220.52,
+    "isused": true
+  },
+  {
+    "c/nno": "29308474",
+    "c/ndate": "2025.01.13",
+    "c/neuro": "9046.81",
+    "c/ndollar": "",
+    "data": {
+      "invoiceno1": "93061659",
+      "smcommission1": "2781.88",
+      "invoiceno2": "93061660",
+      "smcommission2": "2720.51",
+      "invoiceno3": "93061661",
+      "smcommission3": "2965.31",
+      "invoiceno4": "93061776",
+      "smcommission4": "579.11",
+      "invoiceno5": "93061797",
+      "smcommission5": "579.11",
+      "invoiceno6": "4093002653",
+      "smcommission6": "-579.11",
+      "smtotalcommission": "9046.81",
+      "totalcommission": "9046.81"
+    },
+    "isused": true
+  },
+  {
+    "c/nno": "29308558",
+    "c/ndate": "2025.02.10",
+    "c/neuro": "8067.23",
+    "c/ndollar": "",
+    "data": {
+      "nttotalcommission": "905.48",
+      "invoiceno1": "93061845",
+      "smcommission1": "579.11",
+      "invoiceno2": "93062146",
+      "smcommission2": "3056.85",
+      "invoiceno3": "93062157",
+      "smcommission3": "3056.85",
+      "invoiceno4": "93062400",
+      "smcommission4": "1394.26",
+      "invoiceno5": "93062565",
+      "smcommission5": "2710.64",
+      "invoiceno6": "4093002654",
+      "smcommission6": "-579.11",
+      "invoiceno7": "4093002656",
+      "smcommission7": "-3056.85",
+      "smtotalcommission": "7161.75",
+      "totalcommission": "8067.23"
+    },
+    "isused": true
+  },
+  {
+    "c/nno": "29308662",
+    "c/ndate": "2025.03.10",
+    "c/neuro": "5363.63",
+    "c/ndollar": "",
+    "data": {
+      "nttotalcommission": "29.81",
+      "invoiceno1": "93063047",
+      "smcommission1": "3164.17",
+      "invoiceno2": "93063339",
+      "smcommission2": "2169.65",
+      "smtotalcommission": "5333.82",
+      "totalcommission": "5363.63"
+    },
+    "isused": true
+  },
+  {
+    "c/nno": "29308692",
+    "c/ndate": "2025.03.18",
+    "c/neuro": "",
+    "c/ndollar": "681.71",
+    "isused": true
+  },
+  {
+    "c/nno": "29308817",
+    "c/ndate": "2025.04.10",
+    "c/neuro": "131.37",
+    "c/ndollar": "",
+    "data": {
+      "nttotalcommission": "131.37",
+      "totalcommission": "131.37"
+    },
+    "isused": true
+  },
+  {
+    "c/nno": "29308953",
+    "c/ndate": "2025.05.09",
+    "c/neuro": "57.57",
+    "c/ndollar": "",
+    "data": {
+      "nttotalcommission": "57.57",
+      "totalcommission": "57.57"
+    },
+    "isused": true
+  },
+  {
+    "c/nno": "29309125",
+    "c/ndate": "2025.06.11",
+    "c/neuro": "239.67",
+    "c/ndollar": "",
+    "data": {
+      "nttotalcommission": "239.67",
+      "totalcommission": "239.67"
+    },
+    "isused": true
+  },
+  {
+    "c/nno": "29309230",
+    "c/ndate": "2025.07.03",
+    "c/neuro": "239.19",
+    "c/ndollar": "",
+    "data": {
+      "nttotalcommission": "239.19",
+      "totalcommission": "239.19"
+    },
+    "isused": true
+  },
+  {
+    "c/nno": "29309357",
+    "c/ndate": "2025.08.07",
+    "c/neuro": "642.77",
+    "c/ndollar": "",
+    "data": {
+      "nttotalcommission": "642.77",
+      "totalcommission": "642.77"
+    },
+    "isused": true
+  }
+]
