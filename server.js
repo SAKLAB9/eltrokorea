@@ -155,21 +155,14 @@ app.use((req, res, next) => {
   }
 });
 
-// 정적 파일 제공 (HTML 제외)
-app.use(express.static(__dirname, {
-  setHeaders: (res, filePath) => {
-    // HTML 파일은 위 미들웨어에서 처리되므로 여기서는 제외
-  },
-  index: false // index.html 자동 제공 비활성화
-}));
-
-// HTML 파일 제공 라우트 (인증 후) - 모든 HTML 파일 처리
+// HTML 파일 제공 라우트 (인증 후) - 모든 HTML 파일 처리 (express.static보다 먼저 처리)
 app.get(/\.html$/, (req, res) => {
   const filePath = path.join(__dirname, req.path);
   const normalizedPath = path.normalize(filePath);
   
   // 보안: __dirname 밖으로 나가는 경로 차단
-  if (!normalizedPath.startsWith(path.normalize(__dirname))) {
+  const normalizedDir = path.normalize(__dirname);
+  if (!normalizedPath.startsWith(normalizedDir)) {
     return res.status(403).send('Forbidden');
   }
   
@@ -179,6 +172,14 @@ app.get(/\.html$/, (req, res) => {
     res.status(404).send('File not found');
   }
 });
+
+// 정적 파일 제공 (HTML 제외)
+app.use(express.static(__dirname, {
+  setHeaders: (res, filePath) => {
+    // HTML 파일은 위 라우트에서 처리되므로 여기서는 제외
+  },
+  index: false // index.html 자동 제공 비활성화
+}));
 
 // 저장 경로 설정 (환경 변수로 로컬/Railway 구분)
 // 로컬: __dirname 사용 (컴퓨터 하드)
