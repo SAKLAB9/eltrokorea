@@ -184,14 +184,11 @@
     };
 
     async function checkPassword(section) {
-      console.log('checkPassword called with section:', section);
       const userInput = prompt("비밀번호를 입력하세요.");
       if (userInput === null) {
-        console.log('User cancelled password input');
         return; // 취소 시 아무 동작 없음
       }
       
-      console.log('Sending login request...');
       try {
         const response = await fetch('/api/login', {
           method: 'POST',
@@ -205,21 +202,15 @@
           })
         });
         
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-        
         // 응답 본문 파싱 (성공/실패 모두)
         const result = await response.json();
-        console.log('Response result:', result);
         
         if (!response.ok) {
           // 401은 비밀번호 오류
           if (response.status === 401) {
-            console.log('Login failed:', result.message);
             alert(result.message || "비밀번호가 틀렸습니다.");
           } else {
             // 기타 서버 오류
-            console.error('Response error:', result);
             alert("서버 오류가 발생했습니다: " + response.status);
           }
           return;
@@ -227,22 +218,17 @@
         
         // 성공한 경우
         if (result.success) {
-          console.log('Session ID:', result.sessionId);
           // 비밀번호 일치 시 페이지 이동
           const targetPage = result.redirect || sectionPages[section] || section + ".html";
-          console.log('Login successful! Redirecting to:', targetPage);
           
           // 세션 쿠키가 설정될 시간을 주기 위해 약간의 지연
           setTimeout(() => {
-            console.log('Executing redirect to:', targetPage);
             window.location.href = targetPage;
           }, 300);
         } else {
-          console.log('Login failed:', result.message);
           alert(result.message || "비밀번호가 틀렸습니다.");
         }
       } catch (error) {
-        console.error('Login error:', error);
         alert("로그인 중 오류가 발생했습니다: " + error.message);
       }
     }
