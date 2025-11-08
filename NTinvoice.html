@@ -1280,8 +1280,8 @@
           return;
         }
         
-        // 날짜 형식인지 확인
-        if (isDateFormat(orderDateInput.value)) {
+        // Exchange 모드가 아닐 때만 날짜 형식 검증
+        if (!isExchangeMode && isDateFormat(orderDateInput.value)) {
           alert('발생 날짜에 deliveryNo를 적어주세요.');
           return;
         }
