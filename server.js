@@ -312,7 +312,7 @@ function sortPriceData(priceData) {
   Object.assign(priceData, result);
 }
 
-// orderData 정렬 함수 - 주문 레벨 정렬 + 아이템 정렬
+// orderData 정렬 함수 - 주문 레벨 정렬 + 아이템 정렬 + 필드 순서 재배열
 function sortOrderStore(orders) {
   // 모드 우선순위 함수
   const getModePriority = (mode) => {
@@ -334,6 +334,36 @@ function sortOrderStore(orders) {
     return 0;
   };
   
+  // 주문 객체 필드 순서 재배열 함수
+  const reorderOrderFields = (order) => {
+    // 주문 레벨 필드 (위에 올 필드들)
+    const orderLevelFields = ['mode', 'orderId', 'orderDate', 'expectedDate', 'orderNo', 'finalDate', 'cif', 'tfNo', 'tfDate'];
+    
+    // 재정렬된 객체 생성
+    const reordered = {};
+    
+    // 1. 주문 레벨 필드 먼저 추가 (존재하는 것만)
+    orderLevelFields.forEach(field => {
+      if (order.hasOwnProperty(field)) {
+        reordered[field] = order[field];
+      }
+    });
+    
+    // 2. 나머지 필드 추가 (items 제외)
+    Object.keys(order).forEach(key => {
+      if (!orderLevelFields.includes(key) && key !== 'items') {
+        reordered[key] = order[key];
+      }
+    });
+    
+    // 3. items는 마지막에 추가
+    if (order.items) {
+      reordered.items = order.items;
+    }
+    
+    return reordered;
+  };
+  
   return orders.map(order => {
     // 아이템 정렬 (rowNumber 순)
     if (order.items) {
@@ -344,7 +374,8 @@ function sortOrderStore(orders) {
       });
     }
     
-    return order;
+    // 필드 순서 재배열
+    return reorderOrderFields(order);
   }).sort((a, b) => {
     // 모드 우선순위로 정렬 (NT → SM)
     const modePriorityA = getModePriority(a.mode);
