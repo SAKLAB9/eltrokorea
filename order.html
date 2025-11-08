@@ -4345,8 +4345,7 @@
         // 삭제 후 rowNumber 동기화
         await syncRowNumbersWithServer();
         
-        // 삭제 후 서버에서 최신 데이터 다시 불러오기
-        await loadServerFile(currentOrderId);
+        // 새로고침 없이 작업 중인 내용 유지
       } else {
         console.error('아이템 삭제 실패:', responseData);
         alert('아이템 삭제에 실패했습니다: ' + responseData.message);
