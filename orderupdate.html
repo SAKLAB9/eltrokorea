@@ -263,7 +263,6 @@
   function setupOrganizeButton() {
     const organizeBtn = document.getElementById("organizeBtn");
     if (!organizeBtn) {
-      console.error("[ORGANIZE] Organize 버튼을 찾을 수 없습니다!");
       return;
     }
     
@@ -387,7 +386,6 @@
     const smcBtn = document.getElementById("smcBtn");
     
     if (!ntBtn || !smbBtn || !smcBtn) {
-      console.error("[MODE] 모드 버튼을 찾을 수 없습니다!");
       return;
     }
     
@@ -434,7 +432,6 @@
   // SM-B 모드 클릭 핸들러
   //-------------------------------------------------------
   function handleSMBModeClick() {
-    console.log("[MODE] SM-B 모드 선택됨");
     selectedMode = "SM-B";
     
     const ntBtn = document.getElementById("ntBtn");
@@ -461,7 +458,6 @@
   // SM-C 모드 클릭 핸들러
   //-------------------------------------------------------
   function handleSMCModeClick() {
-    console.log("[MODE] SM-C 모드 선택됨");
     selectedMode = "SM-C";
     
     const ntBtn = document.getElementById("ntBtn");
@@ -627,7 +623,6 @@
   function setupConvertButton() {
     const convertBtn = document.getElementById("convertBtn");
     if (!convertBtn) {
-      console.error("[CONVERT] Convert 버튼을 찾을 수 없습니다!");
       return;
     }
     
@@ -785,7 +780,6 @@
   function setupExportButton() {
     const exportBtn = document.getElementById("exportBtn");
     if (!exportBtn) {
-      console.error("[EXPORT] Export 버튼을 찾을 수 없습니다!");
       return;
     }
     
@@ -852,15 +846,11 @@
   // 상태 복원 함수
   //-------------------------------------------------------
   function restoreOrderData() {
-    console.log("[DEBUG] restoreOrderData() 호출됨");
-    
     const savedState = sessionStorage.getItem('orderupdateState');
-    console.log("[DEBUG] 저장된 상태:", savedState);
     
     if (savedState) {
       try {
         const state = JSON.parse(savedState);
-        console.log("[DEBUG] 파싱된 상태:", state);
         
         // Order No와 Date 필드 복원
         const orderNoInput = document.getElementById("orderNoInput");
@@ -950,7 +940,7 @@
         sessionStorage.removeItem('orderupdateState');
         
       } catch (error) {
-        console.error("[INIT] 상태 복원 실패:", error);
+        // 상태 복원 실패 (에러 무시)
       }
     }
   }
