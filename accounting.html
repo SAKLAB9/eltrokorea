@@ -2556,54 +2556,42 @@
         }
       }
       
-      // 뉴인텍 2행: 오늘 포함 미래 날짜일 때 accounting.json에서 데이터 로드 (뉴인텍 1행과 중복 제외)
-      // 현재 날짜 데이터를 먼저 확인하고, 없으면 과거 날짜 데이터 사용
+      // 뉴인텍 2행: 오늘 포함 미래 날짜일 때 accounting.json에서 이전 날짜 데이터 로드 (뉴인텍 1행과 중복 제외)
+      // 항상 이전 날짜 데이터 중 최신 데이터를 사용 (2, 3, 4열)
       if (!isPastDate) {
         const currentDateData = allData?.notes?.nuintek?.[currentDate];
-        let dataToProcess = [];
-        let dataDate = currentDate;
+        // 항상 이전 날짜 데이터 찾기
+        const latestPreviousDate = findLatestPreviousNuintekDate(allData, currentDate);
         
-        if (currentDateData && currentDateData.length > 0) {
-          // 현재 날짜에 데이터가 있으면 현재 날짜 데이터 사용
-          dataToProcess = currentDateData;
-          dataDate = currentDate;
-        } else {
-          // 현재 날짜에 데이터가 없으면 과거 날짜 데이터 찾기
-          const latestPreviousDate = findLatestPreviousNuintekDate(allData, currentDate);
-          if (latestPreviousDate) {
-            const latestData = allData?.notes?.nuintek?.[latestPreviousDate];
-            if (latestData && latestData.length > 0) {
-              dataToProcess = latestData;
-              dataDate = latestPreviousDate;
-            }
-          }
-        }
-        
-        if (dataToProcess.length > 0) {
-          dataToProcess.forEach(accountingItem => {
-            // deliveryNo와 dueDate 둘 다 같아야 중복으로 인식
-            const isDuplicate = incompleteDeliveries.some(item => 
-              item.deliveryNo === accountingItem.deliveryNo && 
-              item.ntinvoicedue === accountingItem.dueDate
-            );
-            if (!isDuplicate) {
-              const currentDeliveryData = currentDateData?.find(data => data.deliveryNo === accountingItem.deliveryNo);
-              const depositAmount = currentDeliveryData?.depositAmount || '';
-              
-              rowsHTML += createNuintekRowHTML(
-                {
-                  deliveryNo: accountingItem.deliveryNo,
-                  ntinvoiceprice: accountingItem.todaySalesAmount,
-                  ntinvoicedue: accountingItem.dueDate
-                },
-                accountingItem,
-                true,
-                currentDate,
-                depositAmount,
-                dataDate
+        if (latestPreviousDate) {
+          const latestData = allData?.notes?.nuintek?.[latestPreviousDate];
+          if (latestData && latestData.length > 0) {
+            latestData.forEach(accountingItem => {
+              // deliveryNo와 dueDate 둘 다 같아야 중복으로 인식
+              const isDuplicate = incompleteDeliveries.some(item => 
+                item.deliveryNo === accountingItem.deliveryNo && 
+                item.ntinvoicedue === accountingItem.dueDate
               );
-            }
-          });
+              if (!isDuplicate) {
+                // 5열은 현재 날짜 데이터에서 가져오기 (없으면 공란)
+                const currentDeliveryData = currentDateData?.find(data => data.deliveryNo === accountingItem.deliveryNo);
+                const depositAmount = currentDeliveryData?.depositAmount || '';
+                
+                rowsHTML += createNuintekRowHTML(
+                  {
+                    deliveryNo: accountingItem.deliveryNo,
+                    ntinvoiceprice: accountingItem.todaySalesAmount,
+                    ntinvoicedue: accountingItem.dueDate
+                  },
+                  accountingItem,
+                  true,
+                  currentDate,
+                  depositAmount,
+                  latestPreviousDate
+                );
+              }
+            });
+          }
         }
       }
       
@@ -2719,7 +2707,7 @@
     
     // 성문 행 HTML 생성
     function createSungmoonRowHTML(allData, date) {
-      // 현재 날짜 데이터를 먼저 확인하고, 없으면 과거 날짜 데이터 사용
+      // 항상 이전 날짜 데이터 중 최신 데이터를 사용 (2, 3, 4열)
       const currentDateData = allData?.notes?.sungmoon?.[date];
       let salesAmount = '';
       let dueDate = '';
@@ -2727,27 +2715,23 @@
       let deliveryNo = '';
       let dataDate = '';
       
-      if (currentDateData && currentDateData.length > 0) {
-        // 현재 날짜에 데이터가 있으면 현재 날짜 데이터 사용
-        const currentData = currentDateData[0];
-        salesAmount = currentData.todaySalesAmount || '';
-        dueDate = currentData.dueDate || '';
-        deliveryNo = currentData.deliveryNo || '';
-        depositAmount = currentData.depositAmount || '';
-        dataDate = date;
-      } else {
-        // 현재 날짜에 데이터가 없으면 과거 날짜 데이터 찾기
-        const commonLatestDate = findCommonLatestSungmoonDate(allData, date);
-        if (commonLatestDate) {
-          const sungmoonData = allData?.notes?.sungmoon?.[commonLatestDate];
-          if (sungmoonData && sungmoonData.length > 0) {
-            const latestData = sungmoonData[0];
-            salesAmount = latestData.todaySalesAmount || '';
-            dueDate = latestData.dueDate || '';
-            deliveryNo = latestData.deliveryNo || '';
-            dataDate = commonLatestDate;
-          }
+      // 항상 이전 날짜 데이터 찾기
+      const commonLatestDate = findCommonLatestSungmoonDate(allData, date);
+      if (commonLatestDate) {
+        const sungmoonData = allData?.notes?.sungmoon?.[commonLatestDate];
+        if (sungmoonData && sungmoonData.length > 0) {
+          const latestData = sungmoonData[0];
+          salesAmount = latestData.todaySalesAmount || '';
+          dueDate = latestData.dueDate || '';
+          deliveryNo = latestData.deliveryNo || '';
+          dataDate = commonLatestDate;
         }
+      }
+      
+      // 5열은 현재 날짜 데이터에서 가져오기 (없으면 공란)
+      if (currentDateData && currentDateData.length > 0) {
+        const currentData = currentDateData[0];
+        depositAmount = currentData.depositAmount || '';
       }
       
       const rowHTML = createCategory3RowHTML(
