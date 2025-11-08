@@ -733,7 +733,9 @@
             </div>
           </div>
           <div class="preview-footer">
-            <div></div>
+            <div>
+              <button class="delete-file-btn" onclick="deleteCurrentUploadFile()" style="background-color: #dc3545; color: white; border-color: #dc3545;">🗑️ 삭제</button>
+            </div>
             <button class="download-btn" onclick="downloadUploadFile()">📥 다운로드</button>
           </div>
         </div>
@@ -866,6 +868,16 @@
     }
     
     window.open(`/api/admin/preview-upload-file?filePath=${encodeURIComponent(currentUploadFile.path)}`, '_blank');
+  }
+
+  // 미리보기 화면에서 현재 파일 삭제
+  window.deleteCurrentUploadFile = async function() {
+    if (!currentUploadFile) {
+      alert('삭제할 파일이 없습니다.');
+      return;
+    }
+    
+    await window.deleteUploadFile(new Event('click'), currentUploadFile.path, currentUploadFile.name);
   }
 
   // JSON 파일 업로드 함수
