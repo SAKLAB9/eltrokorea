@@ -3436,6 +3436,57 @@ app.post('/api/admin/upload-json', upload.single('file'), (req, res) => {
   }
 });
 
+// JSON 파일 삭제 API (admin 페이지용)
+app.delete('/api/admin/delete-json', (req, res) => {
+  try {
+    const { fileName } = req.body;
+    
+    if (!fileName) {
+      return res.status(400).json({ error: 'fileName이 필요합니다.' });
+    }
+    
+    let filePath;
+    
+    switch (fileName) {
+      case 'priceData.json':
+        filePath = DATA_FILE;
+        priceStore = {};
+        break;
+      case 'orderData.json':
+        filePath = ORDER_DATA_FILE;
+        orderStore = [];
+        break;
+      case 'creditnote.json':
+        filePath = CREDIT_NOTE_FILE;
+        creditNoteStore = [];
+        break;
+      case 'transfer.json':
+        filePath = TRANSFER_DATA_FILE;
+        transferStore = { transfers: [], payrolls: [], deposits: [] };
+        break;
+      case 'calendar.json':
+        filePath = CALENDAR_DATA_FILE;
+        calendarStore = {};
+        break;
+      case 'accounting.json':
+        filePath = ACCOUNTING_DATA_FILE;
+        accountingStore = { balance: [] };
+        break;
+      default:
+        return res.status(400).json({ error: '지원하지 않는 파일입니다.' });
+    }
+    
+    // 파일 삭제
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    
+    res.json({ success: true, message: `${fileName}이(가) 삭제되었습니다.` });
+  } catch (error) {
+    res.status(500).json({ error: 'JSON 파일 삭제 중 오류가 발생했습니다.', details: error.message });
+  }
+});
+
 // 서버 재시동 API (Railway에서는 자동 배포가 되므로 안내만)
 app.post('/api/admin/restart', (req, res) => {
   res.json({ 
@@ -3493,6 +3544,12 @@ app.get('/api/admin/explore-uploads', (req, res) => {
           path: relativePath ? `${relativePath}/${item}` : item
         });
       } else {
+        // DATA_DIR에 있는 핵심 JSON 파일들은 uploads 탐색기에서 제외
+        const coreJsonFiles = ['accounting.json', 'calendar.json', 'creditnote.json', 'orderData.json', 'priceData.json', 'transfer.json'];
+        if (coreJsonFiles.includes(item)) {
+          return; // 핵심 JSON 파일은 uploads 탐색기에서 숨김
+        }
+        
         files.push({
           name: item,
           path: relativePath ? `${relativePath}/${item}` : item,

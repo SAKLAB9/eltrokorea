@@ -641,6 +641,7 @@
       <div class="preview-footer">
         <div>
           <button id="saveCurrentBtn" class="save-btn">💾 저장</button>
+          <button id="deleteCurrentJsonBtn" class="delete-file-btn" style="background-color: #dc3545; color: white; border-color: #dc3545; margin-left: 10px;">🗑️ 삭제</button>
         </div>
         <button id="downloadCurrentBtn" class="download-btn">📥 다운로드</button>
       </div>
@@ -655,6 +656,7 @@
     });
     document.getElementById('saveCurrentBtn').addEventListener('click', saveJsonHandler);
     document.getElementById('downloadCurrentBtn').addEventListener('click', downloadJsonHandler);
+    document.getElementById('deleteCurrentJsonBtn').addEventListener('click', deleteJsonHandler);
     
     const title = document.getElementById('previewTitle');
     const content = document.getElementById('jsonContent');
@@ -1043,6 +1045,7 @@
         <div class="preview-footer">
           <div>
             <button id="saveCurrentBtn" class="save-btn">💾 저장</button>
+            <button id="deleteCurrentJsonBtn" class="delete-file-btn" style="background-color: #dc3545; color: white; border-color: #dc3545; margin-left: 10px;">🗑️ 삭제</button>
           </div>
           <button id="downloadCurrentBtn" class="download-btn">📥 다운로드</button>
         </div>
