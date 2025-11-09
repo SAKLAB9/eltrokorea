@@ -3531,22 +3531,22 @@
     document.getElementById("totalAdjustment").textContent = `총: ${totalAdjustmentTon}t`;
   }
 
+  // 전역 변수로 원본 데이터 저장 (sessionStorage 대신)
+  let originalParsedData = null;
+  let originalSelectedMode = null;
+  let isNewOrderFlag = false;
+  let originalFileName = null;
+
   //===================================================
   // Unconvert (원본 복원)
   //===================================================
   document.getElementById("unconvertButton").addEventListener("click", ()=>{
-    // sessionStorage에서 원본 데이터 가져오기
-    const stored = sessionStorage.getItem('parsedData');
-    if(!stored){
+    // 전역 변수에서 원본 데이터 가져오기
+    if(!originalParsedData){
       return;
     }
 
-    let exportData;
-    try {
-      exportData = JSON.parse(stored);
-    } catch(e) {
-      return;
-    }
+    const exportData = originalParsedData;
 
     // exportData에서 orderData 추출
     let arr = [];
@@ -3564,7 +3564,7 @@
     const convs = document.querySelectorAll("#orderTableBody tr.converted");
     convs.forEach(r=>r.remove());
 
-    // 원본행들을 sessionStorage의 원본 데이터로 복원
+    // 원본행들을 전역 변수의 원본 데이터로 복원
     const baseRows = document.querySelectorAll("#orderTableBody tr:not(.converted)");
     baseRows.forEach((row, index) => {
       if(arr[index]) {
@@ -3632,8 +3632,8 @@
     updateTotals();
     
     // 새 주문 플래그 설정
-    sessionStorage.setItem('isNewOrder', 'true');
-    sessionStorage.removeItem('originalFileName'); // originalFileName 초기화
+    isNewOrderFlag = true;
+    originalFileName = null; // originalFileName 초기화
     
     location.href = 'orderupdate.html';
   }
@@ -3676,15 +3676,13 @@
   // ===================================================
   window.addEventListener('DOMContentLoaded', ()=>{
     // isNewOrder 플래그 확인
-    const isNewOrder = sessionStorage.getItem('isNewOrder');
-    
     const tbody = document.getElementById("orderTableBody");
     
-    if (isNewOrder === 'true') {
+    if (isNewOrderFlag) {
       // 새 주문 시작: 빈 테이블로 시작
       tbody.innerHTML = ''; // 기존 행들 모두 제거
-      sessionStorage.removeItem('isNewOrder'); // 플래그 제거
-      sessionStorage.removeItem('originalFileName'); // originalFileName 초기화
+      isNewOrderFlag = false; // 플래그 제거
+      originalFileName = null; // originalFileName 초기화
       
       // Order ID와 Date 필드 초기화
       const orderIdInput = document.getElementById('orderIdInput');
@@ -3698,14 +3696,12 @@
     } else {
       // 기존 작업 계속: orderupdate.html에서 Export한 데이터 불러오기
       
-      // sessionStorage에서 Export된 데이터 불러오기
-      const savedData = sessionStorage.getItem('parsedData');
-      const savedMode = sessionStorage.getItem('selectedMode');
-      
-      if (savedData && savedMode) {
+      // 전역 변수에서 Export된 데이터 불러오기
+      if (originalParsedData && originalSelectedMode) {
         
         try {
-          const exportData = JSON.parse(savedData);
+          const exportData = originalParsedData;
+          const savedMode = originalSelectedMode;
           
           // Order ID와 Date 설정
           if (exportData.orderId) {
@@ -3791,10 +3787,10 @@
     
     if (isRefresh) {
       // 리프레시 시에는 저장된 데이터 제거하고 빈 테이블로 초기화
-      sessionStorage.removeItem('parsedData');
-      sessionStorage.removeItem('selectedMode');
-      sessionStorage.removeItem('isNewOrder');
-      sessionStorage.removeItem('originalFileName');
+      originalParsedData = null;
+      originalSelectedMode = null;
+      isNewOrderFlag = false;
+      originalFileName = null;
       
       // 테이블 초기화
       const tbody = document.getElementById("orderTableBody");
@@ -4006,7 +4002,7 @@
         alert(alertMessage);
         
         // 원본 파일명 저장
-        sessionStorage.setItem('originalFileName', orderId);
+        originalFileName = orderId;
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -4202,14 +4198,13 @@
     }
     
     
-    // 원본 데이터를 sessionStorage에 복원 (Unconvert용)
+    // 원본 데이터를 전역 변수에 복원 (Unconvert용)
     if (data.originalData) {
-      const exportData = {
+      originalParsedData = {
         orderData: data.originalData,
         orderId: data.orderId || "",
         orderDate: data.orderDate || ""
       };
-      sessionStorage.setItem('parsedData', JSON.stringify(exportData));
     } else {
     }
     
@@ -4271,7 +4266,7 @@
             loadFileData(targetFile);
             
             // 원본 파일명 저장 (덮어쓰기 기능을 위해)
-            sessionStorage.setItem('originalFileName', orderId);
+            originalFileName = orderId;
             
             // 모달 닫기
             document.getElementById("serverFileModal").style.display = "none";
