@@ -3934,6 +3934,21 @@
         isNewOrderFlag = false;
         originalFileName = null;
         
+        // 모드를 기본값(NT)으로 초기화
+        selectedMode = "NT";
+        const ntBtn = document.getElementById("ntBtn");
+        const smbBtn = document.getElementById("smbBtn");
+        const smcBtn = document.getElementById("smcBtn");
+        if (ntBtn) {
+          ntBtn.classList.add("selected");
+        }
+        if (smbBtn) {
+          smbBtn.classList.remove("selected");
+        }
+        if (smcBtn) {
+          smcBtn.classList.remove("selected");
+        }
+        
         // 총합 업데이트
         updateTotals();
       });
