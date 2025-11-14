@@ -651,9 +651,6 @@
             }
             const orderData = await response.json();
             
-            // 전역 변수에 데이터 저장 (Email 기능용)
-            window.allOrdersData = orderData;
-            
             // Delivery No별로 아이템들을 그룹화
             const deliveryGroups = {};
             
