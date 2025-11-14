@@ -719,8 +719,8 @@
                     const invoiceno = firstItem['invoiceno'] || '';
                     const invoicedate = firstItem['invoicedate'] || '';
                     
-                    // 체크박스와 deliveryNo, d/nno, (d/ndate), p/ino, (p/idate), p/ino2, (p/idate2), invoiceno, (invoicedate) 아홉 줄로 표시
-                    let deliveryInfo = `<input type="checkbox" class="delivery-checkbox" data-deliveryNo="${deliveryNo}" style="margin-right: 8px;">${deliveryNo}`;
+                    // deliveryNo, d/nno, (d/ndate), p/ino, (p/idate), p/ino2, (p/idate2), invoiceno, (invoicedate) 표시
+                    let deliveryInfo = `${deliveryNo}`;
                     if (dnnno) {
                         deliveryInfo += `<br>${dnnno}`;
                     }
