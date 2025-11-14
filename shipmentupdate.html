@@ -2136,6 +2136,24 @@
     }
   }
 
+  // 특정 행의 Item No 드롭다운 업데이트 함수 (orderNo를 받아서 API 호출)
+  async function updateItemDropdownForRow(row, orderNo) {
+    if (!orderNo) return;
+    
+    try {
+      const response = await fetch(`/api/orders`);
+      const orders = await response.json();
+      const orderData = orders.find(order => order.orderNo === orderNo);
+      
+      if (orderData) {
+        const itemNo = row.dataset.itemNo || null;
+        updateItemDropdownForRowWithData(row, orderData, itemNo);
+      }
+    } catch (error) {
+      console.error('Item No 드롭다운 업데이트 중 오류:', error);
+    }
+  }
+
   // 특정 행의 Item No 드롭다운 업데이트 함수 (orderData를 직접 받는 버전, API 호출 없음)
   function updateItemDropdownForRowWithData(row, orderData, targetItemNo = null) {
     if (!orderData) return;
@@ -2907,15 +2925,15 @@
       const uniqueModes = new Set();
       const uniqueOrderNos = new Set();
       
-      // 모든 행에서 고유한 Mode와 Order No 수집
+      // 모든 행에서 고유한 Mode와 Order No 수집 (dataset에서 직접 가져오기)
       allRows.forEach(row => {
-        const modeSelect = row.querySelector('.modeDropdown');
-        const orderNoSelect = row.querySelector('.orderDropdown');
-        if (modeSelect && modeSelect.value) {
-          uniqueModes.add(modeSelect.value);
+        const mode = row.dataset.mode;
+        const orderNo = row.dataset.orderNo;
+        if (mode) {
+          uniqueModes.add(mode);
         }
-        if (orderNoSelect && orderNoSelect.value) {
-          uniqueOrderNos.add(orderNoSelect.value);
+        if (orderNo) {
+          uniqueOrderNos.add(orderNo);
         }
       });
       
@@ -2927,8 +2945,7 @@
       // 각 Order No에 대해 Item No 드롭다운 업데이트
       for (const orderNo of uniqueOrderNos) {
         const rowsWithOrderNo = Array.from(allRows).filter(row => {
-          const orderNoSelect = row.querySelector('.orderDropdown');
-          return orderNoSelect && orderNoSelect.value === orderNo;
+          return row.dataset.orderNo === orderNo;
         });
         
         for (const row of rowsWithOrderNo) {
@@ -2947,29 +2964,29 @@
         }
       });
       
-      // 잠시 대기 후 Order No와 Item No 설정
-      setTimeout(() => {
-        allRows.forEach((row) => {
-          const orderNoSelect = row.querySelector('.orderDropdown');
-          
-          if (orderNoSelect && row.dataset.orderNo) {
-            orderNoSelect.value = row.dataset.orderNo;
-            // Order No change 이벤트 수동 트리거 (Item No 드롭다운 로드)
-            orderNoSelect.dispatchEvent(new Event('change', { bubbles: true }));
-          }
-        });
+      // Order No와 Item No 드롭다운이 업데이트될 때까지 대기
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      allRows.forEach((row) => {
+        const orderNoSelect = row.querySelector('.orderDropdown');
         
-        // 다시 잠시 대기 후 Item No 설정
-        setTimeout(() => {
-          allRows.forEach((row) => {
-            const itemNoSelect = row.querySelector('.itemDropdown');
-            
-            if (itemNoSelect && row.dataset.itemNo) {
-              itemNoSelect.value = row.dataset.itemNo;
-            }
-          });
-        }, 200);
-      }, 200);
+        if (orderNoSelect && row.dataset.orderNo) {
+          orderNoSelect.value = row.dataset.orderNo;
+          // Order No change 이벤트 수동 트리거 (Item No 드롭다운 로드)
+          orderNoSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+      
+      // Item No 드롭다운이 업데이트될 때까지 대기
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      allRows.forEach((row) => {
+        const itemNoSelect = row.querySelector('.itemDropdown');
+        
+        if (itemNoSelect && row.dataset.itemNo) {
+          itemNoSelect.value = row.dataset.itemNo;
+        }
+      });
       
       // 모든 행의 아이템 정보 업데이트
       for (let i = 0; i < items.length && i < allRows.length; i++) {
