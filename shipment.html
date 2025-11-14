@@ -435,7 +435,6 @@
     </div>
     
     <div class="main-button-group">
-        <button id="emailBtn2" class="top-menu-btn">Email</button>
         <button type="button" onclick="location.href='shipmentupdate.html'" class="top-menu-btn">Update</button>
     </div>
 
@@ -518,116 +517,6 @@
         updateWeekDisplay.weekDisplay.title = `${dateStr} (${year}년 ${weekNumber}주차)`;
     }
 
-    // ========================================
-    // Email 버튼 관련 기능들
-    // ========================================
-    
-    // 체크된 deliveryNo들을 효율적으로 수집하는 함수
-    function getCheckedDeliveryNos() {
-        const checkboxes = document.querySelectorAll('.delivery-checkbox:checked');
-        return Array.from(checkboxes).map(checkbox => 
-            checkbox.getAttribute('data-deliveryNo')
-        );
-    }
-
-    // 클립보드에 텍스트 복사
-    async function copyToClipboard(text) {
-        try {
-            await navigator.clipboard.writeText(text);
-            return true;
-        } catch (err) {
-            // fallback for older browsers
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            try {
-                const result = document.execCommand('copy');
-                document.body.removeChild(textArea);
-                return result;
-            } catch (err) {
-                document.body.removeChild(textArea);
-                return false;
-            }
-        }
-    }
-
-    // 이메일 텍스트 생성
-    function generateEmailText() {
-        const checkedDeliveryNos = getCheckedDeliveryNos();
-        
-        if (checkedDeliveryNos.length === 0) {
-            return { success: false, message: "선택된 아이템이 없습니다." };
-        }
-        
-        // Set을 사용하여 중복 제거 및 빠른 검색
-        const deliveryNoSet = new Set(checkedDeliveryNos);
-        const invoiceInfo = [];
-        
-        if (window.allOrdersData) {
-            for (const order of window.allOrdersData) {
-                if (order.items) {
-                    for (const item of order.items) {
-                        if (deliveryNoSet.has(item.deliveryNo)) {
-                            const pino = item['p/ino'] || '';
-                            const invoiceno = item['invoiceno'] || '';
-                            
-                            if (pino) {
-                                invoiceInfo.push(`Proforma Invoice No. ${pino}`);
-                            } else if (invoiceno) {
-                                invoiceInfo.push(`Invoice No. ${invoiceno}`);
-                            }
-                        }
-                }
-                }
-            }
-        }
-        
-        if (invoiceInfo.length === 0) {
-            return { success: false, message: "선택된 아이템의 정보를 찾을 수 없습니다." };
-        }
-        
-        // 중복 제거
-        const uniqueInvoiceInfo = [...new Set(invoiceInfo)];
-        
-        // 이메일 텍스트 생성
-        let emailText = "Good morning.\n\nPlease send us the shipment detail for ";
-        
-        if (uniqueInvoiceInfo.length === 1) {
-            emailText += uniqueInvoiceInfo[0];
-        } else {
-            emailText += uniqueInvoiceInfo.join(" and ");
-        }
-        
-        emailText += "\n\nBest Regards,";
-        
-        return { success: true, text: emailText };
-    }
-        
-        // Email 버튼 이벤트 리스너
-    function setupEmailButton() {
-        document.getElementById("emailBtn2").addEventListener("click", async () => {
-            try {
-                const result = generateEmailText();
-                
-                if (!result.success) {
-                    alert(result.message + (result.message.includes("선택된 아이템이 없습니다") ? "\n\n체크박스를 선택한 후 다시 시도해주세요." : ""));
-                    return;
-                }
-                
-                const success = await copyToClipboard(result.text);
-                
-                if (success) {
-                    alert('Email 내용이 클립보드에 복사되었습니다.\n바로 붙여넣기(Ctrl+V)를 사용할 수 있습니다.');
-                } else {
-                    alert('클립보드 복사에 실패했습니다. 브라우저 권한을 확인해주세요.');
-                }
-            } catch (error) {
-                console.error("이메일 텍스트 생성 중 오류:", error);
-                alert("이메일 텍스트 생성 중 오류가 발생했습니다.");
-            }
-        });
-    }
 
     // ========================================
     // 모드 버튼 관련 기능들
@@ -681,8 +570,6 @@
         modeButtons.nt.addEventListener('click', () => changeMode('NT'));
         modeButtons.sm.addEventListener('click', () => changeMode('SM'));
         
-        // Email 버튼 설정
-        setupEmailButton();
     });
     
     // ========================================
