@@ -1980,25 +1980,32 @@ ETA : ${eta}
                             const cells = row.cells;
                             console.log(`[ADD] 행 ${index}: 셀 수 ${cells.length}`);
                             
-                            if (cells.length === 9) { // 첫 번째 행 (버튼이 있는 행)
+                            if (cells.length === 10) { // 첫 번째 행 (버튼이 있는 행, rowspan 포함)
                                 const deliveryNoCell = cells[0];
                                 if (deliveryNoCell && deliveryNoCell.textContent.trim()) {
-                                    currentDeliveryNo = deliveryNoCell.textContent.trim();
-                                    deliveryData[currentDeliveryNo] = { vessel: '', etd: '', eta: '' };
-                                    console.log(`[ADD] DeliveryNo 발견: ${currentDeliveryNo}`);
+                                    // 체크박스와 deliveryNo 텍스트 추출
+                                    const checkbox = deliveryNoCell.querySelector('.delivery-checkbox');
+                                    const textContent = deliveryNoCell.textContent.trim();
+                                    // 체크박스 텍스트 제거하고 deliveryNo만 추출
+                                    currentDeliveryNo = textContent.replace(/^\s*/, '').split(/\s/)[0] || checkbox?.getAttribute('data-deliveryNo') || '';
+                                    if (currentDeliveryNo) {
+                                        deliveryData[currentDeliveryNo] = { vessel: '', etd: '', eta: '' };
+                                        console.log(`[ADD] DeliveryNo 발견: ${currentDeliveryNo}`);
+                                    }
                                 }
-                            } else if (cells.length === 8 && currentDeliveryNo) { // 입력 필드가 있는 행 (2번째 행)
+                            } else if (cells.length === 9 && currentDeliveryNo) { // 세 번째 행 (입력 필드가 있는 행)
                                 // 입력 필드 찾기 (BL, Origin, 분석표 열)
-                                const vesselInput = cells[4].querySelector('.vessel-input'); // BL 열
-                                const etdInput = cells[5].querySelector('.etd-input');     // Origin 열  
-                                const etaInput = cells[6].querySelector('.eta-input');     // 분석표 열
+                                // 세 번째 행: cells[4]=vessel-input, cells[5]=etd-input, cells[6]=eta-input
+                                const vesselInput = cells[4]?.querySelector('.vessel-input'); // BL 열
+                                const etdInput = cells[5]?.querySelector('.etd-input');     // Origin 열  
+                                const etaInput = cells[6]?.querySelector('.eta-input');     // 분석표 열
                                 
                                 console.log(`[ADD] 입력 필드 찾기 - Vessel: ${vesselInput?.value}, ETD: ${etdInput?.value}, ETA: ${etaInput?.value}`);
                                 
-                                if (vesselInput && etdInput && etaInput) {
-                                    deliveryData[currentDeliveryNo].vessel = vesselInput.value.trim();
-                                    deliveryData[currentDeliveryNo].etd = etdInput.value.trim();
-                                    deliveryData[currentDeliveryNo].eta = etaInput.value.trim();
+                                if (vesselInput || etdInput || etaInput) {
+                                    if (vesselInput) deliveryData[currentDeliveryNo].vessel = vesselInput.value.trim();
+                                    if (etdInput) deliveryData[currentDeliveryNo].etd = etdInput.value.trim();
+                                    if (etaInput) deliveryData[currentDeliveryNo].eta = etaInput.value.trim();
                                     console.log(`[ADD] 데이터 저장: ${currentDeliveryNo}`, deliveryData[currentDeliveryNo]);
                                 }
                             }
