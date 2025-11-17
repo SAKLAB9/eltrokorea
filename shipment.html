@@ -842,57 +842,13 @@
             const aItems = deliveryGroups[a];
             const bItems = deliveryGroups[b];
             
-            // 각 delivery group의 모든 아이템에서 날짜 수집
-            const aAllDates = [];
-            const bAllDates = [];
+            // 각 delivery group의 첫 번째 아이템에서 날짜 정보 가져오기
+            const aFirstItem = aItems[0];
+            const bFirstItem = bItems[0];
             
-            // a deliveryNo의 모든 아이템에서 날짜 수집
-            aItems.forEach(item => {
-                const dates = [];
-                if (item['d/ndate']) {
-                    const parsedDate = parseDateString(item['d/ndate']);
-                    if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
-                }
-                if (item['p/idate']) {
-                    const parsedDate = parseDateString(item['p/idate']);
-                    if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
-                }
-                if (item['p/idate2']) {
-                    const parsedDate = parseDateString(item['p/idate2']);
-                    if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
-                }
-                if (item['invoicedate']) {
-                    const parsedDate = parseDateString(item['invoicedate']);
-                    if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
-                }
-                aAllDates.push(...dates);
-            });
-            
-            // b deliveryNo의 모든 아이템에서 날짜 수집
-            bItems.forEach(item => {
-                const dates = [];
-                if (item['d/ndate']) {
-                    const parsedDate = parseDateString(item['d/ndate']);
-                    if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
-                }
-                if (item['p/idate']) {
-                    const parsedDate = parseDateString(item['p/idate']);
-                    if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
-                }
-                if (item['p/idate2']) {
-                    const parsedDate = parseDateString(item['p/idate2']);
-                    if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
-                }
-                if (item['invoicedate']) {
-                    const parsedDate = parseDateString(item['invoicedate']);
-                    if (parsedDate && parsedDate.getTime() > 0) dates.push(parsedDate);
-                }
-                bAllDates.push(...dates);
-            });
-            
-            // 각 deliveryNo의 모든 날짜 중 가장 오래된 날짜 찾기
-            const aOldestDate = aAllDates.length > 0 ? aAllDates.reduce((oldest, current) => current < oldest ? current : oldest) : null;
-            const bOldestDate = bAllDates.length > 0 ? bAllDates.reduce((oldest, current) => current < oldest ? current : oldest) : null;
+            // 각 delivery group의 가장 오래된 날짜 찾기
+            const aOldestDate = getOldestDateFromItem(aFirstItem);
+            const bOldestDate = getOldestDateFromItem(bFirstItem);
             
             // 가장 오래된 날짜 기준으로 내림차순 정렬 (최신이 위로)
             if (aOldestDate && bOldestDate) {
