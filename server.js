@@ -1118,12 +1118,16 @@ app.post("/api/updateOrder", (req, res) => {
           // 페이지에서 설정한 업데이트 항목만 업데이트
           if (data.itemUpdateFields && data.itemUpdateFields.length > 0) {
             data.itemUpdateFields.forEach(field => {
-              if (newItem[field] !== undefined) {
-                // 'U/P' 필드는 빈 문자열도 저장 (사용자가 명시적으로 빈칸으로 설정한 경우)
-                if (field === 'U/P') {
-                  existingItem[field] = newItem[field] === null ? '' : newItem[field];
-                } else {
-                  // 다른 필드는 빈 문자열이면 필드 삭제, 아니면 값 설정
+              // 'U/P' 필드는 undefined가 아닌 경우 항상 업데이트 (빈 문자열도 포함)
+              if (field === 'U/P') {
+                if (newItem[field] !== undefined) {
+                  // 빈 문자열, null, undefined 모두 빈 문자열로 저장
+                  existingItem[field] = (newItem[field] === null || newItem[field] === undefined || newItem[field] === '') ? '' : newItem[field];
+                }
+              } else {
+                // 다른 필드는 기존 로직 유지
+                if (newItem[field] !== undefined) {
+                  // 빈 문자열이면 필드 삭제, 아니면 값 설정
                   if (newItem[field] === '' || newItem[field] === null) {
                     delete existingItem[field];
                   } else {

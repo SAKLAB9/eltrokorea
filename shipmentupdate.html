@@ -1360,7 +1360,8 @@
           const itemNo = itemDropdown?.value || '';
           const partialR = partialRInput?.value || '';
           const deliveredKG = deliveredKGInput?.value || '';
-          const up = upInput?.value || '';
+          // U/P는 빈칸도 명시적으로 빈 문자열로 전송 (값을 없애기 위해)
+          const up = upInput ? (upInput.value === '' ? '' : upInput.value || '') : '';
           
           const exportItem = {
             mode,
