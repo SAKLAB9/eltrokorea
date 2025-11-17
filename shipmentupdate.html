@@ -2731,8 +2731,8 @@
         return;
       }
       
-      // deliveryNo 정렬 (날짜 기준으로 정렬)
-      const sortedDeliveryNos = sortDeliveryNosByDate(deliveryGroups);
+      // deliveryNo 정렬 (날짜 기준으로 정렬) - 모든 아이템의 날짜 확인
+      const sortedDeliveryNos = await sortDeliveryNosByDate(deliveryGroups);
       
       // 상세한 테이블 생성 (타이트한 폭)
       let html = '<table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px;">';
@@ -3172,45 +3172,80 @@
     });
   }
   
-  // Delivery No를 날짜 기준으로 정렬하는 함수 (shipmentupdate.html 구조에 맞게 수정)
+  // Delivery No를 날짜 기준으로 정렬하는 함수 (모든 아이템의 날짜 확인)
   function sortDeliveryNosByDate(deliveryGroups) {
-    return Object.keys(deliveryGroups).sort((a, b) => {
-      const aGroup = deliveryGroups[a];
-      const bGroup = deliveryGroups[b];
-      
-      // shipmentupdate.html의 deliveryGroups 구조에 맞게 날짜 정보 가져오기
-      const aItem = {
-        'd/ndate': aGroup.dndate,
-        'p/idate': aGroup.pidate,
-        'p/i2date': aGroup.pidate2,
-        'invoicedate': aGroup.invoicedate
-      };
-      
-      const bItem = {
-        'd/ndate': bGroup.dndate,
-        'p/idate': bGroup.pidate,
-        'p/i2date': bGroup.pidate2,
-        'invoicedate': bGroup.invoicedate
-      };
-      
-      // 각 delivery group의 가장 오래된 날짜 찾기
-      const aOldestDate = getOldestDateFromItem(aItem);
-      const bOldestDate = getOldestDateFromItem(bItem);
-      
-      // 가장 오래된 날짜 기준으로 내림차순 정렬 (최신이 위로)
-      if (aOldestDate && bOldestDate) {
-        return bOldestDate.getTime() - aOldestDate.getTime();
-      } else if (aOldestDate) {
-        return -1; // a가 날짜가 있으면 a가 위로
-      } else if (bOldestDate) {
-        return 1; // b가 날짜가 있으면 b가 위로
-      } else {
-        // 둘 다 날짜가 없으면 EK-번호 기준으로 정렬
-        const aNum = parseInt(a.replace('EK-', '')) || 0;
-        const bNum = parseInt(b.replace('EK-', '')) || 0;
-        return bNum - aNum;
-      }
-    });
+    // 모든 주문 데이터를 다시 로드하여 각 deliveryNo의 모든 아이템 날짜 수집
+    return fetch('/api/orders')
+      .then(response => response.json())
+      .then(allOrders => {
+        // 각 deliveryNo의 모든 아이템 날짜를 수집하는 함수
+        const getAllDatesForDeliveryNo = (deliveryNo) => {
+          const allDates = [];
+          
+          // 모든 주문에서 해당 deliveryNo를 가진 모든 아이템 찾기
+          allOrders.forEach(order => {
+            if (order.items && order.items.length > 0) {
+              order.items.forEach(item => {
+                const itemDeliveryNo = item.deliveryno || item.deliveryNo;
+                if (itemDeliveryNo === deliveryNo) {
+                  // 각 아이템의 날짜 수집
+                  if (item['d/ndate']) {
+                    const parsedDate = parseDateString(item['d/ndate']);
+                    if (parsedDate && parsedDate.getTime() > 0) allDates.push(parsedDate);
+                  }
+                  if (item['p/idate']) {
+                    const parsedDate = parseDateString(item['p/idate']);
+                    if (parsedDate && parsedDate.getTime() > 0) allDates.push(parsedDate);
+                  }
+                  if (item['p/idate2']) {
+                    const parsedDate = parseDateString(item['p/idate2']);
+                    if (parsedDate && parsedDate.getTime() > 0) allDates.push(parsedDate);
+                  }
+                  if (item['invoicedate']) {
+                    const parsedDate = parseDateString(item['invoicedate']);
+                    if (parsedDate && parsedDate.getTime() > 0) allDates.push(parsedDate);
+                  }
+                }
+              });
+            }
+          });
+          
+          return allDates;
+        };
+        
+        // 정렬 수행
+        return Object.keys(deliveryGroups).sort((a, b) => {
+          const aAllDates = getAllDatesForDeliveryNo(a);
+          const bAllDates = getAllDatesForDeliveryNo(b);
+          
+          // 각 deliveryNo의 모든 날짜 중 가장 오래된 날짜 찾기
+          const aOldestDate = aAllDates.length > 0 ? aAllDates.reduce((oldest, current) => current < oldest ? current : oldest) : null;
+          const bOldestDate = bAllDates.length > 0 ? bAllDates.reduce((oldest, current) => current < oldest ? current : oldest) : null;
+          
+          // 가장 오래된 날짜 기준으로 내림차순 정렬 (최신이 위로)
+          if (aOldestDate && bOldestDate) {
+            return bOldestDate.getTime() - aOldestDate.getTime();
+          } else if (aOldestDate) {
+            return -1; // a가 날짜가 있으면 a가 위로
+          } else if (bOldestDate) {
+            return 1; // b가 날짜가 있으면 b가 위로
+          } else {
+            // 둘 다 날짜가 없으면 EK-번호 기준으로 정렬
+            const aNum = parseInt(a.replace('EK-', '')) || 0;
+            const bNum = parseInt(b.replace('EK-', '')) || 0;
+            return bNum - aNum;
+          }
+        });
+      })
+      .catch(error => {
+        console.error('정렬 중 오류:', error);
+        // 오류 발생 시 기본 정렬 (EK-번호 기준)
+        return Object.keys(deliveryGroups).sort((a, b) => {
+          const aNum = parseInt(a.replace('EK-', '')) || 0;
+          const bNum = parseInt(b.replace('EK-', '')) || 0;
+          return bNum - aNum;
+        });
+      });
   }
 
   // 페이지 로드 시 초기화
