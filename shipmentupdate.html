@@ -2249,15 +2249,17 @@
         }
       }
       
-      // U/P 값 설정
+      // U/P 값 설정 (여러 가능한 필드 이름 확인 - PC/Mac 호환성)
       const upInput = row.querySelector('.upInput');
       if (upInput) {
-        if (item['U/P']) {
-        upInput.value = item['U/P'];
+        // 여러 가능한 필드 이름 확인 (PC에서 필드 이름이 다르게 저장될 수 있음)
+        const upValue = item['U/P'] || item['U_P'] || item['unitPrice'] || item['unitprice'] || '';
+        if (upValue) {
+          upInput.value = upValue;
         } else {
           upInput.value = ''; // U/P 값이 없으면 공란으로 설정
+        }
       }
-    }
     
     // 선적R과 주문R 비교하여 빨간색 테두리 표시
     checkPartialRMatch();
@@ -2890,6 +2892,17 @@
   // deliveryNo 데이터로 테이블 채우기 함수
   async function fillTableWithDeliveryData(items, targetDeliveryNo) {
     // console.log("[fillTableWithDeliveryData] 테이블 채우기 시작:", items, "Target deliveryNo:", targetDeliveryNo);
+    // 디버깅: 첫 번째 아이템의 U/P 필드 확인
+    if (items && items.length > 0 && items[0]) {
+      const firstItem = items[0];
+      const upFields = {
+        'U/P': firstItem['U/P'],
+        'U_P': firstItem['U_P'],
+        'unitPrice': firstItem['unitPrice'],
+        'unitprice': firstItem['unitprice']
+      };
+      console.log('[fillTableWithDeliveryData] 첫 번째 아이템의 U/P 필드 확인:', upFields, '전체 키:', Object.keys(firstItem));
+    }
     
     const tableBody = document.getElementById('shipmentTableBody');
     if (!tableBody) {
