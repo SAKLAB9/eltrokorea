@@ -1119,11 +1119,16 @@ app.post("/api/updateOrder", (req, res) => {
           if (data.itemUpdateFields && data.itemUpdateFields.length > 0) {
             data.itemUpdateFields.forEach(field => {
               if (newItem[field] !== undefined) {
-                // 빈 문자열이면 필드 삭제, 아니면 값 설정
-                if (newItem[field] === '' || newItem[field] === null) {
-                  delete existingItem[field];
+                // 'U/P' 필드는 빈 문자열도 저장 (사용자가 명시적으로 빈칸으로 설정한 경우)
+                if (field === 'U/P') {
+                  existingItem[field] = newItem[field] === null ? '' : newItem[field];
                 } else {
-                existingItem[field] = newItem[field];
+                  // 다른 필드는 빈 문자열이면 필드 삭제, 아니면 값 설정
+                  if (newItem[field] === '' || newItem[field] === null) {
+                    delete existingItem[field];
+                  } else {
+                    existingItem[field] = newItem[field];
+                  }
                 }
               }
             });
