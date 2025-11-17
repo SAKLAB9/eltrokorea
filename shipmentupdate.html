@@ -2601,7 +2601,15 @@
                 // 이미 처리된 deliveryNo면 모드 확인 후 스킵
                 if (deliveryGroups[deliveryKey]) {
                   // 모드가 일치하면 카운트 증가, 아니면 스킵
-                  if (deliveryGroups[deliveryKey].orderMode === selectedMode) {
+                  // SM 선택 시 SM-B, SM-C 모두 포함
+                  let modeMatches = false;
+                  if (selectedMode === 'SM') {
+                    modeMatches = deliveryGroups[deliveryKey].orderMode === 'SM-B' || deliveryGroups[deliveryKey].orderMode === 'SM-C';
+                  } else {
+                    modeMatches = deliveryGroups[deliveryKey].orderMode === selectedMode;
+                  }
+                  
+                  if (modeMatches) {
                     deliveryGroups[deliveryKey].itemCount++;
                   }
                   return;
