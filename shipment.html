@@ -748,9 +748,10 @@
                 const isDefect = item.defective === true ? 'checked' : '';
                 const defectCheckbox = `<input type="checkbox" class="defect-checkbox" onchange="toggleDefectStatus(this)" ${isDefect}>`;
                 
-                // KG 열과 U/P 열 값 설정 (모든 모드에서 KG 표시, NT 모드에서만 U/P 표시)
+                // KG 열과 U/P 열 값 설정 (모든 모드에서 KG와 U/P 표시)
                 const kgValue = item.status || ''; // 모든 모드에서 KG 표시
-                const upValue = item.mode === 'NT' ? (item['U/P'] || '') : ''; // NT 모드일 때만 U/P 값 표시
+                // 모든 모드에서 U/P 값 일괄 로드 (PC/Mac 호환성을 위해 여러 필드 이름 확인)
+                const upValue = item['U/P'] || item['U_P'] || item['unitPrice'] || item['unitprice'] || '';
                 
                 // Price 계산: U/P × KG = Price
                 let priceValue = '';
