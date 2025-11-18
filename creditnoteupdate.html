@@ -1125,7 +1125,7 @@
   // 아이템 데이터 추출 함수
   function extractItemData(item) {
     const typeMap = {
-      'c/nno': { type: 'C/N', no: 'c/nno', date: 'c/ndate', euro: 'data.totalcommission', dollar: 'c/ndollar' },
+      'c/nno': { type: 'C/N', no: 'c/nno', date: 'c/ndate', euro: 'c/neuro', dollar: 'c/ndollar' },
       'o/pno': { type: 'O/P', no: 'o/pno', date: 'o/pdate', euro: 'o/peuro', dollar: 'o/pdollar' },
       'l/pno': { type: 'L/P', no: 'l/pno', date: 'l/pdate', euro: 'l/peuro', dollar: 'l/pdollar' }
     };
@@ -1136,9 +1136,7 @@
           type: fields.type,
           no: item[fields.no],
           date: item[fields.date] || '',
-          euro: fields.euro.includes('.') ? 
-            (item.data?.totalcommission || '') : 
-            (item[fields.euro] || ''),
+          euro: item[fields.euro] || '',
           dollar: item[fields.dollar] || '',
           isused: item.isused || false
         };
