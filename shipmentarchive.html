@@ -1272,15 +1272,11 @@
                 `;
             };
             
-            // 숫자 포맷팅 함수 (중복 제거, NaN 방지)
+            // 숫자 포맷팅 함수 (중복 제거)
             const formatPrice = (value, prefix = '') => {
-                if (!value || value === '' || value === null || value === undefined) {
-                    return '';
-                }
+                if (!value || value === '') return '';
                 const numValue = Number(value);
-                if (isNaN(numValue)) {
-                    return '';
-                }
+                if (isNaN(numValue)) return '';
                 return `${prefix}${numValue.toLocaleString()}`;
             };
             
@@ -1377,7 +1373,12 @@
                 
                 fourthRow.innerHTML = `
                     <td></td>
-                    <td style="${textStyle}">${formatPrice(itemData.piprice, '$')}${itemData.piprice2 ? '<br/>' + formatPrice(itemData.piprice2, '$') : ''}</td>
+                    <td style="${textStyle}">${(() => {
+                        const prices = [];
+                        if (itemData.piprice) prices.push(formatPrice(itemData.piprice, '$'));
+                        if (itemData.piprice2) prices.push(formatPrice(itemData.piprice2, '$'));
+                        return prices.join(', ');
+                    })()}</td>
                     <td style="${textStyle}">${formatPrice(itemData.swiftamount, '$')}${itemData.swiftamount2 ? '<br/>' + formatPrice(itemData.swiftamount2, '$') : ''}</td>
                     <td style="${invoicePriceStyle}">${formatPrice(itemData.invoiceprice, '$')}</td>
                     <td></td>
