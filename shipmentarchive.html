@@ -1272,9 +1272,16 @@
                 `;
             };
             
-            // 숫자 포맷팅 함수 (중복 제거)
+            // 숫자 포맷팅 함수 (중복 제거, NaN 방지)
             const formatPrice = (value, prefix = '') => {
-                return value ? `${prefix}${Number(value).toLocaleString()}` : '';
+                if (!value || value === '' || value === null || value === undefined) {
+                    return '';
+                }
+                const numValue = Number(value);
+                if (isNaN(numValue)) {
+                    return '';
+                }
+                return `${prefix}${numValue.toLocaleString()}`;
             };
             
             deliveryList.forEach(delivery => {
