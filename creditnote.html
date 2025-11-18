@@ -882,9 +882,8 @@
                         // 각 deliveryNo별 commission 계산 (항상 euro로 표시)
                         const deliveryCommission = calculateCategory1Commission(items);
                         const euroValue = deliveryCommission > 0 ? deliveryCommission.toFixed(2) : '';
-                        const euroCell = isFirst ? 
-                            `<td contenteditable="false" ${deliveryCommission > 0 ? 'style="background-color: #ffff00;"' : ''}>${euroValue}</td>` :
-                            `<td contenteditable="false">${euroValue}</td>`;
+                        // 모든 행에 commission이 있으면 노란색 배경 적용
+                        const euroCell = `<td contenteditable="false" ${deliveryCommission > 0 ? 'style="background-color: #ffff00;"' : ''}>${euroValue}</td>`;
                         
                         row.innerHTML = `
                             ${monthCell}
