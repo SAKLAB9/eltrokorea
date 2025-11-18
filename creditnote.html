@@ -1132,8 +1132,8 @@
                     const creditItem = creditNoteData.find(creditItem => creditItem['o/pno'] === item.invoiceno);
                     const oPeuro = creditItem?.['o/peuro'] || '';
                     
-                    // 배경색 설정 (값이 있을 때 연한 초록색)
-                    const backgroundColor = (overPaymentValue > 0 && item.deliveryNo && item.deliveryNo.trim() !== '') ? 'background-color: #d4edda;' : '';
+                    // 배경색 설정 (overPaymentValue가 0보다 크면 모든 행에 연한 초록색 적용)
+                    const backgroundColor = overPaymentValue > 0 ? 'background-color: #d4edda;' : '';
                     
                     return {
                         ...item,
@@ -1155,7 +1155,7 @@
                             <td contenteditable="false">${item.invoiceno || ''}</td>
                             <td contenteditable="false">${item.invoicedate || ''}</td>
                         <td contenteditable="false">${item.oPeuro && item.oPeuro !== '0' ? item.oPeuro : ''}</td>
-                        <td contenteditable="false" style="${item.backgroundColor}">${item.overPaymentValue.toFixed(2)}</td>
+                        <td contenteditable="false" style="${item.backgroundColor}">${item.overPaymentValue > 0 ? item.overPaymentValue.toFixed(2) : ''}</td>
                             <td contenteditable="false">
                             <input type="checkbox" class="row-checkbox" data-delivery-no="${item.invoiceno || ''}" data-month="${month}" data-year="${currentYear}" data-category="Over Payment">
                             </td>
