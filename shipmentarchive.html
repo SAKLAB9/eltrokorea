@@ -1373,12 +1373,7 @@
                 
                 fourthRow.innerHTML = `
                     <td></td>
-                    <td style="${textStyle}">${(() => {
-                        const prices = [];
-                        if (itemData.piprice) prices.push(formatPrice(itemData.piprice, '$'));
-                        if (itemData.piprice2) prices.push(formatPrice(itemData.piprice2, '$'));
-                        return prices.join(', ');
-                    })()}</td>
+                    <td style="${textStyle}">${formatPrice(itemData.piprice, '$')}${itemData.piprice2 ? '<br/>' + formatPrice(itemData.piprice2, '$') : ''}</td>
                     <td style="${textStyle}">${formatPrice(itemData.swiftamount, '$')}${itemData.swiftamount2 ? '<br/>' + formatPrice(itemData.swiftamount2, '$') : ''}</td>
                     <td style="${invoicePriceStyle}">${formatPrice(itemData.invoiceprice, '$')}</td>
                     <td></td>
