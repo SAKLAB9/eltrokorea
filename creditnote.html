@@ -875,34 +875,16 @@
                 
                 // 각 deliveryno별로 1개 행만 생성
                 const deliveryNos = Object.keys(groupedByDeliveryNo);
-                    const createRow = (item, isFirst, rowspan = '') => {
+                    const createRow = (item, items, isFirst, rowspan = '') => {
                         const row = document.createElement('tr');
                         const monthCell = isFirst ? `<td rowspan="${deliveryNos.length}">${month}</td>` : '';
                         const commissionCell = isFirst ? 
                             `<td contenteditable="false" ${category1Commission > 0 ? 'style="background-color: #ffff00;"' : ''}>${category1Commission > 0 ? category1Commission.toFixed(2) : ''}</td>` :
                             '<td contenteditable="false"></td>';
                         
-                        // creditNoteData에서 해당 deliveryNo나 invoiceno로 유로 값 찾기
-                        let euroValue = '';
-                        const creditItem = creditNoteData.find(cnItem => {
-                            // deliveryNo로 매칭 시도
-                            if (item.deliveryNo) {
-                                const cnDeliveryNo = cnItem.deliveryNo || cnItem.deliveryno;
-                                if (cnDeliveryNo === item.deliveryNo) {
-                                    return true;
-                                }
-                            }
-                            // invoiceno로 매칭 시도 (c/nno와 매칭)
-                            if (item.invoiceno && cnItem['c/nno'] === item.invoiceno) {
-                                return true;
-                            }
-                            return false;
-                        });
-                        
-                        if (creditItem) {
-                            // c/neuro 우선, 없으면 data.totalcommission 사용
-                            euroValue = creditItem['c/neuro'] || creditItem?.data?.totalcommission || '';
-                        }
+                        // 각 deliveryNo별 commission 계산
+                        const deliveryCommission = calculateCategory1Commission(items);
+                        const euroValue = deliveryCommission > 0 ? deliveryCommission.toFixed(2) : '';
                         
                         row.innerHTML = `
                             ${monthCell}
@@ -921,7 +903,7 @@
                     for (let i = 0; i < deliveryNos.length; i++) {
                         const items = groupedByDeliveryNo[deliveryNos[i]];
                         const firstItem = items[0];
-                        const category1Row = createRow(firstItem, i === 0);
+                        const category1Row = createRow(firstItem, items, i === 0);
                         
                         if (i === 0) firstRowOfMonth = category1Row;
                     
