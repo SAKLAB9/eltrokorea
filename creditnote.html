@@ -882,6 +882,28 @@
                             `<td contenteditable="false" ${category1Commission > 0 ? 'style="background-color: #ffff00;"' : ''}>${category1Commission > 0 ? category1Commission.toFixed(2) : ''}</td>` :
                             '<td contenteditable="false"></td>';
                         
+                        // creditNoteData에서 해당 deliveryNo나 invoiceno로 유로 값 찾기
+                        let euroValue = '';
+                        const creditItem = creditNoteData.find(cnItem => {
+                            // deliveryNo로 매칭 시도
+                            if (item.deliveryNo) {
+                                const cnDeliveryNo = cnItem.deliveryNo || cnItem.deliveryno;
+                                if (cnDeliveryNo === item.deliveryNo) {
+                                    return true;
+                                }
+                            }
+                            // invoiceno로 매칭 시도 (c/nno와 매칭)
+                            if (item.invoiceno && cnItem['c/nno'] === item.invoiceno) {
+                                return true;
+                            }
+                            return false;
+                        });
+                        
+                        if (creditItem) {
+                            // c/neuro 우선, 없으면 data.totalcommission 사용
+                            euroValue = creditItem['c/neuro'] || creditItem?.data?.totalcommission || '';
+                        }
+                        
                         row.innerHTML = `
                             ${monthCell}
                             <td contenteditable="false">SM</td>
@@ -889,7 +911,7 @@
                             <td contenteditable="false">${item.invoiceno || ''}</td>
                             <td contenteditable="false">${item.invoicedate || ''}</td>
                             ${commissionCell}
-                            <td contenteditable="false"></td>
+                            <td contenteditable="false">${euroValue}</td>
                             <td contenteditable="false"></td>
                             <td contenteditable="false"></td>
                         `;
