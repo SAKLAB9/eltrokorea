@@ -878,13 +878,13 @@
                     const createRow = (item, items, isFirst, rowspan = '') => {
                         const row = document.createElement('tr');
                         const monthCell = isFirst ? `<td rowspan="${deliveryNos.length}">${month}</td>` : '';
-                        const commissionCell = isFirst ? 
-                            `<td contenteditable="false" ${category1Commission > 0 ? 'style="background-color: #ffff00;"' : ''}>${category1Commission > 0 ? category1Commission.toFixed(2) : ''}</td>` :
-                            '<td contenteditable="false"></td>';
                         
-                        // 각 deliveryNo별 commission 계산
+                        // 각 deliveryNo별 commission 계산 (항상 euro로 표시)
                         const deliveryCommission = calculateCategory1Commission(items);
                         const euroValue = deliveryCommission > 0 ? deliveryCommission.toFixed(2) : '';
+                        const euroCell = isFirst ? 
+                            `<td contenteditable="false" ${deliveryCommission > 0 ? 'style="background-color: #ffff00;"' : ''}>${euroValue}</td>` :
+                            `<td contenteditable="false">${euroValue}</td>`;
                         
                         row.innerHTML = `
                             ${monthCell}
@@ -892,8 +892,8 @@
                             <td contenteditable="false">${item.deliveryNo || ''}</td>
                             <td contenteditable="false">${item.invoiceno || ''}</td>
                             <td contenteditable="false">${item.invoicedate || ''}</td>
-                            ${commissionCell}
-                            <td contenteditable="false">${euroValue}</td>
+                            ${euroCell}
+                            <td contenteditable="false"></td>
                             <td contenteditable="false"></td>
                             <td contenteditable="false"></td>
                         `;
