@@ -2676,7 +2676,7 @@
     let cachedOrderData = null;
     async function getOrderData() {
       if (!cachedOrderData) {
-        const response = await fetch('orderData.json');
+        const response = await fetch('/api/orders');
         cachedOrderData = await response.json();
       }
       return cachedOrderData;
@@ -2733,11 +2733,11 @@
         matchingItems.forEach((item, idx) => {
           const itemPino2 = item['p/ino2']?.trim();
           if (itemPino2) {
-            allPino2Values.push({ index: idx, value: itemPino2, orderNo: item.orderNo || 'N/A' });
+            allPino2Values.push({ index: idx, orderNo: item.orderNo || 'N/A', pino2: itemPino2 });
           }
           console.log(`[SWIFT DEBUG] ${deliveryNo} - 아이템[${idx}]:`, {
             orderNo: item.orderNo || 'N/A',
-            pino: item['p/ino'],
+            pino: item['p/ino']?.trim(),
             pino2: itemPino2,
             invoiceno: item.invoiceno
           });
@@ -2745,39 +2745,23 @@
         
         console.log(`[SWIFT DEBUG] ${deliveryNo} - 모든 p/ino2 값:`, allPino2Values);
         
-        matchingItems.forEach(item => {
+        matchingItems.forEach((item, idx) => {
           // p/ino 수집 (첫 번째로 발견된 값만 사용)
           if (item['p/ino'] && item['p/ino'].trim() && !pino) {
             pino = item['p/ino'].trim();
-            console.log(`[SWIFT DEBUG] ${deliveryNo} - p/ino 수집:`, pino);
+            console.log(`[SWIFT DEBUG] ${deliveryNo} - p/ino 수집 [아이템${idx}]:`, pino);
+          }
+          // p/ino2 수집 (모든 아이템에서 첫 번째로 발견된 값 사용)
+          if (item['p/ino2'] && item['p/ino2'].trim() && !pino2) {
+            pino2 = item['p/ino2'].trim();
+            console.log(`[SWIFT DEBUG] ${deliveryNo} - p/ino2 수집 [아이템${idx}]:`, pino2, `(orderNo: ${item.orderNo || 'N/A'})`);
           }
         });
-        
-        // p/ino2 수집: shipmentarchive.html처럼 모든 아이템에서 확인하되, 
-        // p/ino와 다른 값이 있는 경우 그 값을 사용 (p/ino2는 보통 p/ino와 다른 값)
-        matchingItems.forEach(item => {
-          const itemPino2 = item['p/ino2']?.trim();
-          if (itemPino2 && itemPino2 !== pino) {
-            // p/ino2가 있고 p/ino와 다른 경우에만 수집
-            if (!pino2 || pino2 === pino) {
-              pino2 = itemPino2;
-              console.log(`[SWIFT DEBUG] ${deliveryNo} - p/ino2 수집:`, pino2, `(아이템에서: ${itemPino2})`);
-            }
-          }
-        });
-        
-        // p/ino2가 여전히 없거나 p/ino와 같은 경우, 모든 아이템에서 다시 확인
-        if (!pino2 || pino2 === pino) {
-          matchingItems.forEach(item => {
-            const itemPino2 = item['p/ino2']?.trim();
-            if (itemPino2 && !pino2) {
-              pino2 = itemPino2;
-              console.log(`[SWIFT DEBUG] ${deliveryNo} - p/ino2 재수집:`, pino2);
-            }
-          });
-        }
         
         console.log(`[SWIFT DEBUG] ${deliveryNo} - 최종 수집 결과:`, { pino, pino2 });
+        if (deliveryNo === 'EK-04' && pino2 === '8993014165') {
+          console.error(`[SWIFT ERROR] EK-04 - 잘못된 p/ino2 수집됨! 8993014165는 존재하지 않아야 함. 모든 p/ino2 값:`, allPino2Values);
+        }
         
         // 드롭다운 옵션 업데이트
         pinoSelect.innerHTML = '<option value="" style="text-align: center;">Choose</option>';
