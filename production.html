@@ -1753,6 +1753,7 @@ Thank you.`;
                     // 분석표 삭제 시 남은 파일 확인 후 isProductionComplete 업데이트
                     if (currentFileType === '분석표') {
                         // 삭제 후 남은 분석표 파일 확인
+                        // 파일이 itemNo 폴더에 직접 저장되므로 itemNo 폴더 확인
                         try {
                             const listResponse = await fetch(`/api/listFiles/${selectedMode}/OrderNO/${currentOrderNo}/${currentItemNo}`);
                             if (listResponse.ok) {

@@ -1120,7 +1120,7 @@ app.post("/api/updateOrder", (req, res) => {
             data.itemUpdateFields.forEach(field => {
               // 'U/P' 필드는 undefined가 아닌 경우 항상 업데이트 (빈 문자열도 포함)
               if (field === 'U/P') {
-                if (newItem[field] !== undefined) {
+              if (newItem[field] !== undefined) {
                   // 빈 문자열, null, undefined 모두 빈 문자열로 저장
                   existingItem[field] = (newItem[field] === null || newItem[field] === undefined || newItem[field] === '') ? '' : newItem[field];
                 }
@@ -1131,7 +1131,7 @@ app.post("/api/updateOrder", (req, res) => {
                   if (newItem[field] === '' || newItem[field] === null) {
                     delete existingItem[field];
                   } else {
-                    existingItem[field] = newItem[field];
+                existingItem[field] = newItem[field];
                   }
                 }
               }
