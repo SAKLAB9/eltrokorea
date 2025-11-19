@@ -1338,12 +1338,12 @@
             const save2Btn = document.getElementById('save2Btn');
             const saveBtn = document.getElementById('saveBtn');
             
-            if (selectedPino && save2Btn && saveBtn) {
+            if (selectedPino && selectedDeliveryNo && save2Btn && saveBtn) {
               // 실제 데이터에서 해당 deliveryNo의 p/ino2 값 확인
               const orderData = await getOrderData();
               const matchingItems = orderData
                 .flatMap(order => order.items || [])
-                .filter(item => (item.deliveryNo || item.deliveryno) === deliveryNo);
+                .filter(item => (item.deliveryNo || item.deliveryno) === selectedDeliveryNo);
               
               let actualPino2 = '';
               matchingItems.forEach(item => {
