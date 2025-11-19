@@ -1072,8 +1072,36 @@
         });
         
         // 디버깅: 수집된 deliveryNo 목록 출력
-        console.log('[SWIFT] 수집된 deliveryNo 목록:', Object.keys(deliveryGroups).sort());
-        console.log('[SWIFT] 총 deliveryNo 개수:', Object.keys(deliveryGroups).length);
+        const allDeliveryNos = Object.keys(deliveryGroups).sort();
+        console.log('[SWIFT] 수집된 deliveryNo 목록:', allDeliveryNos);
+        console.log('[SWIFT] 총 deliveryNo 개수:', allDeliveryNos.length);
+        console.log('[SWIFT] EK-29 포함 여부:', allDeliveryNos.includes('EK-29'));
+        console.log('[SWIFT] EK-06 포함 여부:', allDeliveryNos.includes('EK-06'));
+        
+        // EK-29와 EK-06이 없는 경우, 원본 데이터에서 직접 확인
+        if (!allDeliveryNos.includes('EK-29') || !allDeliveryNos.includes('EK-06')) {
+          console.log('[SWIFT] 누락된 deliveryNo 찾기 시작...');
+          const missingDeliveryNos = [];
+          orderData.forEach((order, orderIndex) => {
+            if (order.items?.length) {
+              order.items.forEach((item, itemIndex) => {
+                const dn = item.deliveryno || item.deliveryNo;
+                if (dn && (dn.includes('29') || dn.includes('06'))) {
+                  console.log(`[SWIFT] 발견: order[${orderIndex}].items[${itemIndex}].deliveryNo = "${dn}"`, {
+                    orderNo: order.orderNo,
+                    deliveryNo: dn,
+                    deliveryno: item.deliveryno,
+                    deliveryNo_field: item.deliveryNo
+                  });
+                  if (!allDeliveryNos.includes(dn.trim())) {
+                    missingDeliveryNos.push(dn.trim());
+                  }
+                }
+              });
+            }
+          });
+          console.log('[SWIFT] 누락된 deliveryNo:', missingDeliveryNos);
+        }
         
         const sortedDeliveryNos = Object.keys(deliveryGroups).sort((a, b) => {
           const aFirstItem = deliveryGroups[a][0];
