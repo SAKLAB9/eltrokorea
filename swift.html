@@ -1523,22 +1523,8 @@
         const commissionCell = row.querySelector('td:nth-child(6)');
         
         if (dueDateCell && commissionCell) {
-          // colspan 제거
-          dueDateCell.removeAttribute('colspan');
-          
-          // 스타일 초기화
-          Object.assign(dueDateCell.style, {
-            width: '30px',
-            minWidth: '30px',
-            maxWidth: '30px',
-            height: 'auto',
-            minHeight: '33px',
-            verticalAlign: 'top'
-          });
-          
-          // 6열 다시 표시
-          commissionCell.style.display = '';
-          
+          // restoreCells 함수를 사용하여 완전히 복원
+          restoreCells(dueDateCell, commissionCell);
         }
         
         // 6열 수수료 입력 초기화
