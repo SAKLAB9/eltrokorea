@@ -1071,61 +1071,6 @@
           }
         });
         
-        // 디버깅: 수집된 deliveryNo 목록 출력
-        const allDeliveryNos = Object.keys(deliveryGroups).sort();
-        console.log('[SWIFT] 수집된 deliveryNo 목록:', allDeliveryNos);
-        console.log('[SWIFT] 총 deliveryNo 개수:', allDeliveryNos.length);
-        console.log('[SWIFT] EK-29 포함 여부:', allDeliveryNos.includes('EK-29'));
-        console.log('[SWIFT] EK-06 포함 여부:', allDeliveryNos.includes('EK-06'));
-        
-        // EK-29와 EK-06이 없는 경우, 원본 데이터에서 직접 확인 (더 자세한 디버깅)
-        if (!allDeliveryNos.includes('EK-29') || !allDeliveryNos.includes('EK-06')) {
-          console.log('[SWIFT] 누락된 deliveryNo 찾기 시작...');
-          const missingDeliveryNos = [];
-          const allDeliveryFields = new Set();
-          
-          orderData.forEach((order, orderIndex) => {
-            if (order.items?.length) {
-              order.items.forEach((item, itemIndex) => {
-                // 모든 deliveryNo 관련 필드 확인
-                const dn1 = item.deliveryno;
-                const dn2 = item.deliveryNo;
-                const dn3 = item.deliveryNO;
-                const dn4 = item.DeliveryNo;
-                
-                // 모든 필드 수집
-                [dn1, dn2, dn3, dn4].forEach(dn => {
-                  if (dn && typeof dn === 'string') {
-                    allDeliveryFields.add(dn.trim());
-                  }
-                });
-                
-                // 29나 06이 포함된 모든 필드 확인
-                [dn1, dn2, dn3, dn4].forEach((dn, idx) => {
-                  if (dn && typeof dn === 'string' && (dn.includes('29') || dn.includes('06'))) {
-                    console.log(`[SWIFT] 발견: order[${orderIndex}].items[${itemIndex}]`, {
-                      orderNo: order.orderNo,
-                      fieldIndex: idx,
-                      deliveryno: dn1,
-                      deliveryNo: dn2,
-                      deliveryNO: dn3,
-                      DeliveryNo: dn4,
-                      foundValue: dn,
-                      allFields: Object.keys(item).filter(k => k.toLowerCase().includes('delivery'))
-                    });
-                    if (!allDeliveryNos.includes(dn.trim())) {
-                      missingDeliveryNos.push(dn.trim());
-                    }
-                  }
-                });
-              });
-            }
-          });
-          
-          console.log('[SWIFT] 데이터에 있는 모든 deliveryNo 필드 값:', Array.from(allDeliveryFields).sort());
-          console.log('[SWIFT] 누락된 deliveryNo:', missingDeliveryNos);
-        }
-        
         const sortedDeliveryNos = Object.keys(deliveryGroups).sort((a, b) => {
           const aFirstItem = deliveryGroups[a][0];
           const bFirstItem = deliveryGroups[b][0];
