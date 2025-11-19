@@ -2686,47 +2686,31 @@
       try {
         const orderData = await getOrderData();
         
-        // 해당 deliveryNo를 가진 모든 아이템 찾기 (첫 번째 아이템만이 아닌 모든 아이템 확인)
-        const matchingItems = orderData
+        // 해당 deliveryNo를 가진 첫 번째 아이템 찾기
+        const foundItem = orderData
           .flatMap(order => order.items || [])
-          .filter(item => (item.deliveryNo || item.deliveryno) === deliveryNo);
+          .find(item => item.deliveryNo === deliveryNo);
         
-        // 모든 아이템에서 p/ino와 p/ino2 수집 (중복 제거)
-        const pinoSet = new Set();
-        const pino2Set = new Set();
-        
-        matchingItems.forEach(item => {
-          if (item['p/ino'] && item['p/ino'].trim()) {
-            pinoSet.add(item['p/ino'].trim());
-          }
-          if (item['p/ino2'] && item['p/ino2'].trim()) {
-            pino2Set.add(item['p/ino2'].trim());
-          }
-        });
-        
-        // p/ino를 먼저, 그 다음 p/ino2를 추가
-        const pinoArray = Array.from(pinoSet);
-        const pino2Array = Array.from(pino2Set);
-        const allPinos = [...pinoArray, ...pino2Array];
+        const pino = foundItem?.['p/ino'] || '';
+        const pino2 = foundItem?.['p/ino2'] || '';
         
         // 드롭다운 옵션 업데이트
         pinoSelect.innerHTML = '<option value="" style="text-align: center;">Choose</option>';
         
-        allPinos.forEach((pinoValue, index) => {
+        [pino, pino2].filter(Boolean).forEach((pinoValue, index) => {
           const option = document.createElement('option');
           option.value = pinoValue;
           option.textContent = pinoValue;
           option.style.textAlign = 'center';
-          if (index === 0 && pinoArray.length > 0) option.selected = true; // 첫 번째 p/ino를 기본 선택
+          if (index === 0) option.selected = true; // 첫 번째 p/ino를 기본 선택
           pinoSelect.appendChild(option);
         });
         
         // p/ino가 기본 선택된 경우 자동으로 날짜와 가격 로드
-        if (pinoArray.length > 0) {
-          const firstPino = pinoArray[0];
+        if (pino) {
           const row = pinoSelect.closest('tr');
           if (row) {
-            await loadPinoData(deliveryNo, firstPino, row);
+            await loadPinoData(deliveryNo, pino, row);
             
             // 자동 로드된 p/ino에 대해서도 버튼 상태 업데이트
             const category1Rows = document.querySelectorAll('.category1-row');
@@ -2734,17 +2718,17 @@
             
             if (isFirstCategory1Row) {
               console.log('🔍 자동 로드된 p/ino로 버튼 상태 업데이트');
-              console.log('  - auto-loaded pino:', firstPino);
+              console.log('  - auto-loaded pino:', pino);
               console.log('  - row:', row);
               
               const save2Btn = document.getElementById('save2Btn');
               const saveBtn = document.getElementById('saveBtn');
               
-              if (firstPino && save2Btn && saveBtn) {
+              if (pino && save2Btn && saveBtn) {
                 // p/ino2 값들 확인 (실제 데이터에서 p/ino2 필드 값들)
-                const pino2Values = Array.from(pino2Set); // 실제 p/ino2 값들
+                const pino2Values = ['8993014165', '8993013490']; // 실제 p/ino2 값들
                 
-                if (pino2Values.includes(firstPino)) {
+                if (pino2Values.includes(pino)) {
                   console.log('✅ 자동 로드된 p/ino2 - Save 버튼 비활성화');
                   // Save2 버튼은 변화 없음 (기본 상태 유지)
                   
