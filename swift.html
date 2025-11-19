@@ -1704,15 +1704,9 @@
     function addCategory1SubtotalRow() {
       const tbody = document.getElementById('orderTbody');
       
-      // 기존 subtotal 행 확인 및 현재 입력된 값 저장
+      // 기존 subtotal 행 제거
       const existingSubtotalRow = tbody.querySelector('.category1-subtotal-row');
-      let currentDiscountValue = null;
       if (existingSubtotalRow) {
-        const existingInput = existingSubtotalRow.querySelector('td:nth-child(7) input');
-        // 사용자가 입력한 값이 있으면 (빈 문자열이 아니면) 그대로 사용
-        if (existingInput && existingInput.value !== null && existingInput.value !== undefined && existingInput.value.trim() !== '') {
-          currentDiscountValue = existingInput.value;
-        }
         existingSubtotalRow.remove();
       }
       
@@ -1730,11 +1724,6 @@
       
       // 2% 할인 적용하여 음수로 표시
       const discountedAmount = -(totalPrice * 0.02);
-      
-      // 기존 값이 있으면 사용, 없으면 계산된 값 사용 (0이어도 표시)
-      if (currentDiscountValue === null) {
-        currentDiscountValue = discountedAmount.toFixed(2);
-      }
       
       // subtotal 행 생성 (total 행과 동일한 스타일)
       const subtotalRow = document.createElement('tr');
@@ -1758,11 +1747,15 @@
         <td style="width: 30px; min-width: 30px; max-width: 30px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0;"></td>
         <td style="width: 30px; min-width: 30px; max-width: 30px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0;"></td>
         <td style="width: 38px; min-width: 38px; max-width: 38px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0; font-weight: bold;">
-          <input type="text" class="discount-amount-input" value="${currentDiscountValue}" style="width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; font-size: inherit; color: inherit; outline: none; height: 23px; min-height: 23px; box-sizing: border-box;">
+          <input type="text" class="discount-amount-input" value="${discountedAmount.toFixed(2)}" style="width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; font-size: inherit; color: inherit; outline: none; box-sizing: border-box; height: 23px; min-height: 23px;" />
         </td>
       `;
       
-      // input 필드에 change 이벤트 리스너 추가 (토탈 재계산)
+      // 마지막 카테고리 1 행 다음에 삽입
+      const lastCategory1Row = category1Rows[category1Rows.length - 1];
+      lastCategory1Row.insertAdjacentElement('afterend', subtotalRow);
+      
+      // 2% discount 값 변경 시 토탈 재계산
       const discountInput = subtotalRow.querySelector('.discount-amount-input');
       if (discountInput) {
         discountInput.addEventListener('change', () => {
@@ -1772,10 +1765,6 @@
           calculateTotal();
         });
       }
-      
-      // 마지막 카테고리 1 행 다음에 삽입
-      const lastCategory1Row = category1Rows[category1Rows.length - 1];
-      lastCategory1Row.insertAdjacentElement('afterend', subtotalRow);
     }
 
     // 카테고리 2 행 추가 함수 (카테고리 1 행 아래에 배치)
