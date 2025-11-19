@@ -1474,13 +1474,7 @@
         const order = firstItemWithPino ? firstItemWithPino.order : firstOrder;
         
         if (matchingItem && order) {
-          console.log(`[SWIFT DEBUG] ${deliveryNo} - loadModeForDeliveryNo:`, {
-            mode: order.mode,
-            hasPino: hasPino,
-            pino: matchingItem['p/ino'],
-            invoiceno: matchingItem.invoiceno
-          });
-          
+          // 모든 모드(NT, SM-B, SM-C)에서 p/ino가 있으면 p/ino 사용, 없으면 invoiceno 사용
           foundData = {
             mode: order.mode,
             invoice: hasPino ? matchingItem['p/ino'] : matchingItem.invoiceno || '',
@@ -1525,6 +1519,7 @@
           }
           
           // 헤더 동적 변경 (1행에서만)
+          // 모든 모드에서 p/ino가 있으면 'Proforma Invoice No', 없으면 'Invoice No'
           const tbody = document.getElementById('orderTbody');
           const isFirstRow = currentRow === tbody.querySelector('tr:not(.total-row)');
           
