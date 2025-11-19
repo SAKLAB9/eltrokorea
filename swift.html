@@ -1043,21 +1043,27 @@
       }
     }
 
-    // deliveryNo 드랍다운 생성 함수
+    // deliveryNo 드랍다운 생성 함수 (shipment.html과 동일한 방식으로 모든 deliveryNo 로드)
     async function createDeliveryDropdown() {
       try {
-        const response = await fetch('orderData.json');
+        const response = await fetch('/api/orders');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const orderData = await response.json();
         
         const deliveryGroups = {};
+        // 모든 주문의 모든 아이템에서 deliveryNo 수집 (필터링 없이)
         orderData.forEach(order => {
           if (order.items?.length) {
             order.items.forEach(item => {
-              if (item.deliveryNo) {
-                if (!deliveryGroups[item.deliveryNo]) {
-                  deliveryGroups[item.deliveryNo] = [];
+              // deliveryNo 또는 deliveryno 둘 다 확인 (대소문자 구분 없이)
+              const deliveryNo = item.deliveryNo || item.deliveryno;
+              if (deliveryNo && deliveryNo.trim() !== '') {
+                if (!deliveryGroups[deliveryNo]) {
+                  deliveryGroups[deliveryNo] = [];
                 }
-                deliveryGroups[item.deliveryNo].push(item);
+                deliveryGroups[deliveryNo].push(item);
               }
             });
           }
@@ -1089,6 +1095,7 @@
         return `<select style="width: 100%; border: none; background: transparent; font-size: inherit; color: inherit; outline: none; appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; text-align: center; text-align-last: center;"><option value="" style="text-align: center;">Choose</option>${options}</select>`;
         
       } catch (error) {
+        console.error('deliveryNo 드롭다운 로드 실패:', error);
         return '<select style="width: 100%; border: none; background: transparent;"><option value="">로드 실패</option></select>';
       }
     }
