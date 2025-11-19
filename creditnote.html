@@ -741,7 +741,6 @@
         const seenDeliveryNos = new Set();
         
         return orderData
-            .filter(order => order.mode === 'NT')
             .flatMap(order => order.items || [])
             .filter(item => {
                 // 필수 필드 확인
