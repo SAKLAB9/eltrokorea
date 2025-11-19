@@ -646,6 +646,95 @@
       box-sizing: border-box;
     }
 
+    .pdf-edit-mode-selector {
+      margin: 20px;
+      text-align: center;
+    }
+
+    .pdf-edit-mode-selector h3 {
+      margin: 0 0 20px 0;
+      font-size: 1rem;
+      color: #333;
+    }
+
+    .pdf-edit-mode-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .pdf-edit-mode-btn {
+      flex: 1;
+      padding: 15px 30px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      max-width: 200px;
+    }
+
+    .pdf-edit-mode-btn:hover {
+      background: #0056b3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .pdf-edit-merge-area {
+      margin: 15px;
+    }
+
+    .pdf-edit-file-list {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }
+
+    .pdf-edit-file-list h4 {
+      margin: 0 0 10px 0;
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    #pdfEditMergeFileNames {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .pdf-edit-merge-file-item {
+      padding: 8px 12px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    .pdf-edit-merge-file-item .file-name {
+      flex: 1;
+      color: #333;
+    }
+
+    .pdf-edit-merge-file-item .remove-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    .pdf-edit-merge-file-item .remove-btn:hover {
+      background: #c82333;
+    }
+
     .pdf-edit-progress-bar {
       width: 100%;
       height: 20px;
@@ -957,8 +1046,17 @@
       <button class="pdf-edit-close-btn" onclick="closePdfEditModal()">×</button>
     </div>
     
-    <!-- PDF 업로드 영역 -->
-    <div class="pdf-edit-upload-area" id="pdfEditUploadArea">
+    <!-- 모드 선택 영역 -->
+    <div class="pdf-edit-mode-selector" id="pdfEditModeSelector">
+      <h3>편집 모드를 선택하세요</h3>
+      <div class="pdf-edit-mode-buttons">
+        <button class="pdf-edit-mode-btn" onclick="selectPdfEditMode('split')">분할</button>
+        <button class="pdf-edit-mode-btn" onclick="selectPdfEditMode('merge')">합치기</button>
+      </div>
+    </div>
+    
+    <!-- 분할 모드: PDF 업로드 영역 -->
+    <div class="pdf-edit-upload-area" id="pdfEditUploadArea" style="display: none;">
       <button class="pdf-edit-file-select-btn" id="pdfEditFileSelectBtn">📄 파일 선택</button>
       <input type="file" id="pdfEditFileInput" accept=".pdf" style="display: none;">
       <div class="pdf-edit-file-info" id="pdfEditFileInfo" style="display: none;">
@@ -967,13 +1065,13 @@
       </div>
     </div>
 
-    <!-- 페이지 선택 영역 -->
+    <!-- 분할 모드: 페이지 선택 영역 -->
     <div class="pdf-edit-page-selector" id="pdfEditPageSelector" style="display: none;">
       <h4>추출할 페이지를 선택하세요</h4>
       <div class="pdf-edit-page-checkboxes" id="pdfEditPageCheckboxes"></div>
     </div>
 
-    <!-- 저장 설정 -->
+    <!-- 분할 모드: 저장 설정 -->
     <div class="pdf-edit-output-area" id="pdfEditOutputArea" style="display: none;">
       <div class="pdf-edit-form-group">
         <label for="pdfEditFileName">저장할 파일명:</label>
@@ -981,6 +1079,25 @@
       </div>
       <div class="pdf-edit-btn-group">
         <button class="pdf-edit-btn pdf-edit-btn-success" onclick="savePdfToServer()">저장</button>
+      </div>
+    </div>
+
+    <!-- 합치기 모드: 여러 파일 선택 영역 -->
+    <div class="pdf-edit-merge-area" id="pdfEditMergeArea" style="display: none;">
+      <div class="pdf-edit-upload-area">
+        <button class="pdf-edit-file-select-btn" id="pdfEditMergeFileSelectBtn">📄 파일 선택 (여러 개 가능)</button>
+        <input type="file" id="pdfEditMergeFileInput" accept=".pdf" multiple style="display: none;">
+        <div class="pdf-edit-file-list" id="pdfEditMergeFileList" style="display: none;">
+          <h4>선택된 파일:</h4>
+          <div id="pdfEditMergeFileNames"></div>
+        </div>
+      </div>
+      <div class="pdf-edit-form-group" id="pdfEditMergeOutputArea" style="display: none;">
+        <label for="pdfEditMergeFileName">저장할 파일명:</label>
+        <input type="text" id="pdfEditMergeFileName" placeholder="예: merged_pdf (자동으로 .pdf 추가)">
+      </div>
+      <div class="pdf-edit-btn-group" id="pdfEditMergeBtnGroup" style="display: none;">
+        <button class="pdf-edit-btn pdf-edit-btn-success" onclick="mergePdfFiles()">합치기 및 다운로드</button>
       </div>
     </div>
 
@@ -2305,6 +2422,8 @@ ETA : ${eta}
     // ===== PDF Edit 모달 관련 함수들 =====
     let pdfEditDoc = null;
     let pdfEditSelectedPages = [];
+    let pdfEditMode = null; // 'split' or 'merge'
+    let pdfEditMergeFiles = []; // 합치기용 파일 배열
 
     // PDF Edit 모달 열기
     function openPdfEditModal() {
@@ -2324,10 +2443,26 @@ ETA : ${eta}
     function resetPdfEditModal() {
         pdfEditDoc = null;
         pdfEditSelectedPages = [];
+        pdfEditMode = null;
+        pdfEditMergeFiles = [];
         
+        // 모드 선택 화면 표시
+        document.getElementById('pdfEditModeSelector').style.display = 'block';
+        
+        // 분할 모드 영역 숨기기
         document.getElementById('pdfEditFileInput').value = '';
+        document.getElementById('pdfEditUploadArea').style.display = 'none';
         document.getElementById('pdfEditPageSelector').style.display = 'none';
         document.getElementById('pdfEditOutputArea').style.display = 'none';
+        
+        // 합치기 모드 영역 숨기기
+        document.getElementById('pdfEditMergeFileInput').value = '';
+        document.getElementById('pdfEditMergeArea').style.display = 'none';
+        document.getElementById('pdfEditMergeFileList').style.display = 'none';
+        document.getElementById('pdfEditMergeOutputArea').style.display = 'none';
+        document.getElementById('pdfEditMergeBtnGroup').style.display = 'none';
+        
+        // 상태 메시지 초기화
         document.getElementById('pdfEditStatus').style.display = 'none';
         document.getElementById('pdfEditStatus').className = 'pdf-edit-status';
         
@@ -2344,6 +2479,26 @@ ETA : ${eta}
         const fileNameInput = document.getElementById('pdfEditOutputFileName');
         if (fileNameInput) {
             fileNameInput.value = '';
+        }
+        const mergeFileNameInput = document.getElementById('pdfEditMergeFileName');
+        if (mergeFileNameInput) {
+            mergeFileNameInput.value = '';
+        }
+    }
+
+    // PDF 편집 모드 선택
+    function selectPdfEditMode(mode) {
+        pdfEditMode = mode;
+        
+        // 모드 선택 화면 숨기기
+        document.getElementById('pdfEditModeSelector').style.display = 'none';
+        
+        if (mode === 'split') {
+            // 분할 모드: 파일 선택 영역 표시
+            document.getElementById('pdfEditUploadArea').style.display = 'block';
+        } else if (mode === 'merge') {
+            // 합치기 모드: 여러 파일 선택 영역 표시
+            document.getElementById('pdfEditMergeArea').style.display = 'block';
         }
     }
 
@@ -2419,7 +2574,137 @@ ETA : ${eta}
 
         // 드래그 앤 드롭 설정 (초기에는 설정만 하고, 파일 선택 후 활성화)
         setupDragAndDrop();
+
+        // 합치기 모드: 여러 파일 선택 버튼
+        const mergeFileSelectBtn = document.getElementById('pdfEditMergeFileSelectBtn');
+        const mergeFileInput = document.getElementById('pdfEditMergeFileInput');
+        
+        if (mergeFileSelectBtn && mergeFileInput) {
+            mergeFileSelectBtn.addEventListener('click', () => {
+                mergeFileInput.click();
+            });
+
+            // 합치기 모드: 여러 파일 선택
+            mergeFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleMergeFiles(Array.from(e.target.files));
+                    // 같은 파일을 다시 선택할 수 있도록 value 초기화
+                    e.target.value = '';
+                }
+            });
+        }
     });
+
+    // 합치기 모드: 여러 파일 처리
+    function handleMergeFiles(files) {
+        // PDF 파일만 필터링
+        const pdfFiles = files.filter(file => file.type.includes('pdf'));
+        
+        if (pdfFiles.length === 0) {
+            showPdfEditStatus('PDF 파일만 선택 가능합니다.', 'error');
+            return;
+        }
+
+        // 기존 파일에 추가
+        pdfEditMergeFiles = [...pdfEditMergeFiles, ...pdfFiles];
+        
+        // 파일 목록 업데이트
+        updateMergeFileList();
+        
+        // 파일 이름 입력 영역과 합치기 버튼 표시
+        document.getElementById('pdfEditMergeOutputArea').style.display = 'block';
+        document.getElementById('pdfEditMergeBtnGroup').style.display = 'block';
+    }
+
+    // 합치기 파일 목록 업데이트
+    function updateMergeFileList() {
+        const fileList = document.getElementById('pdfEditMergeFileList');
+        const fileNames = document.getElementById('pdfEditMergeFileNames');
+        
+        if (pdfEditMergeFiles.length === 0) {
+            fileList.style.display = 'none';
+            return;
+        }
+        
+        fileList.style.display = 'block';
+        fileNames.innerHTML = '';
+        
+        pdfEditMergeFiles.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'pdf-edit-merge-file-item';
+            fileItem.innerHTML = `
+                <span class="file-name">${file.name}</span>
+                <button class="remove-btn" onclick="removeMergeFile(${index})">제거</button>
+            `;
+            fileNames.appendChild(fileItem);
+        });
+    }
+
+    // 합치기 파일 목록에서 파일 제거
+    function removeMergeFile(index) {
+        pdfEditMergeFiles.splice(index, 1);
+        updateMergeFileList();
+        
+        // 파일이 없으면 입력 영역과 버튼 숨기기
+        if (pdfEditMergeFiles.length === 0) {
+            document.getElementById('pdfEditMergeOutputArea').style.display = 'none';
+            document.getElementById('pdfEditMergeBtnGroup').style.display = 'none';
+        }
+    }
+
+    // PDF 파일 합치기 및 다운로드
+    async function mergePdfFiles() {
+        if (pdfEditMergeFiles.length === 0) {
+            showPdfEditStatus('합칠 파일을 선택해주세요.', 'error');
+            return;
+        }
+
+        let fileName = document.getElementById('pdfEditMergeFileName').value || 'merged_pdf';
+        // .pdf 확장자가 없으면 자동으로 추가
+        if (!fileName.endsWith('.pdf')) {
+            fileName = fileName + '.pdf';
+        }
+
+        try {
+            showPdfEditStatus('PDF 파일들을 합치는 중...', 'info');
+
+            // 새 PDF 문서 생성
+            const mergedPdf = await PDFLib.PDFDocument.create();
+
+            // 각 PDF 파일을 로드하고 페이지 복사
+            for (const file of pdfEditMergeFiles) {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+                
+                pages.forEach((page) => {
+                    mergedPdf.addPage(page);
+                });
+            }
+
+            // 합쳐진 PDF 저장
+            const mergedBytes = await mergedPdf.save();
+            
+            // 브라우저 다운로드
+            const blob = new Blob([mergedBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showPdfEditStatus('파일이 성공적으로 합쳐져 다운로드되었습니다!', 'success');
+            setTimeout(() => {
+                closePdfEditModal();
+            }, 1500);
+        } catch (error) {
+            console.error('PDF 합치기 오류:', error);
+            showPdfEditStatus('PDF 합치기 중 오류가 발생했습니다: ' + error.message, 'error');
+        }
+    }
 
     // PDF 파일 처리
     async function handlePdfEditFile(file) {
