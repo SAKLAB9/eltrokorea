@@ -2056,6 +2056,9 @@
        discountRows.forEach(row => row.remove());
        displayCurrentRows();
        
+       // 토탈 금액 재계산
+       calculateTotal();
+       
        console.log(`✅ ${discountRows.length}개의 2% discount 행이 제거되었습니다.`);
      }
     
