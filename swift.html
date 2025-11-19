@@ -1490,8 +1490,7 @@
                 }
                 
                 // p/ino가 있는지 확인 (모든 아이템 확인)
-                // 여러 가능한 필드 이름 확인
-                const pino = item['p/ino'] || item['p/ino '] || item['p/ino'] || '';
+                const pino = item['p/ino'] || '';
                 if (pino && pino.toString().trim()) {
                   hasPino = true;
                   if (!firstItemWithPino) {
@@ -1508,8 +1507,8 @@
         const order = firstItemWithPino ? firstItemWithPino.order : firstOrder;
         
         if (matchingItem && order) {
-          // p/ino 값 추출 (여러 가능한 필드 이름 확인)
-          const pinoValue = matchingItem['p/ino'] || matchingItem['p/ino '] || matchingItem['p/ino'] || '';
+          // p/ino 값 추출
+          const pinoValue = matchingItem['p/ino'] || '';
           const pino = pinoValue ? pinoValue.toString().trim() : '';
           
           // 모든 모드(NT, SM-B, SM-C)에서 p/ino가 있으면 p/ino 사용, 없으면 invoiceno 사용
