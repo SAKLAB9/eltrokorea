@@ -2734,17 +2734,17 @@
             
             if (isFirstCategory1Row) {
               console.log('🔍 자동 로드된 p/ino로 버튼 상태 업데이트');
-              console.log('  - auto-loaded pino:', pino);
+              console.log('  - auto-loaded pino:', firstPino);
               console.log('  - row:', row);
               
               const save2Btn = document.getElementById('save2Btn');
               const saveBtn = document.getElementById('saveBtn');
               
-              if (pino && save2Btn && saveBtn) {
+              if (firstPino && save2Btn && saveBtn) {
                 // p/ino2 값들 확인 (실제 데이터에서 p/ino2 필드 값들)
-                const pino2Values = ['8993014165', '8993013490']; // 실제 p/ino2 값들
+                const pino2Values = Array.from(pino2Set); // 실제 p/ino2 값들
                 
-                if (pino2Values.includes(pino)) {
+                if (pino2Values.includes(firstPino)) {
                   console.log('✅ 자동 로드된 p/ino2 - Save 버튼 비활성화');
                   // Save2 버튼은 변화 없음 (기본 상태 유지)
                   
