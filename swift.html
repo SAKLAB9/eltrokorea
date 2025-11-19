@@ -1441,22 +1441,54 @@
         // deliveryNo가 일치하는 order를 찾기
         let foundData = null;
         
+        // deliveryNo가 일치하는 모든 아이템 찾기 (첫 번째만이 아닌 모든 아이템 확인)
+        let hasPino = false;
+        let firstItemWithPino = null;
+        let firstMatchingItem = null;
+        let firstOrder = null;
+        
         for (const order of orderData) {
           if (order.items?.length) {
-            const matchingItem = order.items.find(item => item.deliveryNo === deliveryNo);
-            if (matchingItem) {
-              const hasPino = matchingItem['p/ino']?.trim();
-              foundData = {
-                mode: order.mode,
-                invoice: hasPino ? matchingItem['p/ino'] : matchingItem.invoiceno || '',
-                date: hasPino ? matchingItem['p/idate'] || '' : matchingItem.invoicedate || '',
-                dueDate: hasPino ? '' : matchingItem.invoicedue || '',
-                price: hasPino ? matchingItem['p/iprice'] || '' : matchingItem.invoiceprice || '',
-                hasPino: !!hasPino
-              };
-                break;
+            for (const item of order.items) {
+              if ((item.deliveryNo || item.deliveryno) === deliveryNo) {
+                // 첫 번째 매칭 아이템 저장
+                if (!firstMatchingItem) {
+                  firstMatchingItem = item;
+                  firstOrder = order;
+                }
+                
+                // p/ino가 있는지 확인 (모든 아이템 확인)
+                if (item['p/ino'] && item['p/ino'].trim()) {
+                  hasPino = true;
+                  if (!firstItemWithPino) {
+                    firstItemWithPino = { item, order };
+                  }
+                }
               }
+            }
           }
+        }
+        
+        // p/ino가 있는 경우 첫 번째 p/ino 아이템 사용, 없으면 첫 번째 아이템 사용
+        const matchingItem = firstItemWithPino ? firstItemWithPino.item : firstMatchingItem;
+        const order = firstItemWithPino ? firstItemWithPino.order : firstOrder;
+        
+        if (matchingItem && order) {
+          console.log(`[SWIFT DEBUG] ${deliveryNo} - loadModeForDeliveryNo:`, {
+            mode: order.mode,
+            hasPino: hasPino,
+            pino: matchingItem['p/ino'],
+            invoiceno: matchingItem.invoiceno
+          });
+          
+          foundData = {
+            mode: order.mode,
+            invoice: hasPino ? matchingItem['p/ino'] : matchingItem.invoiceno || '',
+            date: hasPino ? matchingItem['p/idate'] || '' : matchingItem.invoicedate || '',
+            dueDate: hasPino ? '' : matchingItem.invoicedue || '',
+            price: hasPino ? matchingItem['p/iprice'] || '' : matchingItem.invoiceprice || '',
+            hasPino: hasPino
+          };
         }
         
         if (foundData) {
