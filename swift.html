@@ -1057,17 +1057,23 @@
         orderData.forEach(order => {
           if (order.items?.length) {
             order.items.forEach(item => {
-              // deliveryNo 또는 deliveryno 둘 다 확인 (대소문자 구분 없이)
-              const deliveryNo = item.deliveryNo || item.deliveryno;
+              // deliveryno 또는 deliveryNo 둘 다 확인 (shipmentupdate.html과 동일한 순서)
+              const deliveryNo = item.deliveryno || item.deliveryNo;
               if (deliveryNo && deliveryNo.trim() !== '') {
-                if (!deliveryGroups[deliveryNo]) {
-                  deliveryGroups[deliveryNo] = [];
+                // 정규화: 공백 제거 및 대소문자 통일
+                const normalizedDeliveryNo = deliveryNo.trim();
+                if (!deliveryGroups[normalizedDeliveryNo]) {
+                  deliveryGroups[normalizedDeliveryNo] = [];
                 }
-                deliveryGroups[deliveryNo].push(item);
+                deliveryGroups[normalizedDeliveryNo].push(item);
               }
             });
           }
         });
+        
+        // 디버깅: 수집된 deliveryNo 목록 출력
+        console.log('[SWIFT] 수집된 deliveryNo 목록:', Object.keys(deliveryGroups).sort());
+        console.log('[SWIFT] 총 deliveryNo 개수:', Object.keys(deliveryGroups).length);
         
         const sortedDeliveryNos = Object.keys(deliveryGroups).sort((a, b) => {
           const aFirstItem = deliveryGroups[a][0];
