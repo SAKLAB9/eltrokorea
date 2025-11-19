@@ -2686,13 +2686,25 @@
       try {
         const orderData = await getOrderData();
         
-        // 해당 deliveryNo를 가진 첫 번째 아이템 찾기
-        const foundItem = orderData
+        // 해당 deliveryNo를 가진 모든 아이템 찾기 (shipmentarchive.html과 동일한 로직)
+        const matchingItems = orderData
           .flatMap(order => order.items || [])
-          .find(item => item.deliveryNo === deliveryNo);
+          .filter(item => (item.deliveryNo || item.deliveryno) === deliveryNo);
         
-        const pino = foundItem?.['p/ino'] || '';
-        const pino2 = foundItem?.['p/ino2'] || '';
+        // 모든 아이템에서 p/ino와 p/ino2 수집 (shipmentarchive.html과 동일)
+        let pino = '';
+        let pino2 = '';
+        
+        matchingItems.forEach(item => {
+          // p/ino 수집 (첫 번째로 발견된 값만 사용)
+          if (item['p/ino'] && item['p/ino'].trim() && !pino) {
+            pino = item['p/ino'].trim();
+          }
+          // p/ino2 수집 (모든 아이템에서 첫 번째로 발견된 값 사용)
+          if (item['p/ino2'] && item['p/ino2'].trim() && !pino2) {
+            pino2 = item['p/ino2'].trim();
+          }
+        });
         
         // 드롭다운 옵션 업데이트
         pinoSelect.innerHTML = '<option value="" style="text-align: center;">Choose</option>';
