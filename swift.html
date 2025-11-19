@@ -1725,6 +1725,16 @@
       // 2% 할인 적용하여 음수로 표시
       const discountedAmount = -(totalPrice * 0.02);
       
+      // 기존 subtotal 행이 있으면 현재 입력된 값 사용, 없으면 계산된 값 사용
+      const existingSubtotalRow = tbody.querySelector('.category1-subtotal-row');
+      let currentDiscountValue = discountedAmount.toFixed(2);
+      if (existingSubtotalRow) {
+        const existingInput = existingSubtotalRow.querySelector('td:nth-child(7) input');
+        if (existingInput && existingInput.value) {
+          currentDiscountValue = existingInput.value;
+        }
+      }
+      
       // subtotal 행 생성 (total 행과 동일한 스타일)
       const subtotalRow = document.createElement('tr');
       subtotalRow.className = 'category1-subtotal-row';
@@ -1746,8 +1756,21 @@
         <td style="width: 30px; min-width: 30px; max-width: 30px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0;"></td>
         <td style="width: 30px; min-width: 30px; max-width: 30px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0;"></td>
         <td style="width: 30px; min-width: 30px; max-width: 30px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0;"></td>
-        <td style="width: 38px; min-width: 38px; max-width: 38px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0; font-weight: bold;">${discountedAmount.toFixed(2)}</td>
+        <td style="width: 38px; min-width: 38px; max-width: 38px; height: 33px; min-height: 33px; max-height: 33px; padding: 5px; line-height: 1.5; vertical-align: middle; border: 1px solid #000; text-align: center; font-size: 0.9rem; box-sizing: border-box; background-color: #f0f0f0; font-weight: bold;">
+          <input type="text" class="discount-amount-input" value="${currentDiscountValue}" style="width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; font-size: inherit; color: inherit; outline: none; height: 23px; min-height: 23px; box-sizing: border-box;">
+        </td>
       `;
+      
+      // input 필드에 change 이벤트 리스너 추가 (토탈 재계산)
+      const discountInput = subtotalRow.querySelector('.discount-amount-input');
+      if (discountInput) {
+        discountInput.addEventListener('change', () => {
+          calculateTotal();
+        });
+        discountInput.addEventListener('input', () => {
+          calculateTotal();
+        });
+      }
       
       // 마지막 카테고리 1 행 다음에 삽입
       const lastCategory1Row = category1Rows[category1Rows.length - 1];
