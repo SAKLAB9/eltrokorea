@@ -1704,9 +1704,14 @@
     function addCategory1SubtotalRow() {
       const tbody = document.getElementById('orderTbody');
       
-      // 기존 subtotal 행 제거
+      // 기존 subtotal 행 확인 및 현재 입력된 값 저장
       const existingSubtotalRow = tbody.querySelector('.category1-subtotal-row');
+      let currentDiscountValue = null;
       if (existingSubtotalRow) {
+        const existingInput = existingSubtotalRow.querySelector('td:nth-child(7) input');
+        if (existingInput && existingInput.value) {
+          currentDiscountValue = existingInput.value;
+        }
         existingSubtotalRow.remove();
       }
       
@@ -1725,14 +1730,9 @@
       // 2% 할인 적용하여 음수로 표시
       const discountedAmount = -(totalPrice * 0.02);
       
-      // 기존 subtotal 행이 있으면 현재 입력된 값 사용, 없으면 계산된 값 사용
-      const existingSubtotalRow = tbody.querySelector('.category1-subtotal-row');
-      let currentDiscountValue = discountedAmount.toFixed(2);
-      if (existingSubtotalRow) {
-        const existingInput = existingSubtotalRow.querySelector('td:nth-child(7) input');
-        if (existingInput && existingInput.value) {
-          currentDiscountValue = existingInput.value;
-        }
+      // 기존 값이 있으면 사용, 없으면 계산된 값 사용
+      if (currentDiscountValue === null) {
+        currentDiscountValue = discountedAmount.toFixed(2);
       }
       
       // subtotal 행 생성 (total 행과 동일한 스타일)
