@@ -1339,14 +1339,24 @@
             const saveBtn = document.getElementById('saveBtn');
             
             if (selectedPino && save2Btn && saveBtn) {
-              // p/ino2 값들 확인 (실제 데이터에서 p/ino2 필드 값들)
-              const pino2Values = ['8993014165', '8993013490']; // 실제 p/ino2 값들
+              // 실제 데이터에서 해당 deliveryNo의 p/ino2 값 확인
+              const orderData = await getOrderData();
+              const matchingItems = orderData
+                .flatMap(order => order.items || [])
+                .filter(item => (item.deliveryNo || item.deliveryno) === deliveryNo);
               
-              if (pino2Values.includes(selectedPino)) {
-                console.log('✅ p/ino2 선택됨 - Save 버튼 비활성화');
-                // Save2 버튼은 변화 없음 (기본 상태 유지)
-                
-                // Save 버튼 비활성화
+              let actualPino2 = '';
+              matchingItems.forEach(item => {
+                if (item['p/ino2'] && item['p/ino2'].trim() && !actualPino2) {
+                  actualPino2 = item['p/ino2'].trim();
+                }
+              });
+              
+              // 선택된 p/ino가 실제 p/ino2 값과 일치하는지 확인
+              const isPino2 = selectedPino === actualPino2;
+              
+              if (isPino2) {
+                // p/ino2 선택됨 - Save 버튼 비활성화
                 saveBtn.disabled = true;
                 saveBtn.style.opacity = '0.5';
                 saveBtn.style.cursor = 'not-allowed';
@@ -1355,8 +1365,7 @@
                 saveBtn.style.color = '';
                 saveBtn.style.borderColor = '';
               } else {
-                console.log('❌ 일반 p/ino 선택됨 - Save 버튼 활성화, Save2 버튼 비활성화');
-                // Save 버튼 활성화 (기본 상태)
+                // 일반 p/ino 또는 invoiceno 선택됨 - Save 버튼 활성화
                 saveBtn.disabled = false;
                 saveBtn.style.opacity = '1';
                 saveBtn.style.cursor = 'pointer';
@@ -1365,7 +1374,7 @@
                 saveBtn.style.color = '';
                 saveBtn.style.borderColor = '';
                 
-                // Save2 버튼 비활성화 (기본 상태)
+                // Save2 버튼 활성화 (기본 상태)
                 save2Btn.classList.remove('save2-selected');
                 save2Btn.style.backgroundColor = '';
                 save2Btn.style.color = '';
@@ -1508,6 +1517,34 @@
                 invoiceSelect.appendChild(newOption);
               }
             invoiceSelect.value = foundData.invoice;
+            
+            // invoiceno가 로드된 경우 버튼 상태 업데이트 (첫 번째 행에서만)
+            const tbody = document.getElementById('orderTbody');
+            const isFirstRow = currentRow === tbody.querySelector('tr:not(.total-row)');
+            
+            if (isFirstRow && !foundData.hasPino) {
+              // invoiceno가 로드된 경우 (p/ino가 없는 경우) - Save 버튼 활성화
+              const save2Btn = document.getElementById('save2Btn');
+              const saveBtn = document.getElementById('saveBtn');
+              
+              if (save2Btn && saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '1';
+                saveBtn.style.cursor = 'pointer';
+                saveBtn.classList.remove('save2-selected');
+                saveBtn.style.backgroundColor = '';
+                saveBtn.style.color = '';
+                saveBtn.style.borderColor = '';
+                
+                save2Btn.classList.remove('save2-selected');
+                save2Btn.style.backgroundColor = '';
+                save2Btn.style.color = '';
+                save2Btn.style.borderColor = '';
+                save2Btn.disabled = false;
+                save2Btn.style.opacity = '1';
+                save2Btn.style.cursor = 'pointer';
+              }
+            }
           }
           
           // 4-7열 데이터 설정
@@ -2783,63 +2820,64 @@
           pinoSelect.appendChild(option);
         });
         
-        // p/ino가 기본 선택된 경우 자동으로 날짜와 가격 로드
+        // 버튼 상태 업데이트 함수
+        const updateButtonState = (selectedPinoValue) => {
+          const row = pinoSelect.closest('tr');
+          if (!row) return;
+          
+          const category1Rows = document.querySelectorAll('.category1-row');
+          const isFirstCategory1Row = category1Rows.length > 0 && row === category1Rows[0];
+          
+          if (!isFirstCategory1Row) return;
+          
+          const save2Btn = document.getElementById('save2Btn');
+          const saveBtn = document.getElementById('saveBtn');
+          
+          if (!save2Btn || !saveBtn) return;
+          
+          // 실제 데이터에서 수집한 p/ino2 값과 비교
+          const isPino2 = selectedPinoValue && pino2 && selectedPinoValue === pino2;
+          
+          if (isPino2) {
+            // p/ino2 선택됨 - Save 버튼 비활성화
+            saveBtn.disabled = true;
+            saveBtn.style.opacity = '0.5';
+            saveBtn.style.cursor = 'not-allowed';
+            saveBtn.classList.remove('save2-selected');
+            saveBtn.style.backgroundColor = '';
+            saveBtn.style.color = '';
+            saveBtn.style.borderColor = '';
+          } else {
+            // 일반 p/ino 또는 invoiceno 선택됨 - Save 버튼 활성화
+            saveBtn.disabled = false;
+            saveBtn.style.opacity = '1';
+            saveBtn.style.cursor = 'pointer';
+            saveBtn.classList.remove('save2-selected');
+            saveBtn.style.backgroundColor = '';
+            saveBtn.style.color = '';
+            saveBtn.style.borderColor = '';
+            
+            // Save2 버튼 활성화 (기본 상태)
+            save2Btn.classList.remove('save2-selected');
+            save2Btn.style.backgroundColor = '';
+            save2Btn.style.color = '';
+            save2Btn.style.borderColor = '';
+            save2Btn.disabled = false;
+            save2Btn.style.opacity = '1';
+            save2Btn.style.cursor = 'pointer';
+          }
+        };
+        
+        // p/ino가 기본 선택된 경우 자동으로 날짜와 가격 로드 및 버튼 상태 업데이트
         if (pino) {
           const row = pinoSelect.closest('tr');
           if (row) {
             await loadPinoData(deliveryNo, pino, row);
-            
-            // 자동 로드된 p/ino에 대해서도 버튼 상태 업데이트
-            const category1Rows = document.querySelectorAll('.category1-row');
-            const isFirstCategory1Row = category1Rows.length > 0 && row === category1Rows[0];
-            
-            if (isFirstCategory1Row) {
-              console.log('🔍 자동 로드된 p/ino로 버튼 상태 업데이트');
-              console.log('  - auto-loaded pino:', pino);
-              console.log('  - row:', row);
-              
-              const save2Btn = document.getElementById('save2Btn');
-              const saveBtn = document.getElementById('saveBtn');
-              
-              if (pino && save2Btn && saveBtn) {
-                // p/ino2 값들 확인 (실제 데이터에서 p/ino2 필드 값들)
-                const pino2Values = ['8993014165', '8993013490']; // 실제 p/ino2 값들
-                
-                if (pino2Values.includes(pino)) {
-                  console.log('✅ 자동 로드된 p/ino2 - Save 버튼 비활성화');
-                  // Save2 버튼은 변화 없음 (기본 상태 유지)
-                  
-                  // Save 버튼 비활성화
-                  saveBtn.disabled = true;
-                  saveBtn.style.opacity = '0.5';
-                  saveBtn.style.cursor = 'not-allowed';
-                  saveBtn.classList.remove('save2-selected');
-                  saveBtn.style.backgroundColor = '';
-                  saveBtn.style.color = '';
-                  saveBtn.style.borderColor = '';
-                } else {
-                  console.log('❌ 자동 로드된 일반 p/ino - Save 버튼 활성화, Save2 버튼 비활성화');
-                  // Save 버튼 활성화 (기본 상태)
-                  saveBtn.disabled = false;
-                  saveBtn.style.opacity = '1';
-                  saveBtn.style.cursor = 'pointer';
-                  saveBtn.classList.remove('save2-selected');
-                  saveBtn.style.backgroundColor = '';
-                  saveBtn.style.color = '';
-                  saveBtn.style.borderColor = '';
-                  
-                  // Save2 버튼 비활성화 (기본 상태)
-                  save2Btn.classList.remove('save2-selected');
-                  save2Btn.style.backgroundColor = '';
-                  save2Btn.style.color = '';
-                  save2Btn.style.borderColor = '';
-                  save2Btn.disabled = false;
-                  save2Btn.style.opacity = '1';
-                  save2Btn.style.cursor = 'pointer';
-                }
-              }
-            }
+            updateButtonState(pino);
           }
+        } else {
+          // p/ino가 없을 때도 버튼 상태 업데이트 (invoiceno가 로드될 예정이므로 활성화)
+          updateButtonState(null);
         }
         
       } catch (error) {
