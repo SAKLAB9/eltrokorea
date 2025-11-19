@@ -1464,6 +1464,9 @@
         const response = await fetch('orderData.json');
         const orderData = await response.json();
         
+        // deliveryNo 정규화 (공백 제거 및 대소문자 통일)
+        const normalizedDeliveryNo = deliveryNo ? deliveryNo.trim() : '';
+        
         // deliveryNo가 일치하는 order를 찾기
         let foundData = null;
         
@@ -1476,7 +1479,10 @@
         for (const order of orderData) {
           if (order.items?.length) {
             for (const item of order.items) {
-              if ((item.deliveryNo || item.deliveryno) === deliveryNo) {
+              // deliveryNo 정규화하여 비교
+              const itemDeliveryNo = (item.deliveryNo || item.deliveryno || '').trim();
+              
+              if (itemDeliveryNo === normalizedDeliveryNo) {
                 // 첫 번째 매칭 아이템 저장
                 if (!firstMatchingItem) {
                   firstMatchingItem = item;
@@ -1484,7 +1490,9 @@
                 }
                 
                 // p/ino가 있는지 확인 (모든 아이템 확인)
-                if (item['p/ino'] && item['p/ino'].trim()) {
+                // 여러 가능한 필드 이름 확인
+                const pino = item['p/ino'] || item['p/ino '] || item['p/ino'] || '';
+                if (pino && pino.toString().trim()) {
                   hasPino = true;
                   if (!firstItemWithPino) {
                     firstItemWithPino = { item, order };
@@ -1500,14 +1508,18 @@
         const order = firstItemWithPino ? firstItemWithPino.order : firstOrder;
         
         if (matchingItem && order) {
+          // p/ino 값 추출 (여러 가능한 필드 이름 확인)
+          const pinoValue = matchingItem['p/ino'] || matchingItem['p/ino '] || matchingItem['p/ino'] || '';
+          const pino = pinoValue ? pinoValue.toString().trim() : '';
+          
           // 모든 모드(NT, SM-B, SM-C)에서 p/ino가 있으면 p/ino 사용, 없으면 invoiceno 사용
           foundData = {
             mode: order.mode,
-            invoice: hasPino ? matchingItem['p/ino'] : matchingItem.invoiceno || '',
-            date: hasPino ? matchingItem['p/idate'] || '' : matchingItem.invoicedate || '',
-            dueDate: hasPino ? '' : matchingItem.invoicedue || '',
-            price: hasPino ? matchingItem['p/iprice'] || '' : matchingItem.invoiceprice || '',
-            hasPino: hasPino
+            invoice: hasPino && pino ? pino : (matchingItem.invoiceno || ''),
+            date: hasPino && pino ? (matchingItem['p/idate'] || '') : (matchingItem.invoicedate || ''),
+            dueDate: hasPino && pino ? '' : (matchingItem.invoicedue || ''),
+            price: hasPino && pino ? (matchingItem['p/iprice'] || '') : (matchingItem.invoiceprice || ''),
+            hasPino: hasPino && !!pino
           };
         }
         
