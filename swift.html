@@ -1383,6 +1383,23 @@
                 save2Btn.style.opacity = '1';
                 save2Btn.style.cursor = 'pointer';
               }
+            } else if (!selectedPino && selectedDeliveryNo && save2Btn && saveBtn) {
+              // p/ino가 선택되지 않은 경우 (invoiceno만 있는 경우) - Save 버튼 활성화
+              saveBtn.disabled = false;
+              saveBtn.style.opacity = '1';
+              saveBtn.style.cursor = 'pointer';
+              saveBtn.classList.remove('save2-selected');
+              saveBtn.style.backgroundColor = '';
+              saveBtn.style.color = '';
+              saveBtn.style.borderColor = '';
+              
+              save2Btn.classList.remove('save2-selected');
+              save2Btn.style.backgroundColor = '';
+              save2Btn.style.color = '';
+              save2Btn.style.borderColor = '';
+              save2Btn.disabled = false;
+              save2Btn.style.opacity = '1';
+              save2Btn.style.cursor = 'pointer';
             }
           }
         });
@@ -2811,17 +2828,21 @@
         // 드롭다운 옵션 업데이트
         pinoSelect.innerHTML = '<option value="" style="text-align: center;">Choose</option>';
         
+        let selectedPinoValue = null;
         [pino, pino2].filter(Boolean).forEach((pinoValue, index) => {
           const option = document.createElement('option');
           option.value = pinoValue;
           option.textContent = pinoValue;
           option.style.textAlign = 'center';
-          if (index === 0) option.selected = true; // 첫 번째 p/ino를 기본 선택
+          if (index === 0) {
+            option.selected = true; // 첫 번째 p/ino를 기본 선택
+            selectedPinoValue = pinoValue;
+          }
           pinoSelect.appendChild(option);
         });
         
-        // 버튼 상태 업데이트 함수
-        const updateButtonState = (selectedPinoValue) => {
+        // 버튼 상태 업데이트 함수 (공통)
+        const updateButtonState = async (selectedPinoValue, deliveryNoForCheck) => {
           const row = pinoSelect.closest('tr');
           if (!row) return;
           
@@ -2835,8 +2856,23 @@
           
           if (!save2Btn || !saveBtn) return;
           
-          // 실제 데이터에서 수집한 p/ino2 값과 비교
-          const isPino2 = selectedPinoValue && pino2 && selectedPinoValue === pino2;
+          // 실제 데이터에서 해당 deliveryNo의 p/ino2 값 확인
+          let actualPino2 = '';
+          if (deliveryNoForCheck && selectedPinoValue) {
+            const orderData = await getOrderData();
+            const matchingItems = orderData
+              .flatMap(order => order.items || [])
+              .filter(item => (item.deliveryNo || item.deliveryno) === deliveryNoForCheck);
+            
+            matchingItems.forEach(item => {
+              if (item['p/ino2'] && item['p/ino2'].trim() && !actualPino2) {
+                actualPino2 = item['p/ino2'].trim();
+              }
+            });
+          }
+          
+          // 선택된 p/ino가 실제 p/ino2 값과 일치하는지 확인
+          const isPino2 = selectedPinoValue && actualPino2 && selectedPinoValue === actualPino2;
           
           if (isPino2) {
             // p/ino2 선택됨 - Save 버튼 비활성화
@@ -2869,15 +2905,15 @@
         };
         
         // p/ino가 기본 선택된 경우 자동으로 날짜와 가격 로드 및 버튼 상태 업데이트
-        if (pino) {
+        if (selectedPinoValue) {
           const row = pinoSelect.closest('tr');
           if (row) {
-            await loadPinoData(deliveryNo, pino, row);
-            updateButtonState(pino);
+            await loadPinoData(deliveryNo, selectedPinoValue, row);
+            await updateButtonState(selectedPinoValue, deliveryNo);
           }
         } else {
           // p/ino가 없을 때도 버튼 상태 업데이트 (invoiceno가 로드될 예정이므로 활성화)
-          updateButtonState(null);
+          await updateButtonState(null, deliveryNo);
         }
         
       } catch (error) {
