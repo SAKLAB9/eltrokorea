@@ -2722,10 +2722,11 @@
         });
         
         // p/ino가 기본 선택된 경우 자동으로 날짜와 가격 로드
-        if (pino) {
+        if (pinoArray.length > 0) {
+          const firstPino = pinoArray[0];
           const row = pinoSelect.closest('tr');
           if (row) {
-            await loadPinoData(deliveryNo, pino, row);
+            await loadPinoData(deliveryNo, firstPino, row);
             
             // 자동 로드된 p/ino에 대해서도 버튼 상태 업데이트
             const category1Rows = document.querySelectorAll('.category1-row');
