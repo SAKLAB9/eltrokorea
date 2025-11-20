@@ -312,10 +312,12 @@
       }
       
       // 각 항목별 숫자 추출 (다음 줄이 숫자로 시작하면 그 줄까지 포함)
-      if (line.includes('관세') || line.includes('관 세')) {
+      // 관세 추출 (부가세와 동일한 로직 적용)
+      if ((line.includes('관세') || line.includes('관 세')) && !customsDuty) {
         customsDuty = extractNumberWithNextLine(line, nextLine);
       }
-      if (line.includes('부가세') || line.includes('부 가 세')) {
+      // 부가세 추출
+      if ((line.includes('부가세') || line.includes('부 가 세')) && !vat) {
         vat = extractNumberWithNextLine(line, nextLine);
       }
       if (line.includes('창고료') || line.includes('창 고 료')) {
