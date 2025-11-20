@@ -1352,20 +1352,33 @@
         if (!input) return;
         
         input.addEventListener('input', function(e) {
-          let value = e.target.value.replace(/,/g, '');
-          if (value && !isNaN(value)) {
+          let value = e.target.value.replace(/,/g, '').trim();
+          const vatInput = document.querySelector(`.cost-table tbody tr:nth-child(${rowIndex}) td:nth-child(3) input`);
+          const supplyInput = document.querySelector(`.cost-table tbody tr:nth-child(${rowIndex}) td:nth-child(2) input`);
+          
+          // 합계가 비어있으면 공급가와 부가세도 비우기
+          if (!value || value === '') {
+            if (vatInput) vatInput.value = '';
+            if (supplyInput) supplyInput.value = '';
+            // 계산 함수 호출
+            if (onCalculate) {
+              setTimeout(onCalculate, rowIndex === 5 ? 50 : 10);
+            }
+            return;
+          }
+          
+          // 숫자 값이 있는 경우
+          if (!isNaN(value)) {
             const numericValue = parseInt(value);
             e.target.value = numericValue.toLocaleString();
             
-            // 3열(부가세)에 1/11 계산
-            const vatInput = document.querySelector(`.cost-table tbody tr:nth-child(${rowIndex}) td:nth-child(3) input`);
+            // 3열(부가세)에 1/11 계산 (공급가가 공란이면 0으로 생각)
             if (vatInput) {
               const vatValue = Math.round(numericValue / 11);
               vatInput.value = vatValue.toLocaleString();
             }
             
-            // 2열(공급가)에 10/11 계산
-            const supplyInput = document.querySelector(`.cost-table tbody tr:nth-child(${rowIndex}) td:nth-child(2) input`);
+            // 2열(공급가)에 10/11 계산 (공급가가 공란이면 0으로 생각)
             if (supplyInput) {
               const supplyValue = Math.round(numericValue * 10 / 11);
               supplyInput.value = supplyValue.toLocaleString();
