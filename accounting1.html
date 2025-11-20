@@ -1302,9 +1302,14 @@
             shipFeeDefaultValue = data.shipFeeDefaultValue;
           }
           
-          // 테이블 데이터 복원
+          // 테이블 데이터 복원 (드롭다운 로드 완료 후)
           if (data.table1Data) {
-            setTimeout(() => restoreTable1Data(data.table1Data), 500);
+            loadDeliveryNumbers().then(() => {
+              // 드롭다운이 완전히 로드될 때까지 약간의 지연 후 복원
+              setTimeout(() => {
+                restoreTable1Data(data.table1Data);
+              }, 200);
+            });
           }
           if (data.table2Data) {
             setTimeout(() => restoreTable2Data(data.table2Data), 500);
@@ -1335,9 +1340,12 @@
               
               // 드롭다운 로드 후 테이블1 복원
               loadDeliveryNumbers().then(() => {
-                if (exportData.table1Data) {
-                  restoreTable1Data(exportData.table1Data);
-                }
+                // 드롭다운이 완전히 로드될 때까지 약간의 지연 후 복원
+                setTimeout(() => {
+                  if (exportData.table1Data) {
+                    restoreTable1Data(exportData.table1Data);
+                  }
+                }, 200);
               });
             }
           } catch (error) {
@@ -1458,13 +1466,15 @@
       const table1Data = {};
       
       // DOM 쿼리 최적화
-      const [deliveryNoSelect, invoiceInput] = [
+      const [deliveryNoSelect, invoiceInput, exchangeRateInput] = [
         document.querySelector('.cost-table tbody tr:first-child td:first-child select'),
-        document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input')
+        document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input'),
+        document.getElementById('exchangeRate')
       ];
       
       if (deliveryNoSelect) table1Data.deliveryNo = deliveryNoSelect.value;
       if (invoiceInput) table1Data.invoiceprice = invoiceInput.value;
+      if (exchangeRateInput) table1Data.exchangeRate = exchangeRateInput.value;
       
       // 원화금액 (4열)
       const wonAmountInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(4) input');
@@ -1479,27 +1489,58 @@
 
     // 테이블1 데이터 복원 함수 (최적화)
     function restoreTable1Data(table1Data) {
-      if (!table1Data.deliveryNo) return;
+      if (!table1Data || !table1Data.deliveryNo) return;
       
       const deliveryNoSelect = document.querySelector('.cost-table tbody tr:first-child td:first-child select');
       if (!deliveryNoSelect) return;
       
-      // 옵션이 로드될 때까지 기다린 후 선택
+      // 옵션이 로드될 때까지 기다린 후 선택 (최대 50회 시도, 5초)
+      let retryCount = 0;
+      const maxRetries = 50;
+      
       const checkAndSetDeliveryNo = () => {
         const options = deliveryNoSelect.querySelectorAll('option');
         
         if (options.length > 1) {
-          deliveryNoSelect.value = table1Data.deliveryNo;
+          // 저장된 deliveryNo가 실제 옵션에 존재하는지 확인
+          const deliveryNoExists = Array.from(options).some(option => option.value === table1Data.deliveryNo);
           
-          // deliveryNo 선택 후 invoiceprice도 로드
-          if (table1Data.invoiceprice) {
-            const invoiceInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input');
-            if (invoiceInput) {
-              invoiceInput.value = table1Data.invoiceprice;
+          if (deliveryNoExists) {
+            // deliveryNo 선택
+            deliveryNoSelect.value = table1Data.deliveryNo;
+            
+            // 실제로 선택되었는지 확인 (값이 제대로 설정되었는지)
+            if (deliveryNoSelect.value === table1Data.deliveryNo) {
+              // change 이벤트 트리거하여 invoiceprice 자동 로드
+              const changeEvent = new Event('change', { bubbles: true });
+              deliveryNoSelect.dispatchEvent(changeEvent);
+              
+              // deliveryNo 선택 후 invoiceprice도 로드 (이미 로드되었을 수 있으므로 수동 설정도 함께)
+              if (table1Data.invoiceprice) {
+                setTimeout(() => {
+                  const invoiceInput = document.querySelector('.cost-table tbody tr:first-child td:nth-child(2) input');
+                  if (invoiceInput) {
+                    invoiceInput.value = table1Data.invoiceprice;
+                  }
+                }, 100);
+              }
+              
+              // 환율 복원
+              if (table1Data.exchangeRate) {
+                const exchangeRateInput = document.getElementById('exchangeRate');
+                if (exchangeRateInput) {
+                  exchangeRateInput.value = table1Data.exchangeRate;
+                }
+              }
+            } else if (retryCount < maxRetries) {
+              // 값이 제대로 설정되지 않았으면 다시 시도
+              retryCount++;
+              setTimeout(checkAndSetDeliveryNo, 100);
             }
           }
-        } else {
+        } else if (retryCount < maxRetries) {
           // 옵션이 아직 로드되지 않았으면 다시 시도
+          retryCount++;
           setTimeout(checkAndSetDeliveryNo, 100);
         }
       };
