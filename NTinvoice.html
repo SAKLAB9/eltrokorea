@@ -835,8 +835,8 @@
         if (swiftDateInput) swiftDateInput.value = firstItem.swiftdate || '';
         if (airInput) airInput.value = selectedDeliveryNo.includes('AIR') ? '4000' : '';
         
-        // addprice 저장
-        const addprice = parseFloat(firstItem.addprice) || 0;
+        // addprice 저장 (ntinvoiceprice 필드명 사용, fallback으로 addprice 확인)
+        const addprice = parseFloat(firstItem.ntinvoiceprice || firstItem.addprice) || 0;
         const tbody = getTbody();
         tbody.querySelector('tr:first-child').setAttribute('data-addprice', addprice);
         
@@ -1543,7 +1543,36 @@
       if (totalQuantityInput && totalRow) {
         const totalQty = parseFloat(totalQuantityInput.value.replace(/,/g, '')) || 0;
         // addprice를 데이터 속성에서 가져와서 계산
-        const addprice = parseFloat(tbody.querySelector('tr:first-child').getAttribute('data-addprice') || 0);
+        const firstRow = tbody.querySelector('tr:first-child');
+        let addprice = 0;
+        
+        if (firstRow) {
+          // data-addprice 속성에서 가져오기
+          const dataAddprice = firstRow.getAttribute('data-addprice');
+          if (dataAddprice) {
+            addprice = parseFloat(dataAddprice) || 0;
+          } else {
+            // data-addprice가 없으면 orderData에서 직접 가져오기
+            const deliveryNoSelect = document.querySelector('.cost-table tbody tr:first-child td:first-child select');
+            if (deliveryNoSelect && deliveryNoSelect.value) {
+              getOrderData().then(orderData => {
+                const firstItem = orderData.flatMap(order => order.items || [])
+                  .find(item => item.deliveryNo === deliveryNoSelect.value);
+                if (firstItem) {
+                  const addpriceValue = parseFloat(firstItem.ntinvoiceprice || firstItem.addprice) || 0;
+                  firstRow.setAttribute('data-addprice', addpriceValue);
+                  costPerKgInput.value = totalQty > 0 ? Math.round(addpriceValue / totalQty).toLocaleString() : '0';
+                } else {
+                  costPerKgInput.value = '0';
+                }
+              }).catch(() => {
+                costPerKgInput.value = '0';
+              });
+              return; // 비동기 처리 중이므로 여기서 종료
+            }
+          }
+        }
+        
         costPerKgInput.value = totalQty > 0 ? Math.round(addprice / totalQty).toLocaleString() : '0';
       } else {
         costPerKgInput.value = '0';
