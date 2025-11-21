@@ -1499,7 +1499,7 @@
                     <td style="${textStyle}">${formatPrice(itemData.addprice, '₩')}</td>
                     <td style="${textStyle}; position: relative;">
                         ${formatPrice(itemData.ntinvoiceprice, '₩')}
-                        ${itemData.ntminusprice ? `<div style="position: relative; display: inline-block; margin-left: 5px; padding-right: 14px;">
+                        ${itemData.ntminusprice ? `<br/><div style="position: relative; display: inline-block; padding-right: 14px;">
                             ${formatPrice(itemData.ntminusprice, '₩')}
                             <button type="button" class="delete-ntminusprice-btn" onclick="deleteNtminusprice('${delivery.deliveryNo}')" title="ntminusprice 삭제">×</button>
                         </div>` : ''}
