@@ -836,9 +836,19 @@
         if (airInput) airInput.value = selectedDeliveryNo.includes('AIR') ? '4000' : '';
         
         // addprice 저장 (통관 열 4행에 표시되는 addprice 값 사용)
-        const addprice = parseFloat(firstItem.addprice) || 0;
+        // 여러 필드명 확인 (배포 환경 호환성)
+        const addprice = parseFloat(
+          firstItem.addprice || 
+          firstItem.addPrice || 
+          firstItem.ADD_PRICE || 
+          firstItem['addprice'] || 
+          0
+        ) || 0;
         const tbody = getTbody();
-        tbody.querySelector('tr:first-child').setAttribute('data-addprice', addprice);
+        const firstRow = tbody.querySelector('tr:first-child');
+        if (firstRow) {
+          firstRow.setAttribute('data-addprice', addprice);
+        }
         
         // 상단 필드 설정 (ntinvoicedate가 있으면 사용, 없으면 오늘 날짜)
         if (orderDateInput) {
@@ -949,7 +959,14 @@
         if (firstRow && !firstRow.getAttribute('data-addprice')) {
           const firstItem = items.length > 0 ? items[0] : null;
           if (firstItem) {
-            const addprice = parseFloat(firstItem.addprice) || 0;
+            // 여러 필드명 확인 (배포 환경 호환성)
+            const addprice = parseFloat(
+              firstItem.addprice || 
+              firstItem.addPrice || 
+              firstItem.ADD_PRICE || 
+              firstItem['addprice'] || 
+              0
+            ) || 0;
             firstRow.setAttribute('data-addprice', addprice);
           }
         }
@@ -1569,7 +1586,14 @@
                 const firstItem = orderData.flatMap(order => order.items || [])
                   .find(item => item.deliveryNo === deliveryNoSelect.value);
                 if (firstItem) {
-                  const addpriceValue = parseFloat(firstItem.addprice) || 0;
+                  // 여러 필드명 확인 (배포 환경 호환성)
+                  const addpriceValue = parseFloat(
+                    firstItem.addprice || 
+                    firstItem.addPrice || 
+                    firstItem.ADD_PRICE || 
+                    firstItem['addprice'] || 
+                    0
+                  ) || 0;
                   firstRow.setAttribute('data-addprice', addpriceValue);
                   costPerKgInput.value = totalQty > 0 ? Math.round(addpriceValue / totalQty).toLocaleString() : '0';
                 } else {
