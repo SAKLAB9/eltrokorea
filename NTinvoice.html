@@ -853,7 +853,7 @@
         // 값 설정
         if (dateInput) dateInput.value = firstItem['p/idate'] || '';
         if (swiftDateInput) swiftDateInput.value = firstItem.swiftdate || '';
-        if (airInput) airInput.value = selectedDeliveryNo.includes('AIR') ? '4000' : '';
+        if (airInput) airInput.value = selectedDeliveryNo.toUpperCase().includes('AIR') ? '4000' : '';
         
         // addprice 저장 (통관 열 4행에 표시되는 addprice 값 사용)
         // addprice가 있는 아이템을 찾아서 사용
