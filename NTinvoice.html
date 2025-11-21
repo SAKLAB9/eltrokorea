@@ -816,10 +816,19 @@
     async function loadInvoicePrice(selectedDeliveryNo) {
       try {
         const orderData = await getOrderData();
-        const firstItem = orderData.flatMap(order => order.items || [])
-          .find(item => item.deliveryNo === selectedDeliveryNo);
+        const allItems = orderData.flatMap(order => order.items || [])
+          .filter(item => item.deliveryNo === selectedDeliveryNo);
         
-        if (!firstItem) return;
+        if (allItems.length === 0) return;
+        
+        // 첫 번째 아이템 찾기
+        const firstItem = allItems[0];
+        
+        // addprice가 있는 아이템 찾기 (첫 번째 아이템에 없으면 다른 아이템에서 찾기)
+        let itemWithAddprice = allItems.find(item => item.addprice && parseFloat(item.addprice) > 0);
+        if (!itemWithAddprice) {
+          itemWithAddprice = firstItem; // 없으면 첫 번째 아이템 사용
+        }
         
         // DOM 요소들 한 번에 쿼리
         const [dateInput, swiftDateInput, airInput, orderDateInput, dueDateInput] = [
@@ -836,11 +845,20 @@
         if (airInput) airInput.value = selectedDeliveryNo.includes('AIR') ? '4000' : '';
         
         // addprice 저장 (통관 열 4행에 표시되는 addprice 값 사용)
-        const addprice = parseFloat(firstItem.addprice) || 0;
+        // 모든 아이템 중 addprice가 있는 아이템에서 가져오기
+        // shipmentarchive.html과 동일하게 모든 아이템을 확인
+        let addprice = 0;
+        for (const item of allItems) {
+          if (item.addprice && parseFloat(item.addprice) > 0) {
+            addprice = parseFloat(item.addprice);
+            console.log('[NTINVOICE] loadInvoicePrice - found addprice in item:', item);
+            break;
+          }
+        }
         console.log('[NTINVOICE] loadInvoicePrice - deliveryNo:', selectedDeliveryNo);
-        console.log('[NTINVOICE] loadInvoicePrice - firstItem:', firstItem);
-        console.log('[NTINVOICE] loadInvoicePrice - firstItem.addprice:', firstItem.addprice);
-        console.log('[NTINVOICE] loadInvoicePrice - parsed addprice:', addprice);
+        console.log('[NTINVOICE] loadInvoicePrice - allItems count:', allItems.length);
+        console.log('[NTINVOICE] loadInvoicePrice - allItems with addprice:', allItems.filter(item => item.addprice).map(item => ({ itemNo: item.itemNo, addprice: item.addprice })));
+        console.log('[NTINVOICE] loadInvoicePrice - final addprice:', addprice);
         const tbody = getTbody();
         const firstRow = tbody.querySelector('tr:first-child');
         if (firstRow) {
@@ -960,16 +978,17 @@
         if (firstRow) {
           const existingAddprice = firstRow.getAttribute('data-addprice');
           console.log('[NTINVOICE] loadDeliveryItems - existing data-addprice:', existingAddprice);
-          if (!existingAddprice) {
-            const firstItem = items.length > 0 ? items[0] : null;
-            console.log('[NTINVOICE] loadDeliveryItems - firstItem:', firstItem);
-            if (firstItem) {
-              const addprice = parseFloat(firstItem.addprice) || 0;
-              console.log('[NTINVOICE] loadDeliveryItems - firstItem.addprice:', firstItem.addprice);
+          if (!existingAddprice || existingAddprice === '0') {
+            // addprice가 있는 아이템 찾기
+            const itemWithAddprice = items.find(item => item.addprice && parseFloat(item.addprice) > 0);
+            console.log('[NTINVOICE] loadDeliveryItems - itemWithAddprice:', itemWithAddprice);
+            if (itemWithAddprice) {
+              const addprice = parseFloat(itemWithAddprice.addprice) || 0;
+              console.log('[NTINVOICE] loadDeliveryItems - itemWithAddprice.addprice:', itemWithAddprice.addprice);
               console.log('[NTINVOICE] loadDeliveryItems - setting data-addprice to:', addprice);
               firstRow.setAttribute('data-addprice', addprice);
             } else {
-              console.log('[NTINVOICE] loadDeliveryItems - firstItem not found');
+              console.log('[NTINVOICE] loadDeliveryItems - no item with addprice found');
             }
           }
         } else {
