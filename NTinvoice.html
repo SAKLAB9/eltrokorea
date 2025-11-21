@@ -816,19 +816,17 @@
     async function loadInvoicePrice(selectedDeliveryNo) {
       try {
         const orderData = await getOrderData();
-        const allItems = orderData.flatMap(order => order.items || [])
-          .filter(item => item.deliveryNo === selectedDeliveryNo);
         
-        if (allItems.length === 0) return;
-        
-        // 첫 번째 아이템 찾기
-        const firstItem = allItems[0];
-        
-        // addprice가 있는 아이템 찾기 (첫 번째 아이템에 없으면 다른 아이템에서 찾기)
-        let itemWithAddprice = allItems.find(item => item.addprice && parseFloat(item.addprice) > 0);
-        if (!itemWithAddprice) {
-          itemWithAddprice = firstItem; // 없으면 첫 번째 아이템 사용
+        // shipmentarchive.html과 동일하게: 첫 번째 order의 items에서 deliveryNo에 해당하는 첫 번째 아이템 찾기
+        let firstItem = null;
+        for (const order of orderData) {
+          if (order.items && order.items.length > 0) {
+            firstItem = order.items.find(item => item.deliveryNo === selectedDeliveryNo);
+            if (firstItem) break; // 첫 번째로 찾은 아이템 사용
+          }
         }
+        
+        if (!firstItem) return;
         
         // DOM 요소들 한 번에 쿼리
         const [dateInput, swiftDateInput, airInput, orderDateInput, dueDateInput] = [
@@ -845,35 +843,12 @@
         if (airInput) airInput.value = selectedDeliveryNo.includes('AIR') ? '4000' : '';
         
         // addprice 저장 (통관 열 4행에 표시되는 addprice 값 사용)
-        // 모든 아이템 중 addprice가 있는 아이템에서 가져오기
-        // shipmentarchive.html과 동일하게 모든 아이템을 확인
-        let addprice = 0;
-        
-        // 디버깅: 첫 번째 아이템의 모든 키 확인
-        if (allItems.length > 0) {
-          console.log('[NTINVOICE] loadInvoicePrice - first item keys:', Object.keys(allItems[0]));
-          console.log('[NTINVOICE] loadInvoicePrice - first item:', allItems[0]);
-        }
-        
-        for (const item of allItems) {
-          // 여러 가능한 필드명 확인
-          const addpriceValue = item.addprice || item['addprice'] || item.ADD_PRICE || item['ADD_PRICE'];
-          if (addpriceValue && parseFloat(addpriceValue) > 0) {
-            addprice = parseFloat(addpriceValue);
-            console.log('[NTINVOICE] loadInvoicePrice - found addprice in item:', item.itemNo, 'value:', addprice);
-            break;
-          }
-        }
+        // shipmentarchive.html과 동일하게 첫 번째 아이템에서 직접 가져오기
+        const addprice = parseFloat(firstItem.addprice) || 0;
         console.log('[NTINVOICE] loadInvoicePrice - deliveryNo:', selectedDeliveryNo);
-        console.log('[NTINVOICE] loadInvoicePrice - allItems count:', allItems.length);
-        console.log('[NTINVOICE] loadInvoicePrice - allItems with addprice:', allItems.filter(item => {
-          const val = item.addprice || item['addprice'] || item.ADD_PRICE || item['ADD_PRICE'];
-          return val && parseFloat(val) > 0;
-        }).map(item => ({ 
-          itemNo: item.itemNo, 
-          addprice: item.addprice || item['addprice'] || item.ADD_PRICE || item['ADD_PRICE']
-        })));
-        console.log('[NTINVOICE] loadInvoicePrice - final addprice:', addprice);
+        console.log('[NTINVOICE] loadInvoicePrice - firstItem:', firstItem);
+        console.log('[NTINVOICE] loadInvoicePrice - firstItem.addprice:', firstItem.addprice);
+        console.log('[NTINVOICE] loadInvoicePrice - parsed addprice:', addprice);
         const tbody = getTbody();
         const firstRow = tbody.querySelector('tr:first-child');
         if (firstRow) {
