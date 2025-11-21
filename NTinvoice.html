@@ -835,8 +835,8 @@
         if (swiftDateInput) swiftDateInput.value = firstItem.swiftdate || '';
         if (airInput) airInput.value = selectedDeliveryNo.includes('AIR') ? '4000' : '';
         
-        // addprice 저장 (ntinvoiceprice 필드명 사용, fallback으로 addprice 확인)
-        const addprice = parseFloat(firstItem.ntinvoiceprice || firstItem.addprice) || 0;
+        // addprice 저장 (통관 열 4행에 표시되는 addprice 값 사용)
+        const addprice = parseFloat(firstItem.addprice) || 0;
         const tbody = getTbody();
         tbody.querySelector('tr:first-child').setAttribute('data-addprice', addprice);
         
@@ -943,6 +943,16 @@
           <td><input type="text" value="0" readonly class="readonly-input total-row" id="totalAmountField"></td>
         `;
         tbody.appendChild(totalRow);
+        
+        // addprice 확인 및 설정 (loadInvoicePrice에서 설정되지 않은 경우 대비)
+        const firstRow = tbody.querySelector('tr:first-child');
+        if (firstRow && !firstRow.getAttribute('data-addprice')) {
+          const firstItem = items.length > 0 ? items[0] : null;
+          if (firstItem) {
+            const addprice = parseFloat(firstItem.addprice) || 0;
+            firstRow.setAttribute('data-addprice', addprice);
+          }
+        }
         
         // Total 행 생성 후 부대비용/kg 계산 실행
         calculateCostPerKg();
@@ -1559,7 +1569,7 @@
                 const firstItem = orderData.flatMap(order => order.items || [])
                   .find(item => item.deliveryNo === deliveryNoSelect.value);
                 if (firstItem) {
-                  const addpriceValue = parseFloat(firstItem.ntinvoiceprice || firstItem.addprice) || 0;
+                  const addpriceValue = parseFloat(firstItem.addprice) || 0;
                   firstRow.setAttribute('data-addprice', addpriceValue);
                   costPerKgInput.value = totalQty > 0 ? Math.round(addpriceValue / totalQty).toLocaleString() : '0';
                 } else {
