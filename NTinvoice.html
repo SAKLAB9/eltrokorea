@@ -737,12 +737,22 @@
       if (cache.cached) return cache.cached;
       if (cache.promise) return cache.promise;
       
-      const fileName = type === 'orderData' ? 'orderData.json' : 'priceData.json';
-      cache.promise = fetch(fileName).then(res => res.json()).then(data => {
-        cache.cached = data;
-        cache.promise = null;
-        return data;
-      });
+      // orderData는 서버 API를 통해 가져오기 (웹 서버와 동기화)
+      if (type === 'orderData') {
+        cache.promise = fetch('/api/orders').then(res => res.json()).then(data => {
+          cache.cached = data;
+          cache.promise = null;
+          return data;
+        });
+      } else {
+        // priceData는 파일에서 직접 가져오기
+        const fileName = 'priceData.json';
+        cache.promise = fetch(fileName).then(res => res.json()).then(data => {
+          cache.cached = data;
+          cache.promise = null;
+          return data;
+        });
+      }
       
       return cache.promise;
     }
