@@ -704,9 +704,6 @@
         // addprice 로드 및 NT비용합계 공급가에 설정 (shipmentarchive.html과 동일하게)
         if (firstItem && firstItem.addprice) {
           const addprice = parseFloat(firstItem.addprice) || 0;
-          console.log('[ACCOUNTING1] loadInvoicePrice - deliveryNo:', selectedDeliveryNo);
-          console.log('[ACCOUNTING1] loadInvoicePrice - firstItem.addprice:', firstItem.addprice);
-          console.log('[ACCOUNTING1] loadInvoicePrice - parsed addprice:', addprice);
           
           // NT비용합계 행 찾기
           const dataRows = Array.from(document.querySelectorAll('.cost-table tbody tr')).slice(2);
@@ -724,28 +721,23 @@
             // NT비용합계 공급가 (2열)에 addprice 설정
             if (supplyPriceCell) {
               supplyPriceCell.value = addprice.toLocaleString();
-              console.log('[ACCOUNTING1] loadInvoicePrice - NT비용합계 공급가에 addprice 설정:', addprice.toLocaleString());
             }
             
             // 부가세 계산 (공급가의 10%)
             if (vatCell) {
               const vatAmount = Math.round(addprice * 0.1);
               vatCell.value = vatAmount.toLocaleString();
-              console.log('[ACCOUNTING1] loadInvoicePrice - 부가세 계산:', vatAmount.toLocaleString());
             }
             
             // 합계 계산 (공급가 + 부가세)
             if (totalCell) {
               const totalAmount = addprice + Math.round(addprice * 0.1);
               totalCell.value = totalAmount.toLocaleString();
-              console.log('[ACCOUNTING1] loadInvoicePrice - 합계 계산:', totalAmount.toLocaleString());
             }
             
             // 총부대비용합계 재계산
             calculateTotalCost();
           }
-        } else {
-          console.log('[ACCOUNTING1] loadInvoicePrice - addprice not found for deliveryNo:', selectedDeliveryNo);
         }
       } catch (error) {
         alert('invoiceprice 로드 중 오류가 발생했습니다.');
