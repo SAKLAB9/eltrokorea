@@ -817,16 +817,19 @@
       try {
         const orderData = await getOrderData();
         
-        // shipmentarchive.html과 동일하게: 첫 번째 order의 items에서 deliveryNo에 해당하는 첫 번째 아이템 찾기
-        let firstItem = null;
-        for (const order of orderData) {
-          if (order.items && order.items.length > 0) {
-            firstItem = order.items.find(item => item.deliveryNo === selectedDeliveryNo);
-            if (firstItem) break; // 첫 번째로 찾은 아이템 사용
-          }
-        }
+        // 모든 아이템을 평탄화하여 deliveryNo에 해당하는 아이템들 찾기
+        const allItems = orderData.flatMap(order => order.items || [])
+          .filter(item => item.deliveryNo === selectedDeliveryNo);
         
-        if (!firstItem) return;
+        if (allItems.length === 0) return;
+        
+        // addprice가 있는 아이템을 우선적으로 찾기
+        let firstItem = allItems.find(item => item.addprice != null && item.addprice !== '');
+        
+        // addprice가 있는 아이템이 없으면 첫 번째 아이템 사용
+        if (!firstItem) {
+          firstItem = allItems[0];
+        }
         
         // DOM 요소들 한 번에 쿼리
         const [dateInput, swiftDateInput, airInput, orderDateInput, dueDateInput] = [
@@ -843,11 +846,17 @@
         if (airInput) airInput.value = selectedDeliveryNo.includes('AIR') ? '4000' : '';
         
         // addprice 저장 (통관 열 4행에 표시되는 addprice 값 사용)
-        // shipmentarchive.html과 동일하게 첫 번째 아이템에서 직접 가져오기
-        const addprice = parseFloat(firstItem.addprice) || 0;
+        // addprice가 있는 아이템을 찾아서 사용
+        let addprice = 0;
+        const itemWithAddprice = allItems.find(item => item.addprice != null && item.addprice !== '');
+        if (itemWithAddprice) {
+          addprice = parseFloat(itemWithAddprice.addprice) || 0;
+        }
+        
         console.log('[NTINVOICE] loadInvoicePrice - deliveryNo:', selectedDeliveryNo);
         console.log('[NTINVOICE] loadInvoicePrice - firstItem:', firstItem);
-        console.log('[NTINVOICE] loadInvoicePrice - firstItem.addprice:', firstItem.addprice);
+        console.log('[NTINVOICE] loadInvoicePrice - itemWithAddprice:', itemWithAddprice);
+        console.log('[NTINVOICE] loadInvoicePrice - itemWithAddprice.addprice:', itemWithAddprice?.addprice);
         console.log('[NTINVOICE] loadInvoicePrice - parsed addprice:', addprice);
         const tbody = getTbody();
         const firstRow = tbody.querySelector('tr:first-child');
@@ -969,8 +978,18 @@
           const existingAddprice = firstRow.getAttribute('data-addprice');
           console.log('[NTINVOICE] loadDeliveryItems - existing data-addprice:', existingAddprice);
           if (!existingAddprice || existingAddprice === '0') {
-            // addprice가 있는 아이템 찾기
-            const itemWithAddprice = items.find(item => item.addprice && parseFloat(item.addprice) > 0);
+            // orderData에서 모든 아이템을 다시 확인하여 addprice가 있는 아이템 찾기
+            const allItemsForDeliveryNo = orderData.flatMap(order => order.items || [])
+              .filter(item => item.deliveryNo === selectedDeliveryNo);
+            
+            // addprice가 있는 아이템 찾기 (null, undefined, 빈 문자열, 0이 아닌 값)
+            const itemWithAddprice = allItemsForDeliveryNo.find(item => 
+              item.addprice != null && 
+              item.addprice !== '' && 
+              parseFloat(item.addprice) > 0
+            );
+            
+            console.log('[NTINVOICE] loadDeliveryItems - allItemsForDeliveryNo count:', allItemsForDeliveryNo.length);
             console.log('[NTINVOICE] loadDeliveryItems - itemWithAddprice:', itemWithAddprice);
             if (itemWithAddprice) {
               const addprice = parseFloat(itemWithAddprice.addprice) || 0;
@@ -1616,18 +1635,25 @@
             if (deliveryNoSelect && deliveryNoSelect.value) {
               console.log('[NTINVOICE] calculateCostPerKg - deliveryNo:', deliveryNoSelect.value);
               getOrderData().then(orderData => {
-                const firstItem = orderData.flatMap(order => order.items || [])
-                  .find(item => item.deliveryNo === deliveryNoSelect.value);
-                console.log('[NTINVOICE] calculateCostPerKg - firstItem from orderData:', firstItem);
-                if (firstItem) {
-                  const addpriceValue = parseFloat(firstItem.addprice) || 0;
+                // 모든 아이템을 평탄화하여 deliveryNo에 해당하는 아이템들 찾기
+                const allItems = orderData.flatMap(order => order.items || [])
+                  .filter(item => item.deliveryNo === deliveryNoSelect.value);
+                
+                // addprice가 있는 아이템을 우선적으로 찾기
+                const itemWithAddprice = allItems.find(item => item.addprice != null && item.addprice !== '');
+                
+                console.log('[NTINVOICE] calculateCostPerKg - allItems count:', allItems.length);
+                console.log('[NTINVOICE] calculateCostPerKg - itemWithAddprice:', itemWithAddprice);
+                
+                if (itemWithAddprice) {
+                  const addpriceValue = parseFloat(itemWithAddprice.addprice) || 0;
                   console.log('[NTINVOICE] calculateCostPerKg - addpriceValue from orderData:', addpriceValue);
                   firstRow.setAttribute('data-addprice', addpriceValue);
                   const result = totalQty > 0 ? Math.round(addpriceValue / totalQty).toLocaleString() : '0';
                   console.log('[NTINVOICE] calculateCostPerKg - calculated result:', result);
                   costPerKgInput.value = result;
                 } else {
-                  console.log('[NTINVOICE] calculateCostPerKg - firstItem not found in orderData');
+                  console.log('[NTINVOICE] calculateCostPerKg - itemWithAddprice not found in orderData');
                   costPerKgInput.value = '0';
                 }
               }).catch((error) => {
