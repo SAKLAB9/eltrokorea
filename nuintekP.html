@@ -844,10 +844,6 @@
                             return `title="${formatDate(ISOweekStart)} ~ ${formatDate(ISOweekEnd)}"`;
                         })();
                         
-                        // Produced 값이 50 이하이거나 20000 이상이면 빨간색으로 표시
-                        const producedValue = parseFloat(col7Value) || 0;
-                        const producedStyle = (producedValue > 0 && producedValue <= 50) || producedValue >= 20000 ? 'color: red; font-weight: bold;' : '';
-                        
                         // 생산 열 (10번째) - 체크박스 (읽기 전용, orderData.json의 isProductionComplete 값에 따라 표시)
                         const checkboxValue = `<input type="checkbox" class="row-checkbox" ${item.isProductionComplete ? 'checked' : ''} disabled>`;
                         
@@ -881,7 +877,7 @@
                             <td>${col4Value}</td>
                             <td>${col5Value}</td>
                             <td>${col6Value}</td>
-                            <td style="${producedStyle}">${col7Value}</td>
+                            <td>${col7Value}</td>
                             <td>${col8Value}</td>
                             <td ${weekTooltip}>${col9Value}</td>
                             <td>${checkboxValue}</td>
