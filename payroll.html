@@ -674,9 +674,9 @@
             <th style="width: 60px;">성명</th>
             <th style="width: 60px;">월급여</th>
             <th id="bonusHeader" style="width: 60px; display: none;">상여금</th>
+            <th id="yearEndHeader" style="width: 60px; display: none;">연말정산차감징수세액</th>
             <th id="incomeTaxHeader" style="width: 60px;">소득세</th>
             <th style="width: 60px;">주민세</th>
-            <th id="yearEndHeader" style="width: 60px; display: none;">연말정산차감징수세액</th>
             <th style="width: 60px;">연금보험료</th>
             <th style="width: 60px;">건강보험료</th>
             <th style="width: 60px;">요양보험료</th>
@@ -1180,6 +1180,24 @@
 
     // 상여금 버튼 (6월, 12월)
     function bonusPayroll() {
+      // 상여금 모드를 켤 때 연말정산 모드가 켜져있으면 먼저 끄기
+      if (!isBonusMode && isYearEndMode) {
+        // 연말정산 모드만 끄기 (재귀 호출 방지)
+        isYearEndMode = false;
+        const yearEndBtn = document.getElementById('yearEndBtn');
+        const yearEndHeader = document.getElementById('yearEndHeader');
+        const rows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
+        
+        yearEndBtn.classList.remove('selected');
+        yearEndHeader.style.display = 'none';
+        rows.forEach(row => {
+          const yearEndCell = row.querySelector('td.year-end-column');
+          if (yearEndCell) {
+            yearEndCell.style.display = 'none';
+          }
+        });
+      }
+      
       isBonusMode = !isBonusMode;
       const bonusBtn = document.getElementById('bonusBtn');
       const bonusHeader = document.getElementById('bonusHeader');
@@ -1231,6 +1249,7 @@
       }
       setTimeout(() => {
         updateTotalRow();
+        // 상여금 모드가 꺼지면 일반 소득세 값으로 복원, 켜지면 상여금 소득세 값 적용
         applyColumn5Values();
       }, 50);
     }
@@ -1249,6 +1268,29 @@
 
     // 연말정산 버튼 (2월)
     function yearEndSettlement() {
+      // 연말정산 모드를 켤 때 상여금 모드가 켜져있으면 먼저 끄기
+      if (!isYearEndMode && isBonusMode) {
+        // 상여금 모드만 끄기 (재귀 호출 방지)
+        isBonusMode = false;
+        const bonusBtn = document.getElementById('bonusBtn');
+        const bonusHeader = document.getElementById('bonusHeader');
+        const rows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
+        
+        bonusBtn.classList.remove('selected');
+        bonusHeader.style.display = 'none';
+        rows.forEach(row => {
+          const bonusCell = row.querySelector('td.bonus-column');
+          if (bonusCell) {
+            bonusCell.style.display = 'none';
+          }
+        });
+        
+        // 상여금 모드를 끌 때 일반 소득세 값으로 복원
+        setTimeout(() => {
+          applyColumn5Values();
+        }, 10);
+      }
+      
       isYearEndMode = !isYearEndMode;
       const yearEndBtn = document.getElementById('yearEndBtn');
       const yearEndHeader = document.getElementById('yearEndHeader');
@@ -1292,12 +1334,13 @@
       setTimeout(() => {
         updateTotalRow();
         recalculateAllNetPay();
-        // 연말정산 모드일 때는 기본 소득세 적용
+        // 연말정산 모드일 때는 일반 소득세 값 적용 (상여금 소득세 값 제거)
         if (isYearEndMode) {
           applyColumn5Values();
         }
       }, 50);
     }
+
 
     // Update 버튼 - transfer.json의 payrolls에 저장
     async function updatePayrolls() {
@@ -1469,7 +1512,7 @@
       
       if (payrolls.length === 0) {
         const row = document.createElement('tr');
-        row.innerHTML = '<td colspan="11" style="text-align: center; padding: 20px; color: #666;">데이터가 없습니다. 행추가 버튼을 클릭하여 급여 정보를 추가하세요.</td>';
+        row.innerHTML = '<td colspan="12" style="text-align: center; padding: 20px; color: #666;">데이터가 없습니다. 행추가 버튼을 클릭하여 급여 정보를 추가하세요.</td>';
         tableBody.appendChild(row);
       } else {
         payrolls.forEach(payroll => {
@@ -1542,7 +1585,7 @@
       let totalBonus = 0;
       let totalIncomeTax = 0;
       let totalResidentTax = 0;
-      let totalYearEndDeduction = 0;
+      let totalYearEndAddition = 0;
       let totalPensionInsurance = 0;
       let totalHealthInsurance = 0;
       let totalNursingInsurance = 0;
@@ -1563,7 +1606,7 @@
         totalIncomeTax += getColumnValue(row, incomeTaxIndex);
         totalResidentTax += getColumnValue(row, residentTaxIndex);
         if (hasYearEndColumn && yearEndIndex) {
-          totalYearEndDeduction += getColumnValue(row, yearEndIndex);
+          totalYearEndAddition += getColumnValue(row, yearEndIndex);
         }
         totalPensionInsurance += getColumnValue(row, pensionIndex);
         totalHealthInsurance += getColumnValue(row, healthIndex);
@@ -1603,7 +1646,7 @@
           totalRowHTML += `<td style="text-align: right;">${formatNumber(totalResidentTax)}</td>`;
         } else if (headerId === 'yearEndHeader' || headerText === '연말정산차감징수세액') {
           if (hasYearEndColumn) {
-            totalRowHTML += `<td style="text-align: right;">${formatNumber(totalYearEndDeduction)}</td>`;
+            totalRowHTML += `<td style="text-align: right;">${formatNumber(totalYearEndAddition)}</td>`;
           }
         } else if (headerText === '연금보험료') {
           totalRowHTML += `<td style="text-align: right;">${formatNumber(totalPensionInsurance)}</td>`;
@@ -1658,9 +1701,9 @@
         <td style="text-align: center;"><input type="text" value="${payroll.name || ''}" style="${inputStyle}" onkeydown="handleEnterKey(event, this)" oninput="updatePaymentInfoFromTable()"></td>
         <td style="text-align: right;"><input type="text" value="${formatNumber(payroll.monthlySalary || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow(); updateBonusColumn(this);" onkeydown="handleEnterKey(event, this)"></td>
         <td class="bonus-column" style="text-align: right; display: none;"><input type="text" value="${formatNumber(payroll.bonus || payroll.monthlySalary || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
+        <td class="year-end-column" style="text-align: right; display: none;"><input type="text" value="${formatNumber(payroll.yearEndDeduction || 0)}" style="${inputStyle}" oninput="formatYearEndInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleYearEndKey(event, this)"></td>
         <td class="income-tax-column" style="text-align: right;"><input type="text" value="${formatNumber(payroll.incomeTax || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateResidentTax(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
         <td style="text-align: right;"><input type="text" value="${formatNumber(payroll.residentTax || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
-        <td class="year-end-column" style="text-align: right; display: none;"><input type="text" value="${formatNumber(payroll.yearEndDeduction || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
         <td style="text-align: right;"><input type="text" value="${formatNumber(payroll.pensionInsurance || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
         <td style="text-align: right;"><input type="text" value="${formatNumber(payroll.healthInsurance || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
         <td style="text-align: right;"><input type="text" value="${formatNumber(payroll.nursingInsurance || 0)}" style="${inputStyle}" oninput="formatAmountInput(this); calculateNetPay(this); updateTotalRow();" onkeydown="handleEnterKey(event, this)"></td>
@@ -1681,6 +1724,51 @@
         input.value = '0';
       } else {
         input.value = formatNumber(value);
+      }
+    }
+
+    // 연말정산 입력 필드 포맷팅 (음수 허용)
+    function formatYearEndInput(input) {
+      let value = input.value.trim();
+      
+      // 빈 값이면 '0'으로 설정
+      if (value === '') {
+        input.value = '0';
+        return;
+      }
+      
+      // '0-' 또는 '-0' 같은 경우 '-'로 변경 (사용자가 0에서 -를 입력한 경우)
+      if (value === '0-' || value === '-0') {
+        input.value = '-';
+        return;
+      }
+      
+      // '-'만 있으면 그대로 유지 (사용자가 숫자를 입력할 수 있도록)
+      if (value === '-') {
+        input.value = '-';
+        return;
+      }
+      
+      // 맨 앞의 - 기호 확인
+      const isNegative = value.startsWith('-');
+      // 숫자만 추출
+      const numStr = value.replace(/[^0-9]/g, '');
+      
+      if (numStr === '') {
+        // 숫자가 없으면 '-'만 있으면 '-' 유지, 아니면 '0'
+        input.value = isNegative ? '-' : '0';
+      } else {
+        const numValue = parseInt(numStr, 10);
+        if (isNegative && numValue > 0) {
+          // 음수로 포맷팅
+          input.value = '-' + formatNumber(numValue);
+        } else if (isNegative && numValue === 0) {
+          // '-0'인 경우 '-'로 표시
+          input.value = '-';
+        } else {
+          // 양수로 포맷팅
+          input.value = formatNumber(numValue);
+        }
       }
     }
 
@@ -1750,18 +1838,18 @@
       
       const monthlySalary = parseFloat(row.querySelector(`td:nth-child(${monthlySalaryIndex}) input`)?.value.replace(/,/g, '') || '0') || 0;
       const bonus = (hasBonusColumn && bonusIndex) ? parseFloat(row.querySelector(`td:nth-child(${bonusIndex}) input`)?.value.replace(/,/g, '') || '0') || 0 : 0;
+      const yearEndAddition = (hasYearEndColumn && yearEndIndex) ? parseFloat(row.querySelector(`td:nth-child(${yearEndIndex}) input`)?.value.replace(/,/g, '') || '0') || 0 : 0;
       const incomeTax = parseFloat(row.querySelector(`td:nth-child(${incomeTaxIndex}) input`)?.value.replace(/,/g, '') || '0') || 0;
       const residentTax = parseFloat(row.querySelector(`td:nth-child(${residentTaxIndex}) input`)?.value.replace(/,/g, '') || '0') || 0;
-      const yearEndDeduction = (hasYearEndColumn && yearEndIndex) ? parseFloat(row.querySelector(`td:nth-child(${yearEndIndex}) input`)?.value.replace(/,/g, '') || '0') || 0 : 0;
       const pensionInsurance = parseFloat(row.querySelector(`td:nth-child(${pensionIndex}) input`)?.value.replace(/,/g, '') || '0') || 0;
       const healthInsurance = parseFloat(row.querySelector(`td:nth-child(${healthIndex}) input`)?.value.replace(/,/g, '') || '0') || 0;
       const nursingInsurance = parseFloat(row.querySelector(`td:nth-child(${nursingIndex}) input`)?.value.replace(/,/g, '') || '0') || 0;
       
       // 평소: 차인지급액 = 월급여 - 소득세 - 주민세 - 연금보험료 - 건강보험료 - 요양보험료
       // 상여금 모드: 차인지급액 = (월급여 + 상여금) - 소득세 - 주민세 - 연금보험료 - 건강보험료 - 요양보험료
-      // 연말정산 모드: 차인지급액 = 월급여(또는 월급여+상여금) - 소득세 - 주민세 - 연말정산차감징수세액 - 연금보험료 - 건강보험료 - 요양보험료
-      const totalIncome = monthlySalary + bonus;
-      const netPay = totalIncome - incomeTax - residentTax - yearEndDeduction - pensionInsurance - healthInsurance - nursingInsurance;
+      // 연말정산 모드: 차인지급액 = (월급여 + 상여금 + 연말정산차감징수세액) - 소득세 - 주민세 - 연금보험료 - 건강보험료 - 요양보험료
+      const totalIncome = monthlySalary + bonus + yearEndAddition;
+      const netPay = totalIncome - incomeTax - residentTax - pensionInsurance - healthInsurance - nursingInsurance;
       const netPayInput = row.querySelector(`td:nth-child(${netPayIndex}) input`);
       if (netPayInput) {
         netPayInput.value = formatNumber(netPay);
@@ -2023,6 +2111,21 @@
         input.focus();
         input.select();
       }
+    }
+
+    // 연말정산 입력 필드 키 처리 함수
+    function handleYearEndKey(event, currentInput) {
+      // '-' 키를 눌렀을 때 현재 값이 '0'이면 '-'로 변경
+      if (event.key === '-' || event.key === 'Minus') {
+        const currentValue = currentInput.value.replace(/,/g, '').trim();
+        if (currentValue === '0' || currentValue === '') {
+          event.preventDefault();
+          currentInput.value = '-';
+          return;
+        }
+      }
+      // Enter 키는 기존 함수로 처리
+      handleEnterKey(event, currentInput);
     }
 
     // 엔터키 처리 함수 - 같은 열의 아래 행으로 이동 (숨겨진 행 제외)
