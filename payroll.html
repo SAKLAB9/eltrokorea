@@ -1253,27 +1253,38 @@
       const yearEndBtn = document.getElementById('yearEndBtn');
       const yearEndHeader = document.getElementById('yearEndHeader');
       const rows = document.querySelectorAll('#payrollTableBody tr:not(.total-row)');
-      const displayValue = isYearEndMode ? 'table-cell' : 'none';
       
-      // 버튼 상태 변경
       if (isYearEndMode) {
+        // 연말정산 모드 ON - 버튼 블랙
         yearEndBtn.classList.add('selected');
+        
+        // 연말정산 열 표시
+        yearEndHeader.style.display = 'table-cell';
+        
+        // 각 행에 연말정산 열 표시
+        rows.forEach(row => {
+          const yearEndCell = row.querySelector('td.year-end-column');
+          if (yearEndCell) {
+            yearEndCell.style.display = 'table-cell';
+          }
+        });
       } else {
+        // 연말정산 모드 OFF - 버튼 원래대로
         yearEndBtn.classList.remove('selected');
+        
+        // 연말정산 열 숨기기
+        yearEndHeader.style.display = 'none';
+        
+        // 각 행에서 연말정산 열 숨기기
+        rows.forEach(row => {
+          const yearEndCell = row.querySelector('td.year-end-column');
+          if (yearEndCell) {
+            yearEndCell.style.display = 'none';
+          }
+        });
       }
       
-      // 연말정산 열 표시/숨기기
-      yearEndHeader.style.display = displayValue;
-      
-      // 각 행에 연말정산 열 표시/숨기기
-      rows.forEach(row => {
-        const yearEndCell = row.querySelector('td.year-end-column');
-        if (yearEndCell) {
-          yearEndCell.style.display = displayValue;
-        }
-      });
-      
-      // 합계 행 업데이트 및 차인지급액 재계산 (공통 로직)
+      // 합계 행 업데이트 및 차인지급액 재계산
       const existingTotalRow = document.querySelector('.total-row');
       if (existingTotalRow) {
         existingTotalRow.remove();
@@ -1281,6 +1292,10 @@
       setTimeout(() => {
         updateTotalRow();
         recalculateAllNetPay();
+        // 연말정산 모드일 때는 기본 소득세 적용
+        if (isYearEndMode) {
+          applyColumn5Values();
+        }
       }, 50);
     }
 
