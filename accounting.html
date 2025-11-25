@@ -1733,7 +1733,7 @@
         <td><input type="text" value="${formatNumber(data.previousBalance || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
         <td><input type="text" value="${formatNumber(data.todayDeposit || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
         <td><input type="text" value="${formatNumber(data.todayWithdrawal || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
-        <td><input type="text" value="${formatNumber(data.todayBalance || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateCategory4TodayLoan(this);"></td>
+        <td><input type="text" value="${formatNumber(data.todayBalance || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this);"></td>
       `;
     }
 
@@ -2010,15 +2010,29 @@
     // 공통 금액 포맷팅 함수 (음수 지원)
     function formatAmount(amount) {
       if (amount === null || amount === undefined || amount === '') return '0';
+      
+      // 문자열로 변환하여 소수점 확인
+      const amountStr = String(amount);
+      const hasDecimal = amountStr.includes('.');
+      
       const num = Number(amount);
       
       // 음수인 경우 음수 기호를 유지하면서 포맷팅
       if (num < 0) {
         const absNum = Math.abs(num);
-        return '-' + (absNum.toString().includes('.') ? absNum.toString() : absNum.toLocaleString());
+        // 원본 문자열에 소수점이 있으면 그대로 유지
+        if (hasDecimal) {
+          return '-' + absNum.toString();
+        }
+        return '-' + absNum.toLocaleString();
       }
       
-      return num.toString().includes('.') ? num.toString() : num.toLocaleString();
+      // 원본 문자열에 소수점이 있으면 그대로 유지
+      if (hasDecimal) {
+        return num.toString();
+      }
+      
+      return num.toLocaleString();
     }
 
     // 금일잔액 자동 계산 (전일잔액 + 금일입금 - 금일출금) - 최적화
