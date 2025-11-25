@@ -2326,14 +2326,11 @@
     }
 
     function updateDayOptions() {
-      const year = parseInt(document.getElementById('yearSelect').value);
-      const month = parseInt(document.getElementById('monthSelect').value);
-      const daysInMonth = new Date(year, month, 0).getDate();
       const daySelect = document.getElementById('daySelect');
       const currentDay = new Date().getDate();
       
       daySelect.innerHTML = '';
-      for (let day = 1; day <= daysInMonth; day++) {
+      for (let day = 1; day <= 31; day++) {
         daySelect.innerHTML += `<option value="${day}">${day}일</option>`;
       }
       daySelect.value = currentDay;
