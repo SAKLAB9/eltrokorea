@@ -1474,92 +1474,94 @@
     }
 
     // 카테고리5에서 카테고리2 출금내역 업데이트 (- 버튼 클릭 시)
-    async function updateCategory5Withdrawal(button) {
+    // 공통: 카테고리에서 카테고리2 출금내역 업데이트
+    async function updateCategoryWithdrawal(button, description, useNegative = false) {
       const row = button.closest('tr');
       const inputs = row.querySelectorAll('input');
       const companyName = inputs[0].value;
-      const depositAmount = inputs[4].value; // 송금금액 (5번째 컬럼)
+      const depositAmount = inputs[4].value;
       
-      if (!companyName.trim() || !depositAmount || parseAmount(depositAmount) <= 0) return;
+      if (!companyName.trim() || !depositAmount) return;
+      if (useNegative && parseAmount(depositAmount) <= 0) return;
       
       const category2TableBody = document.getElementById('category2TableBody');
-      
-      // 빈 행 찾기 또는 새 행 생성
       let targetRow = findEmptyWithdrawalRow(category2TableBody);
       if (!targetRow) {
-        // 빈 행이 없으면 새 행 생성
         targetRow = await createNewCategory2Row(category2TableBody);
       }
       
       if (targetRow) {
-        // 카테고리 2에 데이터 설정
         const balanceSelect = targetRow.querySelector('td:nth-child(4) select');
         const withdrawalSelect = targetRow.querySelector('td:nth-child(5) select');
         const withdrawalInput = targetRow.querySelector('td:nth-child(6) input');
         
         if (balanceSelect) balanceSelect.value = companyName;
         if (withdrawalSelect) {
-          // "가수금상환" 옵션이 없으면 추가
-          const hasOption = Array.from(withdrawalSelect.options).some(option => option.value === '가수금상환');
+          const hasOption = Array.from(withdrawalSelect.options).some(option => option.value === description);
           if (!hasOption) {
             const newOption = document.createElement('option');
-            newOption.value = '가수금상환';
-            newOption.textContent = '가수금상환';
+            newOption.value = description;
+            newOption.textContent = description;
             withdrawalSelect.appendChild(newOption);
           }
-          withdrawalSelect.value = '가수금상환';
+          withdrawalSelect.value = description;
         }
         if (withdrawalInput) {
-          withdrawalInput.value = formatAmount(parseAmount(depositAmount));
+          const amount = useNegative ? parseAmount(depositAmount) : parseAmount(depositAmount) * -1;
+          withdrawalInput.value = formatAmount(amount);
         }
-        
         updateCategory1DepositAndWithdrawal();
       }
     }
 
-    // 카테고리5에서 카테고리2 입금내역 업데이트 (체크 버튼 클릭 시)
-    async function updateCategory5Deposit(button) {
+    // 공통: 카테고리에서 카테고리2 입금내역 업데이트
+    async function updateCategoryDeposit(button, description, useNegative = false, requirePositive = true) {
       const row = button.closest('tr');
       const inputs = row.querySelectorAll('input');
       const companyName = inputs[0].value;
-      const depositAmount = inputs[4].value; // 송금금액 (5번째 컬럼)
+      const depositAmount = inputs[4].value;
       
       if (!companyName.trim() || !depositAmount) return;
+      if (requirePositive && parseAmount(depositAmount) <= 0) return;
       
       const category2TableBody = document.getElementById('category2TableBody');
-      
-      // 빈 행 찾기 또는 새 행 생성
       let targetRow = findEmptyDepositRow(category2TableBody);
       if (!targetRow) {
         targetRow = await createNewCategory2Row(category2TableBody);
       }
       
       if (targetRow) {
-        // 카테고리 2에 데이터 설정
         const balanceSelect = targetRow.querySelector('td:nth-child(1) select');
         const depositSelect = targetRow.querySelector('td:nth-child(2) select');
         const depositInput = targetRow.querySelector('td:nth-child(3) input');
         
         if (balanceSelect) balanceSelect.value = companyName;
         if (depositSelect) {
-          // "가수금" 옵션이 없으면 추가
-          const hasOption = Array.from(depositSelect.options).some(option => option.value === '가수금');
+          const hasOption = Array.from(depositSelect.options).some(option => option.value === description);
           if (!hasOption) {
             const newOption = document.createElement('option');
-            newOption.value = '가수금';
-            newOption.textContent = '가수금';
+            newOption.value = description;
+            newOption.textContent = description;
             depositSelect.appendChild(newOption);
           }
-          depositSelect.value = '가수금';
+          depositSelect.value = description;
         }
         if (depositInput) {
-          // 어떤 숫자든 -1을 곱해서 전달
-          const negativeAmount = parseAmount(depositAmount) * -1;
-          depositInput.value = formatAmount(negativeAmount);
+          const amount = useNegative ? parseAmount(depositAmount) * -1 : parseAmount(depositAmount);
+          depositInput.value = formatAmount(amount);
         }
-        
         updateCategory1DepositAndWithdrawal();
       }
+    }
+
+    // 카테고리5에서 카테고리2 출금내역 업데이트
+    async function updateCategory5Withdrawal(button) {
+      await updateCategoryWithdrawal(button, '가수금상환', true);
+    }
+
+    // 카테고리5에서 카테고리2 입금내역 업데이트
+    async function updateCategory5Deposit(button) {
+      await updateCategoryDeposit(button, '가수금', true, false);
     }
 
     // 카테고리 5 (Debt) 숨기기/보이기
@@ -1733,7 +1735,7 @@
         <td><input type="text" value="${formatNumber(data.previousBalance || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
         <td><input type="text" value="${formatNumber(data.todayDeposit || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
         <td><input type="text" value="${formatNumber(data.todayWithdrawal || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
-        <td><input type="text" value="${formatNumber(data.todayBalance || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this);"></td>
+        <td><input type="text" value="${formatNumber(data.todayBalance || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateCategory4TodayLoan(this);"></td>
       `;
     }
 
@@ -2011,25 +2013,21 @@
     function formatAmount(amount) {
       if (amount === null || amount === undefined || amount === '') return '0';
       
-      // 문자열로 변환하여 소수점 확인
-      const amountStr = String(amount);
-      const hasDecimal = amountStr.includes('.');
+      // 원본 문자열에 소수점이 있는지 확인 (입력 중일 때 소수점 유지)
+      const originalString = String(amount);
+      const hasDecimalPoint = originalString.includes('.');
+      
+      // 소수점이 있으면 원본 문자열을 그대로 반환 (콤마만 제거)
+      if (hasDecimalPoint) {
+        return originalString.replace(/,/g, '');
+      }
       
       const num = Number(amount);
       
       // 음수인 경우 음수 기호를 유지하면서 포맷팅
       if (num < 0) {
         const absNum = Math.abs(num);
-        // 원본 문자열에 소수점이 있으면 그대로 유지
-        if (hasDecimal) {
-          return '-' + absNum.toString();
-        }
         return '-' + absNum.toLocaleString();
-      }
-      
-      // 원본 문자열에 소수점이 있으면 그대로 유지
-      if (hasDecimal) {
-        return num.toString();
       }
       
       return num.toLocaleString();
@@ -2065,7 +2063,15 @@
       const originalLength = originalValue.length;
       
       // 숫자와 마이너스, 소수점만 추출
-      const cleanValue = input.value.replace(/[^0-9.-]/g, '');
+      let cleanValue = input.value.replace(/[^0-9.-]/g, '');
+      
+      // 소수점이 여러 개인 경우 첫 번째 소수점만 유지
+      const firstDotIndex = cleanValue.indexOf('.');
+      if (firstDotIndex !== -1) {
+        const beforeDot = cleanValue.substring(0, firstDotIndex + 1);
+        const afterDot = cleanValue.substring(firstDotIndex + 1).replace(/\./g, '');
+        cleanValue = beforeDot + afterDot;
+      }
       
       if (cleanValue === '') {
         input.value = '';
@@ -2172,91 +2178,12 @@
     
     // 카테고리4에서 카테고리2 출금내역 업데이트 (- 버튼 클릭 시)
     async function updateCategory4Withdrawal(button) {
-      const row = button.closest('tr');
-      const inputs = row.querySelectorAll('input');
-      const companyName = inputs[0].value;
-      const depositAmount = inputs[4].value; // 송금금액 (5번째 컬럼)
-      
-      if (!companyName.trim() || !depositAmount) return;
-      
-      const category2TableBody = document.getElementById('category2TableBody');
-      
-      // 빈 행 찾기 또는 새 행 생성
-      let targetRow = findEmptyWithdrawalRow(category2TableBody);
-      if (!targetRow) {
-        // 빈 행이 없으면 새 행 생성
-        targetRow = await createNewCategory2Row(category2TableBody);
-      }
-      
-      if (targetRow) {
-        // 카테고리 2에 데이터 설정
-        const balanceSelect = targetRow.querySelector('td:nth-child(4) select');
-        const withdrawalSelect = targetRow.querySelector('td:nth-child(5) select');
-        const withdrawalInput = targetRow.querySelector('td:nth-child(6) input');
-        
-        if (balanceSelect) balanceSelect.value = companyName;
-        if (withdrawalSelect) {
-          // "가지급" 옵션이 없으면 추가
-          const hasOption = Array.from(withdrawalSelect.options).some(option => option.value === '가지급');
-          if (!hasOption) {
-            const newOption = document.createElement('option');
-            newOption.value = '가지급';
-            newOption.textContent = '가지급';
-            withdrawalSelect.appendChild(newOption);
-          }
-          withdrawalSelect.value = '가지급';
-        }
-        if (withdrawalInput) {
-          // 어떤 숫자든 -1을 곱해서 전달
-          const negativeAmount = parseAmount(depositAmount) * -1;
-          withdrawalInput.value = formatAmount(negativeAmount);
-        }
-        
-        updateCategory1DepositAndWithdrawal();
-      }
+      await updateCategoryWithdrawal(button, '가지급', false);
     }
 
     // 카테고리4에서 카테고리2 입금내역 업데이트 (체크 버튼 클릭 시)
     async function updateCategory4Deposit(button) {
-      const row = button.closest('tr');
-      const inputs = row.querySelectorAll('input');
-      const companyName = inputs[0].value;
-      const depositAmount = inputs[4].value; // 입금금액 (5번째 컬럼)
-      
-      if (!companyName.trim() || !depositAmount || parseAmount(depositAmount) <= 0) return;
-      
-      const category2TableBody = document.getElementById('category2TableBody');
-      
-      // 빈 행 찾기 또는 새 행 생성
-      let targetRow = findEmptyDepositRow(category2TableBody);
-      if (!targetRow) {
-        targetRow = await createNewCategory2Row(category2TableBody);
-      }
-      
-      if (targetRow) {
-        // 카테고리 2에 데이터 설정
-        const balanceSelect = targetRow.querySelector('td:nth-child(1) select');
-        const depositSelect = targetRow.querySelector('td:nth-child(2) select');
-        const depositInput = targetRow.querySelector('td:nth-child(3) input');
-        
-        if (balanceSelect) balanceSelect.value = companyName;
-        if (depositSelect) {
-          // "가지급금회수" 옵션이 없으면 추가
-          const hasOption = Array.from(depositSelect.options).some(option => option.value === '가지급금회수');
-          if (!hasOption) {
-            const newOption = document.createElement('option');
-            newOption.value = '가지급금회수';
-            newOption.textContent = '가지급금회수';
-            depositSelect.appendChild(newOption);
-          }
-          depositSelect.value = '가지급금회수';
-        }
-        if (depositInput) {
-          depositInput.value = formatAmount(parseAmount(depositAmount));
-        }
-        
-        updateCategory1DepositAndWithdrawal();
-      }
+      await updateCategoryDeposit(button, '가지급금회수', false, true);
     }
     
     // 카테고리 4 금일가지급금 자동 계산
@@ -3325,14 +3252,6 @@
     }
     
     // Accounting 테이블 렌더링 (전날 데이터 포함) - 최적화
-    function renderAccountingTableWithPrevious(currentData, previousData) {
-      const tableBody = document.getElementById('category1TableBody');
-      tableBody.innerHTML = '';
-      
-      const allItems = buildBalanceMap({ balance: [] }, currentData, previousData);
-      renderBalanceRows(tableBody, allItems);
-    }
-    
     // Accounting 테이블 렌더링 (기본) - 최적화
     function renderAccountingTable(balanceData) {
       const tableBody = document.getElementById('category1TableBody');
