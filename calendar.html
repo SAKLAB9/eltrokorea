@@ -817,6 +817,7 @@
                 <button class="top-menu-btn" onclick="location.href='eltrokorea9.html'">Home</button>
             </div>
             <div class="right-buttons">
+                <button class="top-menu-btn" onclick="location.href='deposit.html'">입금내역</button>
                 <button class="top-menu-btn" onclick="location.href='Transfer.html'">송금내역</button>
                 <button class="top-menu-btn" onclick="location.href='payroll.html'">급여대장</button>
             </div>
@@ -1028,6 +1029,20 @@
                     .map(transfer => transfer.description)
                     .reverse();
         }
+
+        // deposit 데이터 가져오기 (원래 순서로)
+        async function getDepositDescriptions() {
+                const response = await fetch('/api/transfers');
+                const data = await response.json();
+                
+                if (!data.deposits || data.deposits.length === 0) {
+                return [];
+                }
+                
+            return data.deposits
+                    .map(deposit => deposit.description)
+                    .filter(desc => desc && desc.trim() !== '');
+        }
                 
         // 이벤트 모달 생성 및 표시 (공통 함수)
         function showEventModal(title, initialValue, onConfirm) {
@@ -1058,7 +1073,10 @@
                 modalContent.innerHTML = `
                 <h3 style="margin-top: 0;">${title}</h3>
                     <select id="eventSelect" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">일정을 선택하세요</option>
+                        <option value="">송금내역</option>
+                    </select>
+                    <select id="depositSelect" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">입금내역</option>
                     </select>
                 <input type="text" id="eventInput" value="${initialValue || ''}" placeholder="또는 직접 입력하세요" style="width: 100%; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
                     <div style="text-align: right;">
@@ -1072,11 +1090,12 @@
             
             // DOM 요소 캐싱
             const eventSelect = document.getElementById('eventSelect');
+            const depositSelect = document.getElementById('depositSelect');
             const eventInput = document.getElementById('eventInput');
             const cancelBtn = document.getElementById('cancelBtn');
             const confirmBtn = document.getElementById('confirmBtn');
             
-            // 드롭다운 옵션 추가
+            // 송금내역 드롭다운 옵션 추가
             getTransferDescriptions().then(descriptions => {
                 descriptions.forEach(desc => {
                     const option = document.createElement('option');
@@ -1084,11 +1103,28 @@
                     option.textContent = desc;
                     if (desc === initialValue) {
                         option.selected = true;
+                        eventInput.value = desc;
                     }
                     eventSelect.appendChild(option);
                 });
             }).catch(error => {
-                alert('송금내역 데이터를 불러오는 중 오류가 발생했습니다: ' + error.message);
+                // 에러는 조용히 처리 (데이터가 없을 수 있음)
+            });
+            
+            // 입금내역 드롭다운 옵션 추가 (원래 순서로)
+            getDepositDescriptions().then(descriptions => {
+                descriptions.forEach(desc => {
+                    const option = document.createElement('option');
+                    option.value = desc;
+                    option.textContent = desc;
+                    if (desc === initialValue) {
+                        option.selected = true;
+                        eventInput.value = desc;
+                    }
+                    depositSelect.appendChild(option);
+                });
+            }).catch(error => {
+                // 에러는 조용히 처리 (데이터가 없을 수 있음)
             });
             
             // 모달 닫기 헬퍼
@@ -1098,12 +1134,23 @@
             cancelBtn.onclick = closeModal;
             
             eventSelect.onchange = () => {
-                eventInput.value = eventSelect.value;
+                if (eventSelect.value) {
+                    eventInput.value = eventSelect.value;
+                    depositSelect.value = ''; // 다른 드롭다운 초기화
+                }
+            };
+            
+            depositSelect.onchange = () => {
+                if (depositSelect.value) {
+                    eventInput.value = depositSelect.value;
+                    eventSelect.value = ''; // 다른 드롭다운 초기화
+                }
             };
             
             eventInput.oninput = () => {
-                if (eventInput.value !== eventSelect.value) {
+                if (eventInput.value !== eventSelect.value && eventInput.value !== depositSelect.value) {
                     eventSelect.value = '';
+                    depositSelect.value = '';
                 }
             };
             

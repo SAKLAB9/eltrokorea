@@ -416,9 +416,11 @@
       text-align: center;
     }
     
-    /* 카테고리 3의 숫자 컬럼들 오른쪽 정렬 (3열, 6열) */
+    /* 카테고리 3의 숫자 컬럼들 오른쪽 정렬 (3열, 5열, 6열) */
     #category3TableBody td:nth-child(3),
     #category3TableBody td:nth-child(3) input,
+    #category3TableBody td:nth-child(5),
+    #category3TableBody td:nth-child(5) input,
     #category3TableBody td:nth-child(6),
     #category3TableBody td:nth-child(6) input {
       text-align: right;
@@ -1652,7 +1654,7 @@
       const loadedDate = row.dataset.loadedDate;
       const currentDate = row.dataset.currentDate;
       
-      if (!loadedDate || loadedDate.trim() === '') {
+      if (!loadedDate) {
         alert('삭제할 데이터의 날짜 정보를 찾을 수 없습니다.');
         return;
       }
@@ -2742,8 +2744,7 @@
       );
       
       // 불러온 날짜 정보를 data 속성으로 추가
-      // actualDataDate가 없으면 빈 문자열 (삭제 불가)
-      const loadedDate = actualDataDate || '';
+      const loadedDate = actualDataDate || currentDate;
       
       return rowHTML.replace('<tr>', `<tr data-loaded-date="${loadedDate}" data-current-date="${currentDate}">`);
     }

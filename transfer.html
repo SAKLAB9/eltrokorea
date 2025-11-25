@@ -866,29 +866,25 @@
           }
         });
         
-        // 일치하지 않는 이벤트들을 송금내역 형태로 변환
-        const allTransfers = [...matchedTransfers, ...unmatchedEvents.map(event => ({
-          id: Date.now() + Math.random(),
-          description: event.title,
-          bank: '',
-          accountNumber: '',
-          accountHolder: '',
-          amount: 0
-        }))];
-        
-        if (allTransfers.length === 0) {
-          alert('선택한 날짜의 이벤트와 매칭되는 송금내역이 없습니다.');
+        // 리스트에 있는 것만 필터링
+        if (matchedTransfers.length === 0) {
+          if (unmatchedEvents.length > 0) {
+            alert(`리스트에 없는 항목이 ${unmatchedEvents.length}개 있습니다. 제외하고 불러옵니다.`);
+          } else {
+            alert('선택한 날짜의 이벤트와 매칭되는 송금내역이 없습니다.');
+          }
           return;
         }
         
-        renderTransferTable(allTransfers);
+        // 리스트에 없는 항목이 있으면 알림
+        if (unmatchedEvents.length > 0) {
+          alert(`리스트에 없는 항목이 ${unmatchedEvents.length}개 있습니다. 제외하고 불러옵니다.`);
+        }
+        
+        renderTransferTable(matchedTransfers);
         applyBtn.classList.add('filtered');
         // Apply 필터 적용 시 드래그 비활성화
         initializeSortable();
-        
-        if (unmatchedEvents.length > 0) {
-          alert(`${unmatchedEvents.length}개의 일정이 송금내역과 일치하지 않아 새로 추가되었습니다.`);
-        }
         
       } catch (error) {
         alert('날짜 필터 적용 중 오류가 발생했습니다: ' + error.message);
