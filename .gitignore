@@ -26,6 +26,10 @@ Thumbs.db
 * copy.json
 * copy 2.json
 
+# Test files
+*test.json
+test.json
+
 # Temporary files
 *.tmp
 *.temp
