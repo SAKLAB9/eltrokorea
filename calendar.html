@@ -1489,25 +1489,37 @@
             }
             
             const dayNum = dateType === 'specific' ? parseInt(day) : null;
+            const selectedMonths = repeatType === 'specific' ? 
+                Array.from(modal.querySelectorAll('.month-btn.selected')).map(btn => parseInt(btn.dataset.month)) : null;
             
-            // 고유 키 생성 (년도 제거: 같은 이벤트는 하나만 저장)
-            const key = dateType === 'lastWeekday' ? 
-                `lastWeekday_${title}` : 
-                `${day}_${title}`;
+            if (repeatType === 'specific' && (!selectedMonths || selectedMonths.length === 0)) {
+                alert('월을 선택해주세요.');
+                return;
+            }
             
-            // 이미 존재하는 이벤트인지 확인
-            const existingEvent = recurringEvents[key];
-            if (existingEvent) {
-                // 같은 이벤트가 이미 있으면 년도만 추가 적용
-                applyRecurringEventsToYear(year, dayNum, title, repeatType === 'monthly' ? 'monthly' : 'specific', 
-                    repeatType === 'specific' ? Array.from(modal.querySelectorAll('.month-btn.selected')).map(btn => parseInt(btn.dataset.month)) : null, 
-                    dateType);
+            // title로 중복 확인 (같은 title이 이미 있는지 확인)
+            let existingKey = null;
+            Object.keys(recurringEvents).forEach(key => {
+                if (recurringEvents[key].title === title) {
+                    existingKey = key;
+                }
+            });
+            
+            if (existingKey) {
+                // 같은 title이 이미 있으면 추가하지 않고 년도만 적용
+                const existingEvent = recurringEvents[existingKey];
+                applyRecurringEventsToYear(year, existingEvent.day, title, existingEvent.type, existingEvent.months || null, existingEvent.dateType);
                 updateRecurringEventsList();
                 updateCalendar();
                 saveEvents();
                 closeRecurringModal();
                 return;
             }
+            
+            // 새로운 이벤트 추가
+            const key = dateType === 'lastWeekday' ? 
+                `lastWeekday_${title}` : 
+                `${day}_${title}`;
             
             if (repeatType === 'monthly') {
                 // 매월 반복
@@ -1522,14 +1534,6 @@
                 applyRecurringEventsToYear(year, dayNum, title, 'monthly', null, dateType);
             } else {
                 // 개별 월 선택
-                const selectedMonths = Array.from(modal.querySelectorAll('.month-btn.selected'))
-                    .map(btn => parseInt(btn.dataset.month));
-                
-                if (selectedMonths.length === 0) {
-                    alert('월을 선택해주세요.');
-                    return;
-                }
-                
                 recurringEvents[key] = {
                     type: 'specific',
                     dateType: dateType,
