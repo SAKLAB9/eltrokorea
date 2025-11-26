@@ -1007,20 +1007,36 @@
                     events = data.events || (data && typeof data === 'object' && !data.recurringEvents ? data : {});
                     const rawRecurringEvents = data.recurringEvents || {};
                     
-                    // 기존 데이터 마이그레이션: 년도가 포함된 키를 년도 없는 키로 변환
+                    // 기존 데이터 마이그레이션: 다양한 키 형식을 올바른 형식으로 변환
                     recurringEvents = {};
+                    let needsMigration = false;
+                    
                     Object.keys(rawRecurringEvents).forEach(oldKey => {
                         const event = rawRecurringEvents[oldKey];
-                        // 기존 키 형식: "2025_1_법률자문료" 또는 "2025_lastWeekday_법인세"
-                        // 새 키 형식: "1_법률자문료" 또는 "lastWeekday_법인세"
                         const parts = oldKey.split('_');
                         let newKey;
-                        if (parts[1] === 'lastWeekday') {
-                            // "2025_lastWeekday_법인세" -> "lastWeekday_법인세"
-                            newKey = parts.slice(1).join('_');
-                        } else {
-                            // "2025_1_법률자문료" -> "1_법률자문료"
-                            newKey = parts.slice(1).join('_');
+                        
+                        // 년도가 포함된 형식: "2025_1_법률자문료" 또는 "2025_lastWeekday_법인세"
+                        if (parts.length > 2 && !isNaN(parseInt(parts[0])) && parts[0].length === 4) {
+                            needsMigration = true;
+                            if (parts[1] === 'lastWeekday') {
+                                newKey = parts.slice(1).join('_'); // "lastWeekday_법인세"
+                            } else {
+                                newKey = parts.slice(1).join('_'); // "1_법률자문료"
+                            }
+                        }
+                        // 이미 올바른 형식: "1_법률자문료" 또는 "lastWeekday_법인세"
+                        else if (parts.length >= 2 && (parts[0] === 'lastWeekday' || !isNaN(parseInt(parts[0])))) {
+                            newKey = oldKey;
+                        }
+                        // title만 있는 형식: "법률자문료" -> 날짜를 포함한 키로 변환
+                        else {
+                            needsMigration = true;
+                            if (event.dateType === 'lastWeekday') {
+                                newKey = `lastWeekday_${event.title}`;
+                            } else {
+                                newKey = `${event.day}_${event.title}`;
+                            }
                         }
                         
                         // year 필드 제거
@@ -1029,9 +1045,7 @@
                     });
                     
                     // 마이그레이션이 발생했다면 저장
-                    if (Object.keys(rawRecurringEvents).length > 0 && 
-                        Object.keys(rawRecurringEvents)[0].includes('_') && 
-                        !isNaN(parseInt(Object.keys(rawRecurringEvents)[0].split('_')[0]))) {
+                    if (needsMigration) {
                         saveEvents();
                     }
                     

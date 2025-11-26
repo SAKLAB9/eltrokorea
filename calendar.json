@@ -1134,24 +1134,6 @@
       "day": null,
       "title": "하나은행대출이자"
     },
-    "lastWeekday_하남재산세(건물분)": {
-      "type": "specific",
-      "dateType": "lastWeekday",
-      "day": null,
-      "title": "하남부동산재산세(건물분)",
-      "months": [
-        7
-      ]
-    },
-    "lastWeekday_하남재산세(토지분)": {
-      "type": "specific",
-      "dateType": "lastWeekday",
-      "day": null,
-      "title": "하남부동산재산세(토지분)",
-      "months": [
-        9
-      ]
-    },
     "lastWeekday_하남부동산재산세(건물분)": {
       "type": "specific",
       "dateType": "lastWeekday",
