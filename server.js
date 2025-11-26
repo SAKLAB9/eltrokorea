@@ -434,17 +434,17 @@ function sortCalendarData(calendarData) {
         return;
       }
       
-      const sortedDays = {};
-      
-      // 일별로 정렬 (오름차순) - 숫자로 변환하여 정확하게 정렬
+      // 일별로 정렬 및 정규화 ("01" -> "1", "02" -> "2", ...)
       const dayKeys = Object.keys(monthData).sort((a, b) => {
         const dayA = parseInt(a, 10);
         const dayB = parseInt(b, 10);
         return dayA - dayB;
       });
       
+      const sortedDays = {};
       dayKeys.forEach(day => {
-        sortedDays[day] = monthData[day];
+        const normalizedDay = parseInt(day, 10).toString();
+        sortedDays[normalizedDay] = monthData[day];
       });
       
       sortedMonths[month] = sortedDays;
@@ -2283,7 +2283,7 @@ app.get('/api/loadCalendar', (req, res) => {
 app.post('/api/saveCalendar', (req, res) => {
   try {
     calendarStore = req.body;
-    // 정렬 후 저장
+    // 정렬 후 저장 (날짜 키 정규화 포함: "01" -> "1")
     calendarStore = sortCalendarData(calendarStore);
     fs.writeFileSync(CALENDAR_DATA_FILE, JSON.stringify(calendarStore, null, 2), 'utf8');
     res.json({ success: true, message: '캘린더 데이터가 저장되었습니다.' });

@@ -839,7 +839,7 @@
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         // 날짜를 문자열 키로 변환하는 헬퍼 함수
-        function getDateKeys(date, padMonth = true, padDay = true) {
+        function getDateKeys(date, padMonth = true, padDay = false) {
             return {
                 year: date.getFullYear().toString(),
                 month: padMonth ? (date.getMonth() + 1).toString().padStart(2, '0') : (date.getMonth() + 1).toString(),
@@ -896,7 +896,7 @@
                     }
 
                     // 해당 날짜의 이벤트 가져오기
-                    const { year: yearStr, month: monthStr, day: dayStr } = getDateKeys(date);
+                    const { year: yearStr, month: monthStr, day: dayStr } = getDateKeys(date, true, false);
                     const dayEvents = getDayEvents(yearStr, monthStr, dayStr);
 
                     dayElement.innerHTML = `
@@ -1551,7 +1551,7 @@
             // 이벤트 추가 헬퍼 함수
             const addEventToDate = (y, m, d) => {
                 const monthStr = m.toString().padStart(2, '0');
-                const dayStr = d.toString().padStart(2, '0');
+                const dayStr = d.toString();
                 if (!events[y][monthStr]) events[y][monthStr] = {};
                 if (!events[y][monthStr][dayStr]) events[y][monthStr][dayStr] = [];
                 
@@ -1974,8 +1974,8 @@
                 for (let month = startMonth; month <= 12; month++) {
                     const monthStr = month.toString().padStart(2, '0');
                     const dayStr = event.dateType === 'lastWeekday' 
-                        ? getLastWeekday(year, month).toString().padStart(2, '0')
-                        : event.day.toString().padStart(2, '0');
+                        ? getLastWeekday(year, month).toString()
+                        : event.day.toString();
                     
                     // 해당 날짜의 이벤트들 중에서 정기 이벤트 찾기
                     if (events[year] && events[year][monthStr] && events[year][monthStr][dayStr]) {
