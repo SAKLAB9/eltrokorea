@@ -404,9 +404,11 @@ function sortCalendarData(calendarData) {
   
   const sortedEvents = {};
   
-  // 년도별로 정렬 (오름차순)
+  // 년도별로 정렬 (오름차순) - 숫자로 변환하여 정확하게 정렬
   const sortedYears = Object.keys(calendarData.events).sort((a, b) => {
-    return parseInt(a) - parseInt(b);
+    const yearA = parseInt(a, 10);
+    const yearB = parseInt(b, 10);
+    return yearA - yearB;
   });
   
   sortedYears.forEach(year => {
@@ -418,9 +420,11 @@ function sortCalendarData(calendarData) {
     
     const sortedMonths = {};
     
-    // 월별로 정렬 (오름차순)
+    // 월별로 정렬 (오름차순) - 숫자로 변환하여 정확하게 정렬
     const monthKeys = Object.keys(yearData).sort((a, b) => {
-      return parseInt(a) - parseInt(b);
+      const monthA = parseInt(a, 10);
+      const monthB = parseInt(b, 10);
+      return monthA - monthB;
     });
     
     monthKeys.forEach(month => {
@@ -432,9 +436,11 @@ function sortCalendarData(calendarData) {
       
       const sortedDays = {};
       
-      // 일별로 정렬 (오름차순)
+      // 일별로 정렬 (오름차순) - 숫자로 변환하여 정확하게 정렬
       const dayKeys = Object.keys(monthData).sort((a, b) => {
-        return parseInt(a) - parseInt(b);
+        const dayA = parseInt(a, 10);
+        const dayB = parseInt(b, 10);
+        return dayA - dayB;
       });
       
       dayKeys.forEach(day => {
