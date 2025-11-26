@@ -453,9 +453,20 @@ function sortCalendarData(calendarData) {
     sortedEvents[year] = sortedMonths;
   });
   
+  // recurringEvents도 정렬 (키 기준으로 정렬)
+  let sortedRecurringEvents = calendarData.recurringEvents;
+  if (calendarData.recurringEvents && typeof calendarData.recurringEvents === 'object' && !Array.isArray(calendarData.recurringEvents)) {
+    const recurringKeys = Object.keys(calendarData.recurringEvents).sort();
+    sortedRecurringEvents = {};
+    recurringKeys.forEach(key => {
+      sortedRecurringEvents[key] = calendarData.recurringEvents[key];
+    });
+  }
+  
   return {
     ...calendarData,
-    events: sortedEvents
+    events: sortedEvents,
+    recurringEvents: sortedRecurringEvents
   };
 }
 
