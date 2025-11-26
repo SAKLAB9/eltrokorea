@@ -1005,7 +1005,35 @@
                     
                     // 데이터 구조 확인 및 설정
                     events = data.events || (data && typeof data === 'object' && !data.recurringEvents ? data : {});
-                    recurringEvents = data.recurringEvents || {};
+                    const rawRecurringEvents = data.recurringEvents || {};
+                    
+                    // 기존 데이터 마이그레이션: 년도가 포함된 키를 년도 없는 키로 변환
+                    recurringEvents = {};
+                    Object.keys(rawRecurringEvents).forEach(oldKey => {
+                        const event = rawRecurringEvents[oldKey];
+                        // 기존 키 형식: "2025_1_법률자문료" 또는 "2025_lastWeekday_법인세"
+                        // 새 키 형식: "1_법률자문료" 또는 "lastWeekday_법인세"
+                        const parts = oldKey.split('_');
+                        let newKey;
+                        if (parts[1] === 'lastWeekday') {
+                            // "2025_lastWeekday_법인세" -> "lastWeekday_법인세"
+                            newKey = parts.slice(1).join('_');
+                        } else {
+                            // "2025_1_법률자문료" -> "1_법률자문료"
+                            newKey = parts.slice(1).join('_');
+                        }
+                        
+                        // year 필드 제거
+                        const { year, ...eventWithoutYear } = event;
+                        recurringEvents[newKey] = eventWithoutYear;
+                    });
+                    
+                    // 마이그레이션이 발생했다면 저장
+                    if (Object.keys(rawRecurringEvents).length > 0 && 
+                        Object.keys(rawRecurringEvents)[0].includes('_') && 
+                        !isNaN(parseInt(Object.keys(rawRecurringEvents)[0].split('_')[0]))) {
+                        saveEvents();
+                    }
                     
                     updateCalendar();
                     updateEventList();
@@ -1397,8 +1425,7 @@
             
             // 수정 모드인 경우 기존 값들로 채우기
             if (isEditMode) {
-                // 년도 설정
-                modal.querySelector('#recurringYear').value = editEvent.year;
+                // 년도는 기본값 유지 (다른 년도에 추가하기 위한 것)
                 
                 // 반복 방식 설정
                 const repeatType = editEvent.type === 'monthly' ? 'monthly' : 'specific';
@@ -1463,14 +1490,22 @@
             
             const dayNum = dateType === 'specific' ? parseInt(day) : null;
             
-            // 고유 키 생성
+            // 고유 키 생성 (년도 제거: 같은 이벤트는 하나만 저장)
             const key = dateType === 'lastWeekday' ? 
-                `${year}_lastWeekday_${title}` : 
-                `${year}_${day}_${title}`;
+                `lastWeekday_${title}` : 
+                `${day}_${title}`;
             
             // 이미 존재하는 이벤트인지 확인
-            if (recurringEvents[key]) {
-                alert('이미 존재하는 정기 이벤트입니다.');
+            const existingEvent = recurringEvents[key];
+            if (existingEvent) {
+                // 같은 이벤트가 이미 있으면 년도만 추가 적용
+                applyRecurringEventsToYear(year, dayNum, title, repeatType === 'monthly' ? 'monthly' : 'specific', 
+                    repeatType === 'specific' ? Array.from(modal.querySelectorAll('.month-btn.selected')).map(btn => parseInt(btn.dataset.month)) : null, 
+                    dateType);
+                updateRecurringEventsList();
+                updateCalendar();
+                saveEvents();
+                closeRecurringModal();
                 return;
             }
             
@@ -1480,8 +1515,7 @@
                     type: 'monthly',
                     dateType: dateType,
                     day: dayNum,
-                    title: title,
-                    year: year
+                    title: title
                 };
                 
                 // 모든 월에 적용
@@ -1501,7 +1535,6 @@
                     dateType: dateType,
                     day: dayNum,
                     title: title,
-                    year: year,
                     months: selectedMonths
                 };
                 
@@ -1648,45 +1681,31 @@
                 return eventElement;
             };
             
-            // 년도별로 그룹화 (monthly와 specific 분리)
-            const eventsByYear = {};
+            // monthly와 specific 분리 (년도별 그룹화 제거)
+            const monthlyEvents = [];
+            const specificEvents = [];
+            
             Object.keys(recurringEvents).forEach(key => {
                 const event = recurringEvents[key];
-                const year = event.year;
-                
-                if (!eventsByYear[year]) {
-                    eventsByYear[year] = { monthly: [], specific: [] };
-                }
-                
                 if (event.type === 'monthly') {
-                    eventsByYear[year].monthly.push({ key, event });
+                    monthlyEvents.push({ key, event });
                 } else if (event.type === 'specific') {
-                    eventsByYear[year].specific.push({ key, event });
+                    specificEvents.push({ key, event });
                 }
             });
             
-            // 년도별로 정렬하고 표시
-            Object.keys(eventsByYear).sort().forEach(year => {
-                const yearEvents = eventsByYear[year];
+            // Monthly 이벤트 처리
+            if (monthlyEvents.length > 0) {
+                // 일자별로 정렬
+                monthlyEvents.sort((a, b) => {
+                    const dayA = a.event.dateType === 'lastWeekday' ? 999 : a.event.day;
+                    const dayB = b.event.dateType === 'lastWeekday' ? 999 : b.event.day;
+                    return dayA - dayB;
+                });
                 
-                // 년도 헤더 추가
-                const yearHeader = document.createElement('div');
-                yearHeader.className = 'year-header';
-                yearHeader.innerHTML = `<h3>${year}년</h3>`;
-                list.appendChild(yearHeader);
-                
-                // Monthly 이벤트 처리
-                if (yearEvents.monthly.length > 0) {
-                    // 일자별로 정렬
-                    yearEvents.monthly.sort((a, b) => {
-                        const dayA = a.event.dateType === 'lastWeekday' ? 999 : a.event.day;
-                        const dayB = b.event.dateType === 'lastWeekday' ? 999 : b.event.day;
-                        return dayA - dayB;
-                    });
-                    
-                    // 일자별로 그룹화
-                    const eventsByDay = {};
-                    yearEvents.monthly.forEach(({ key, event }) => {
+                // 일자별로 그룹화
+                const eventsByDay = {};
+                monthlyEvents.forEach(({ key, event }) => {
                         let dayKey;
                         if (event.dateType === 'lastWeekday') {
                             dayKey = '매달말일';
@@ -1722,19 +1741,19 @@
                         });
                     });
                 }
+            
+            // Specific 이벤트 처리
+            if (specificEvents.length > 0) {
+                // 개별 선택 헤더 추가
+                const specificHeader = document.createElement('div');
+                specificHeader.className = 'day-header';
+                specificHeader.innerHTML = `<h4>개별 선택</h4>`;
+                list.appendChild(specificHeader);
                 
-                // Specific 이벤트 처리
-                if (yearEvents.specific.length > 0) {
-                    // 개별 선택 헤더 추가
-                    const specificHeader = document.createElement('div');
-                    specificHeader.className = 'day-header';
-                    specificHeader.innerHTML = `<h4>개별 선택</h4>`;
-                    list.appendChild(specificHeader);
-                    
-                    // 이벤트별로 그룹화 (모든 월/일 정보 포함)
-                    const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
-                    const eventsByTitle = {};
-                    yearEvents.specific.forEach(({ key, event }) => {
+                // 이벤트별로 그룹화 (모든 월/일 정보 포함)
+                const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+                const eventsByTitle = {};
+                specificEvents.forEach(({ key, event }) => {
                         // 모든 선택된 월의 날짜 정보 수집
                         const dateInfo = event.months.map(monthNum => {
                             if (event.dateType === 'lastWeekday') {
@@ -1807,7 +1826,6 @@
                         });
                     });
                 }
-            });
         }
 
         // 정기 이벤트 정의 삭제 (X 버튼) - events는 유지하고 recurringEvents만 삭제

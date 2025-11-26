@@ -453,24 +453,17 @@ function sortCalendarData(calendarData) {
     sortedEvents[year] = sortedMonths;
   });
   
-  // recurringEvents도 정렬 (년도 -> 일(day) -> 제목 순으로 정렬)
+  // recurringEvents도 정렬 (일(day) -> 제목 순으로 정렬, 년도 제거됨)
   let sortedRecurringEvents = calendarData.recurringEvents;
   if (calendarData.recurringEvents && typeof calendarData.recurringEvents === 'object' && !Array.isArray(calendarData.recurringEvents)) {
     const recurringKeys = Object.keys(calendarData.recurringEvents).sort((a, b) => {
-      // 키 형식: "2025_10_4대보험료" 또는 "2025_lastWeekday_법인세"
+      // 키 형식: "10_4대보험료" 또는 "lastWeekday_법인세" (년도 제거됨)
       const partsA = a.split('_');
       const partsB = b.split('_');
       
-      // 년도 비교
-      const yearA = parseInt(partsA[0], 10);
-      const yearB = parseInt(partsB[0], 10);
-      if (yearA !== yearB) {
-        return yearA - yearB;
-      }
-      
       // 일(day) 비교
-      const dayA = partsA[1];
-      const dayB = partsB[1];
+      const dayA = partsA[0];
+      const dayB = partsB[0];
       
       // lastWeekday는 마지막에 오도록 처리
       if (dayA === 'lastWeekday' && dayB !== 'lastWeekday') {
@@ -481,8 +474,8 @@ function sortCalendarData(calendarData) {
       }
       if (dayA === 'lastWeekday' && dayB === 'lastWeekday') {
         // 둘 다 lastWeekday면 제목으로 정렬
-        const titleA = partsA.slice(2).join('_');
-        const titleB = partsB.slice(2).join('_');
+        const titleA = partsA.slice(1).join('_');
+        const titleB = partsB.slice(1).join('_');
         return titleA.localeCompare(titleB);
       }
       
@@ -494,8 +487,8 @@ function sortCalendarData(calendarData) {
       }
       
       // 일이 같으면 제목으로 정렬
-      const titleA = partsA.slice(2).join('_');
-      const titleB = partsB.slice(2).join('_');
+      const titleA = partsA.slice(1).join('_');
+      const titleB = partsB.slice(1).join('_');
       return titleA.localeCompare(titleB);
     });
     

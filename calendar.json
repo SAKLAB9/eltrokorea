@@ -82,12 +82,6 @@
         ]
       },
       "11": {
-        "1": [
-          {
-            "title": "법률자문료",
-            "recurring": true
-          }
-        ],
         "10": [
           {
             "title": "4대보험료",
@@ -157,15 +151,15 @@
           {
             "title": "법인세"
           }
-        ]
-      },
-      "12": {
-        "1": [
+        ],
+        "01": [
           {
             "title": "법률자문료",
             "recurring": true
           }
-        ],
+        ]
+      },
+      "12": {
         "10": [
           {
             "title": "4대보험료",
@@ -219,17 +213,17 @@
             "title": "사무실임차료",
             "recurring": true
           }
+        ],
+        "01": [
+          {
+            "title": "법률자문료",
+            "recurring": true
+          }
         ]
       }
     },
     "2026": {
       "10": {
-        "1": [
-          {
-            "title": "법률자문료",
-            "recurring": true
-          }
-        ],
         "10": [
           {
             "title": "4대보험료",
@@ -291,15 +285,15 @@
             "title": "사무실임차료",
             "recurring": true
           }
-        ]
-      },
-      "11": {
-        "1": [
+        ],
+        "01": [
           {
             "title": "법률자문료",
             "recurring": true
           }
-        ],
+        ]
+      },
+      "11": {
         "10": [
           {
             "title": "4대보험료",
@@ -353,15 +347,15 @@
             "title": "사무실임차료",
             "recurring": true
           }
-        ]
-      },
-      "12": {
-        "1": [
+        ],
+        "01": [
           {
             "title": "법률자문료",
             "recurring": true
           }
-        ],
+        ]
+      },
+      "12": {
         "10": [
           {
             "title": "4대보험료",
@@ -415,15 +409,15 @@
             "title": "사무실임차료",
             "recurring": true
           }
-        ]
-      },
-      "01": {
-        "1": [
+        ],
+        "01": [
           {
             "title": "법률자문료",
             "recurring": true
           }
-        ],
+        ]
+      },
+      "01": {
         "10": [
           {
             "title": "4대보험료",
@@ -488,15 +482,15 @@
             "title": "사무실임차료",
             "recurring": true
           }
-        ]
-      },
-      "02": {
-        "1": [
+        ],
+        "01": [
           {
             "title": "법률자문료",
             "recurring": true
           }
-        ],
+        ]
+      },
+      "02": {
         "10": [
           {
             "title": "4대보험료",
@@ -553,15 +547,15 @@
             "title": "사무실임차료",
             "recurring": true
           }
-        ]
-      },
-      "03": {
-        "1": [
+        ],
+        "01": [
           {
             "title": "법률자문료",
             "recurring": true
           }
-        ],
+        ]
+      },
+      "03": {
         "10": [
           {
             "title": "4대보험료",
@@ -622,15 +616,15 @@
             "title": "법인세",
             "recurring": true
           }
-        ]
-      },
-      "04": {
-        "1": [
+        ],
+        "01": [
           {
             "title": "법률자문료",
             "recurring": true
           }
-        ],
+        ]
+      },
+      "04": {
         "10": [
           {
             "title": "4대보험료",
@@ -692,15 +686,15 @@
             "title": "사무실임차료",
             "recurring": true
           }
-        ]
-      },
-      "05": {
-        "1": [
+        ],
+        "01": [
           {
             "title": "법률자문료",
             "recurring": true
           }
-        ],
+        ]
+      },
+      "05": {
         "10": [
           {
             "title": "4대보험료",
@@ -754,15 +748,15 @@
             "title": "사무실임차료",
             "recurring": true
           }
-        ]
-      },
-      "06": {
-        "1": [
+        ],
+        "01": [
           {
             "title": "법률자문료",
             "recurring": true
           }
-        ],
+        ]
+      },
+      "06": {
         "10": [
           {
             "title": "4대보험료",
@@ -816,15 +810,15 @@
             "title": "사무실임차료",
             "recurring": true
           }
-        ]
-      },
-      "07": {
-        "1": [
+        ],
+        "01": [
           {
             "title": "법률자문료",
             "recurring": true
           }
-        ],
+        ]
+      },
+      "07": {
         "10": [
           {
             "title": "4대보험료",
@@ -890,15 +884,15 @@
             "title": "하남부동산재산세(건물분)",
             "recurring": true
           }
-        ]
-      },
-      "08": {
-        "1": [
+        ],
+        "01": [
           {
             "title": "법률자문료",
             "recurring": true
           }
-        ],
+        ]
+      },
+      "08": {
         "10": [
           {
             "title": "4대보험료",
@@ -952,15 +946,15 @@
             "title": "사무실임차료",
             "recurring": true
           }
-        ]
-      },
-      "09": {
-        "1": [
+        ],
+        "01": [
           {
             "title": "법률자문료",
             "recurring": true
           }
-        ],
+        ]
+      },
+      "09": {
         "10": [
           {
             "title": "4대보험료",
@@ -1018,80 +1012,76 @@
             "title": "하남부동산재산세(토지분)",
             "recurring": true
           }
+        ],
+        "01": [
+          {
+            "title": "법률자문료",
+            "recurring": true
+          }
         ]
       }
     }
   },
   "recurringEvents": {
-    "2025_1_법률자문료": {
+    "1_법률자문료": {
       "type": "monthly",
       "dateType": "specific",
       "day": 1,
-      "title": "법률자문료",
-      "year": "2025"
+      "title": "법률자문료"
     },
-    "2025_10_4대보험료": {
+    "10_4대보험료": {
       "type": "monthly",
       "dateType": "specific",
       "day": 10,
-      "title": "4대보험료",
-      "year": "2025"
+      "title": "4대보험료"
     },
-    "2025_10_사무실관리비": {
+    "10_사무실관리비": {
       "type": "monthly",
       "dateType": "specific",
       "day": 10,
-      "title": "사무실관리비",
-      "year": "2025"
+      "title": "사무실관리비"
     },
-    "2025_10_세무대행료": {
+    "10_세무대행료": {
       "type": "monthly",
       "dateType": "specific",
       "day": 10,
-      "title": "세무대행료",
-      "year": "2025"
+      "title": "세무대행료"
     },
-    "2025_10_전월 근로소득세": {
+    "10_전월 근로소득세": {
       "type": "monthly",
       "dateType": "specific",
       "day": 10,
-      "title": "전월 근로소득세",
-      "year": "2025"
+      "title": "전월 근로소득세"
     },
-    "2025_10_전월 지방소득세": {
+    "10_전월 지방소득세": {
       "type": "monthly",
       "dateType": "specific",
       "day": 10,
-      "title": "전월 지방소득세",
-      "year": "2025"
+      "title": "전월 지방소득세"
     },
-    "2025_25_과장": {
+    "25_과장": {
       "type": "monthly",
       "dateType": "specific",
       "day": 25,
-      "title": "과장",
-      "year": "2025"
+      "title": "과장"
     },
-    "2025_25_대표이사": {
+    "25_대표이사": {
       "type": "monthly",
       "dateType": "specific",
       "day": 25,
-      "title": "대표이사",
-      "year": "2025"
+      "title": "대표이사"
     },
-    "2025_25_법인카드대금": {
+    "25_법인카드대금": {
       "type": "monthly",
       "dateType": "specific",
       "day": 25,
-      "title": "법인카드대금",
-      "year": "2025"
+      "title": "법인카드대금"
     },
-    "2025_25_부가가치세": {
+    "25_부가가치세": {
       "type": "specific",
       "dateType": "specific",
       "day": 25,
       "title": "부가가치세",
-      "year": "2025",
       "months": [
         1,
         4,
@@ -1099,26 +1089,23 @@
         10
       ]
     },
-    "2025_25_부사장": {
+    "25_부사장": {
       "type": "monthly",
       "dateType": "specific",
       "day": 25,
-      "title": "부사장",
-      "year": "2025"
+      "title": "부사장"
     },
-    "2025_25_사무실통신비": {
+    "25_사무실통신비": {
       "type": "monthly",
       "dateType": "specific",
       "day": 25,
-      "title": "사무실통신비",
-      "year": "2025"
+      "title": "사무실통신비"
     },
-    "2025_25_하남 부가가치세": {
+    "25_하남 부가가치세": {
       "type": "specific",
       "dateType": "specific",
       "day": 25,
       "title": "하남 부가가치세",
-      "year": "2025",
       "months": [
         1,
         4,
@@ -1126,193 +1113,59 @@
         10
       ]
     },
-    "2025_lastWeekday_법인세": {
+    "lastWeekday_법인세": {
       "type": "specific",
       "dateType": "lastWeekday",
       "day": null,
       "title": "법인세",
-      "year": "2025",
       "months": [
         3
       ]
     },
-    "2025_lastWeekday_사무실임차료": {
+    "lastWeekday_사무실임차료": {
       "type": "monthly",
       "dateType": "lastWeekday",
       "day": null,
-      "title": "사무실임차료",
-      "year": "2025"
+      "title": "사무실임차료"
     },
-    "2025_lastWeekday_하나은행대출이자": {
+    "lastWeekday_하나은행대출이자": {
       "type": "monthly",
       "dateType": "lastWeekday",
       "day": null,
-      "title": "하나은행대출이자",
-      "year": "2025"
+      "title": "하나은행대출이자"
     },
-    "2025_lastWeekday_하남재산세(건물분)": {
+    "lastWeekday_하남재산세(건물분)": {
       "type": "specific",
       "dateType": "lastWeekday",
       "day": null,
       "title": "하남부동산재산세(건물분)",
-      "year": "2025",
       "months": [
         7
       ]
     },
-    "2025_lastWeekday_하남재산세(토지분)": {
+    "lastWeekday_하남재산세(토지분)": {
       "type": "specific",
       "dateType": "lastWeekday",
       "day": null,
       "title": "하남부동산재산세(토지분)",
-      "year": "2025",
       "months": [
         9
       ]
     },
-    "2026_1_법률자문료": {
-      "type": "monthly",
-      "dateType": "specific",
-      "day": 1,
-      "title": "법률자문료",
-      "year": "2026"
-    },
-    "2026_10_4대보험료": {
-      "type": "monthly",
-      "dateType": "specific",
-      "day": 10,
-      "title": "4대보험료",
-      "year": "2026"
-    },
-    "2026_10_사무실관리비": {
-      "type": "monthly",
-      "dateType": "specific",
-      "day": 10,
-      "title": "사무실관리비",
-      "year": "2026"
-    },
-    "2026_10_세무대행료": {
-      "type": "monthly",
-      "dateType": "specific",
-      "day": 10,
-      "title": "세무대행료",
-      "year": "2026"
-    },
-    "2026_10_전월 근로소득세": {
-      "type": "monthly",
-      "dateType": "specific",
-      "day": 10,
-      "title": "전월 근로소득세",
-      "year": "2026"
-    },
-    "2026_10_전월 지방소득세": {
-      "type": "monthly",
-      "dateType": "specific",
-      "day": 10,
-      "title": "전월 지방소득세",
-      "year": "2026"
-    },
-    "2026_25_과장": {
-      "type": "monthly",
-      "dateType": "specific",
-      "day": 25,
-      "title": "과장",
-      "year": "2026"
-    },
-    "2026_25_대표이사": {
-      "type": "monthly",
-      "dateType": "specific",
-      "day": 25,
-      "title": "대표이사",
-      "year": "2026"
-    },
-    "2026_25_법인카드대금": {
-      "type": "monthly",
-      "dateType": "specific",
-      "day": 25,
-      "title": "법인카드대금",
-      "year": "2026"
-    },
-    "2026_25_부가가치세": {
-      "type": "specific",
-      "dateType": "specific",
-      "day": 25,
-      "title": "부가가치세",
-      "year": "2026",
-      "months": [
-        1,
-        4,
-        7,
-        10
-      ]
-    },
-    "2026_25_부사장": {
-      "type": "monthly",
-      "dateType": "specific",
-      "day": 25,
-      "title": "부사장",
-      "year": "2026"
-    },
-    "2026_25_사무실통신비": {
-      "type": "monthly",
-      "dateType": "specific",
-      "day": 25,
-      "title": "사무실통신비",
-      "year": "2026"
-    },
-    "2026_25_하남 부가가치세": {
-      "type": "specific",
-      "dateType": "specific",
-      "day": 25,
-      "title": "하남 부가가치세",
-      "year": "2026",
-      "months": [
-        1,
-        4,
-        7,
-        10
-      ]
-    },
-    "2026_lastWeekday_법인세": {
-      "type": "specific",
-      "dateType": "lastWeekday",
-      "day": null,
-      "title": "법인세",
-      "year": "2026",
-      "months": [
-        3
-      ]
-    },
-    "2026_lastWeekday_사무실임차료": {
-      "type": "monthly",
-      "dateType": "lastWeekday",
-      "day": null,
-      "title": "사무실임차료",
-      "year": "2026"
-    },
-    "2026_lastWeekday_하나은행대출이자": {
-      "type": "monthly",
-      "dateType": "lastWeekday",
-      "day": null,
-      "title": "하나은행대출이자",
-      "year": "2026"
-    },
-    "2026_lastWeekday_하남부동산재산세(건물분)": {
+    "lastWeekday_하남부동산재산세(건물분)": {
       "type": "specific",
       "dateType": "lastWeekday",
       "day": null,
       "title": "하남부동산재산세(건물분)",
-      "year": "2026",
       "months": [
         7
       ]
     },
-    "2026_lastWeekday_하남부동산재산세(토지분)": {
+    "lastWeekday_하남부동산재산세(토지분)": {
       "type": "specific",
       "dateType": "lastWeekday",
       "day": null,
       "title": "하남부동산재산세(토지분)",
-      "year": "2026",
       "months": [
         9
       ]
