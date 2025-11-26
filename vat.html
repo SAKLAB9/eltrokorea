@@ -159,26 +159,23 @@
       appearance: none;
     }
 
-    /* 텍스트 잘림 방지 - PDF용 수정 */
+    /* 텍스트 잘림 방지 - accounting.html 스타일 참고 */
     .transfer-table td {
-      white-space: normal;
-      overflow: hidden;
-      word-wrap: break-word;
-      word-break: break-all;
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
     }
 
     .transfer-table input {
-      white-space: normal;
-      overflow: hidden;
-      word-wrap: break-word;
-      word-break: break-all;
-      max-width: 100%;
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
       box-sizing: border-box;
     }
 
     /* 입금내역 테이블 */
     .transfer-table {
-      width: 100%;
+      width: 480px; /* 6열 × 80px = 480px (accounting.html 스타일 참고) */
       border-collapse: collapse;
       margin-top: 20px;
       background: #fff;
@@ -220,11 +217,11 @@
 
     .transfer-table th {
       background-color: #f5f5f5;
-      padding: 6px 4px; /* PDF용 padding 축소 */
+      padding: 8px 8px; /* accounting.html 스타일 참고 */
       border: 1px solid #ddd;
       text-align: center;
       font-weight: bold;
-      font-size: 0.65rem; /* PDF용 폰트 크기 약간 축소 */
+      font-size: 0.7rem; /* accounting.html 스타일 참고 */
       color: #333;
     }
     
@@ -246,28 +243,31 @@
     }
     
     .transfer-table .total-row td {
-      padding: 6px 4px; /* PDF용 padding 축소 */
+      padding: 5px 8px; /* accounting.html 스타일 참고 */
       border: 1px solid #ddd;
       background-color: #f5f5f5;
       font-weight: bold;
-      font-size: 0.65rem; /* PDF용 폰트 크기 약간 축소 */
+      font-size: 0.7rem; /* accounting.html 스타일 참고 */
       font-family: inherit;
     }
 
     .transfer-table td {
-      padding: 6px 4px; /* PDF용 padding 축소 */
+      padding: 5px 8px; /* accounting.html 스타일 참고 */
       border: 1px solid #ddd;
       text-align: center;
-      font-size: 0.65rem; /* PDF용 폰트 크기 약간 축소 */
+      font-size: 0.7rem; /* accounting.html 스타일 참고 */
     }
     
-    /* 추가 테이블 td는 transfer-table td 스타일을 오버라이드 - PDF용 수정 */
+    /* 추가 테이블 td는 transfer-table td 스타일을 오버라이드 */
     table.additional-table td {
-      padding: 6px 4px; /* PDF용 padding 축소 */
+      padding: 5px 8px; /* accounting.html 스타일 참고 */
       border: 1px solid #ddd;
-      font-size: 0.65rem; /* PDF용 폰트 크기 약간 축소 */
+      font-size: 0.7rem; /* accounting.html 스타일 참고 */
       text-align: inherit;
       line-height: inherit;
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
     }
 
     .transfer-table tr {
@@ -278,97 +278,138 @@
       background-color: #fff;
     }
 
-    /* 컬럼 너비 설정 - 퍼센트로 변경하여 페이지 너비에 맞춤 */
+    /* 컬럼 너비 설정 - accounting.html 스타일 참고 (고정 픽셀값) */
     .transfer-table th:nth-child(1),
     .transfer-table td:nth-child(1) {
-      width: 12%; /* 날짜 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     .transfer-table th:nth-child(2),
     .transfer-table td:nth-child(2) {
-      width: 18%; /* 내역 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     .transfer-table th:nth-child(3),
     .transfer-table td:nth-child(3) {
-      width: 18%; /* 공급자/구입자 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     .transfer-table th:nth-child(4),
     .transfer-table td:nth-child(4) {
-      width: 17%; /* 매입 금액 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     .transfer-table th:nth-child(5),
     .transfer-table td:nth-child(5) {
-      width: 17%; /* 매입 세액 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     .transfer-table th:nth-child(6),
     .transfer-table td:nth-child(6) {
-      width: 18%; /* 매입 총액 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     
-    /* 추가 테이블 (두 번째 테이블) 컬럼 너비 설정 - 퍼센트로 변경 */
+    /* 추가 테이블 (두 번째 테이블) 컬럼 너비 설정 - accounting.html 스타일 참고 (고정 픽셀값) */
+    .additional-table {
+      width: 560px; /* 7열 × 80px = 560px */
+    }
+    
     .additional-table th:nth-child(1),
     .additional-table td:nth-child(1) {
-      width: 15%; /* 1열 구분 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     
     .additional-table th:nth-child(2),
     .additional-table td:nth-child(2) {
-      width: 8%; /* 2열 매수 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     
     .additional-table th:nth-child(3),
     .additional-table td:nth-child(3) {
-      width: 18%; /* 3열 매입 금액 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     
     .additional-table th:nth-child(4),
     .additional-table td:nth-child(4) {
-      width: 15%; /* 4열 매입 세액 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     
     .additional-table th:nth-child(5),
     .additional-table td:nth-child(5) {
-      width: 8%; /* 5열 매수 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     
     .additional-table th:nth-child(6),
     .additional-table td:nth-child(6) {
-      width: 18%; /* 6열 매출 금액 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     
     .additional-table th:nth-child(7),
     .additional-table td:nth-child(7) {
-      width: 18%; /* 7열 매출 세액 */
+      width: 80px;
+      min-width: 80px;
+      max-width: 80px;
     }
     
     
-    /* 추가 테이블 행: 1, 2, 5열 가운데 정렬 - PDF용 수정 */
+    /* 추가 테이블 입력 필드 스타일 - accounting.html 스타일 참고 */
+    table.additional-table td input,
+    table.additional-table td input[type="text"],
+    table.additional-table td input[type="number"] {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      border-radius: 0;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: auto;
+      line-height: inherit;
+      font-size: inherit;
+      color: inherit;
+      text-align: inherit;
+      box-sizing: border-box;
+    }
+    
+    /* 추가 테이블 행: 1, 2, 5열 가운데 정렬 */
     table.additional-table td:nth-child(1),
     table.additional-table td:nth-child(2),
     table.additional-table td:nth-child(5) {
       text-align: center;
-      padding: 6px 2px; /* PDF용 padding 축소 */
     }
     
-    table.additional-table td:nth-child(1) input,
-    table.additional-table td:nth-child(2) input,
-    table.additional-table td:nth-child(5) input {
-      text-align: center;
-      padding: 0 2px; /* PDF용 padding 축소 */
-      box-sizing: border-box;
-      width: 100%;
-      max-width: 100%;
-      height: 100%;
-      word-wrap: break-word;
-      word-break: break-all;
-    }
-    
-    /* 추가 테이블 행: 3, 4, 6, 7열 오른쪽 정렬 - PDF용 수정 */
+    /* 추가 테이블 행: 3, 4, 6, 7열 오른쪽 정렬 */
     table.additional-table td:nth-child(3),
     table.additional-table td:nth-child(4),
     table.additional-table td:nth-child(6),
     table.additional-table td:nth-child(7) {
       text-align: right;
-      padding: 6px 2px; /* PDF용 padding 축소 */
     }
     
     table.additional-table td:nth-child(3) input,
@@ -376,13 +417,6 @@
     table.additional-table td:nth-child(6) input,
     table.additional-table td:nth-child(7) input {
       text-align: right;
-      padding: 0 4px 0 2px; /* PDF용 padding 축소 */
-      box-sizing: border-box;
-      width: 100%;
-      max-width: 100%;
-      height: 100%;
-      word-wrap: break-word;
-      word-break: break-all;
     }
     
     /* 추가 테이블 합계 행 스타일 */
@@ -396,13 +430,13 @@
     .additional-refund-row td {
       background-color: #f5f5f5;
       font-weight: bold;
-      padding: 6px 4px; /* PDF용 padding 축소 */
+      padding: 5px 8px; /* accounting.html 스타일 참고 */
       border: 1px solid #ddd;
-      font-size: 0.65rem; /* PDF용 폰트 크기 약간 축소 */
+      font-size: 0.7rem; /* accounting.html 스타일 참고 */
       font-family: inherit;
     }
     
-    /* 추가 테이블 합계 행 및 예상 환급세액 행: 1, 2, 5열 가운데 정렬 - PDF용 수정 */
+    /* 추가 테이블 합계 행 및 예상 환급세액 행: 1, 2, 5열 가운데 정렬 */
     table.additional-table tr.additional-total-row td:nth-child(1),
     table.additional-table tr.additional-total-row td:nth-child(2),
     table.additional-table tr.additional-total-row td:nth-child(5),
@@ -410,10 +444,9 @@
     table.additional-table tr.additional-refund-row td:nth-child(2),
     table.additional-table tr.additional-refund-row td:nth-child(5) {
       text-align: center;
-      padding: 6px 2px; /* PDF용 padding 축소 */
     }
     
-    /* 추가 테이블 합계 행 및 예상 환급세액 행: 3, 4, 6, 7열 오른쪽 정렬 - PDF용 수정 */
+    /* 추가 테이블 합계 행 및 예상 환급세액 행: 3, 4, 6, 7열 오른쪽 정렬 */
     table.additional-table tr.additional-total-row td:nth-child(3),
     table.additional-table tr.additional-total-row td:nth-child(4),
     table.additional-table tr.additional-total-row td:nth-child(6),
@@ -423,125 +456,71 @@
     table.additional-table tr.additional-refund-row td:nth-child(6),
     table.additional-table tr.additional-refund-row td:nth-child(7) {
       text-align: right;
-      padding: 6px 2px; /* PDF용 padding 축소 */
     }
     
-    table.additional-table tr.additional-total-row td:nth-child(1) span,
-    table.additional-table tr.additional-total-row td:nth-child(2) span,
-    table.additional-table tr.additional-total-row td:nth-child(5) span,
-    table.additional-table tr.additional-refund-row td:nth-child(1) span,
-    table.additional-table tr.additional-refund-row td:nth-child(2) span,
-    table.additional-table tr.additional-refund-row td:nth-child(5) span {
-      display: inline-block;
-      padding: 0 2px; /* PDF용 padding 축소 */
+    /* 입력 필드 스타일 - accounting.html 스타일 참고 */
+    .transfer-table td input,
+    .transfer-table td input[type="text"],
+    .transfer-table td input[type="number"] {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      border-radius: 0;
+      padding: 0;
+      margin: 0;
       width: 100%;
-      max-width: 100%;
-      text-align: center;
+      height: auto;
+      line-height: inherit;
+      font-size: inherit;
+      color: inherit;
+      text-align: inherit;
       box-sizing: border-box;
-      height: 100%;
-      word-wrap: break-word;
-      word-break: break-all;
     }
     
-    table.additional-table tr.additional-total-row td:nth-child(3) span,
-    table.additional-table tr.additional-total-row td:nth-child(4) span,
-    table.additional-table tr.additional-total-row td:nth-child(6) span,
-    table.additional-table tr.additional-total-row td:nth-child(7) span,
-    table.additional-table tr.additional-refund-row td:nth-child(3) span,
-    table.additional-table tr.additional-refund-row td:nth-child(4) span,
-    table.additional-table tr.additional-refund-row td:nth-child(6) span,
-    table.additional-table tr.additional-refund-row td:nth-child(7) span {
-      display: inline-block;
-      padding: 0 4px 0 2px; /* PDF용 padding 축소 */
-      width: 100%;
-      max-width: 100%;
-      text-align: right;
-      box-sizing: border-box;
-      height: 100%;
-      word-wrap: break-word;
-      word-break: break-all;
+    .transfer-table td input:focus,
+    .transfer-table td input:active,
+    .transfer-table td input:hover {
+      background: transparent;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
     }
     
-    /* 1열(날짜) 입력 필드 스타일 - PDF용 수정 */
-    .transfer-table td:nth-child(1) input {
-      text-align: center;
-      padding-left: 2px;
-      padding-right: 2px;
-      padding-top: 0;
-      padding-bottom: 0;
-      box-sizing: border-box;
-      width: 100%;
-      height: 100%;
-      max-width: 100%;
-    }
-    
-    /* 2, 3열 가운데 정렬 - PDF용 padding 축소 */
+    /* 2, 3열 가운데 정렬 */
     .transfer-table td:nth-child(2),
     .transfer-table td:nth-child(3) {
       text-align: center;
-      padding: 6px 2px; /* PDF용 padding 축소 */
     }
     
-    /* 2, 3열의 입력 필드도 가운데 정렬 및 패딩 통일 - PDF용 수정 */
-    .transfer-table td:nth-child(2) input,
-    .transfer-table td:nth-child(3) input {
-      text-align: center;
-      padding-left: 2px;
-      padding-right: 2px;
-      padding-top: 0;
-      padding-bottom: 0;
-      box-sizing: border-box;
-      width: 100%;
-      max-width: 100%;
-      height: 100%;
-    }
-    
-    /* 금액 열 오른쪽 정렬 (4, 5, 6열) - PDF용 padding 축소 */
+    /* 금액 열 오른쪽 정렬 (4, 5, 6열) */
     .transfer-table td:nth-child(4),
     .transfer-table td:nth-child(5),
     .transfer-table td:nth-child(6) {
       text-align: right;
-      padding: 6px 2px; /* PDF용 padding 축소 */
     }
     
-    /* 금액 열의 입력 필드도 오른쪽 정렬 및 패딩 통일 - PDF용 수정 */
     .transfer-table td:nth-child(4) input,
     .transfer-table td:nth-child(5) input,
     .transfer-table td:nth-child(6) input {
       text-align: right;
-      padding-left: 2px;
-      padding-right: 4px;
-      padding-top: 0;
-      padding-bottom: 0;
-      box-sizing: border-box;
-      width: 100%;
-      max-width: 100%;
-      height: 100%;
     }
     
-    /* 합계 행의 금액 열도 동일한 패딩 적용 - PDF용 수정 */
+    /* 합계 행의 금액 열도 동일한 패딩 적용 */
     .transfer-table .total-row td:nth-child(4),
     .transfer-table .total-row td:nth-child(5),
     .transfer-table .total-row td:nth-child(6) {
-      padding: 6px 2px; /* PDF용 padding 축소 */
       text-align: right;
-    }
-    
-    .transfer-table .total-row td:nth-child(4) span,
-    .transfer-table .total-row td:nth-child(5) span,
-    .transfer-table .total-row td:nth-child(6) span {
-      display: inline-block;
-      padding-left: 2px;
-      padding-right: 4px;
-      padding-top: 0;
-      padding-bottom: 0;
-      width: 100%;
-      max-width: 100%;
-      text-align: right;
-      box-sizing: border-box;
-      height: 100%;
-      word-wrap: break-word;
-      word-break: break-all;
     }
     
     /* 버튼 컨테이너 */
@@ -1023,21 +1002,21 @@
       // 합계 계산
       const { totalAmount, totalTax, totalTotal } = calculateTotals(tableBody);
       
-      // 공통 스타일 정의 - PDF용 수정
+      // 공통 스타일 정의 - accounting.html 스타일 참고
       const emptyCellStyle = '';
-      const numberCellStyle = 'text-align: right; padding: 6px 2px;';
-      const numberSpanStyle = 'display: inline-block; padding: 0 4px 0 2px; width: 100%; max-width: 100%; text-align: right; box-sizing: border-box; word-wrap: break-word; word-break: break-all;';
+      const numberCellStyle = 'text-align: right;';
+      const numberSpanStyle = '';
       
       // 합계 행 생성
       const totalRow = document.createElement('tr');
       totalRow.className = 'total-row';
       totalRow.innerHTML = `
         <td style="text-align: center;">합계</td>
-        <td style=""></td>
-        <td style=""></td>
-        <td style="${numberCellStyle}"><span style="${numberSpanStyle}">${formatNumber(totalAmount)}</span></td>
-        <td style="${numberCellStyle}"><span style="${numberSpanStyle}">${formatNumber(totalTax)}</span></td>
-        <td style="${numberCellStyle}"><span style="${numberSpanStyle}">${formatNumber(totalTotal)}</span></td>
+        <td></td>
+        <td></td>
+        <td style="${numberCellStyle}">${formatNumber(totalAmount)}</td>
+        <td style="${numberCellStyle}">${formatNumber(totalTax)}</td>
+        <td style="${numberCellStyle}">${formatNumber(totalTotal)}</td>
       `;
       
       tableBody.appendChild(totalRow);
@@ -1181,7 +1160,7 @@
     
     // 세금계산서 행 HTML 생성
     function createDepositRowHTML(transfer) {
-      const inputStyle = "width: 100%; max-width: 100%; border: none; box-sizing: border-box; word-wrap: break-word; word-break: break-all;";
+      const inputStyle = "width: 100%; border: none; padding: 0; margin: 0; box-sizing: border-box;";
       
       // 날짜 형식 변환 (YYYY-MM-DD를 YYYY/MM/DD로)
       let dateValue = '';
