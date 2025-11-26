@@ -316,58 +316,58 @@
       max-width: 84px;
     }
     
-    /* 추가 테이블 (두 번째 테이블) 컬럼 너비 설정 - 7열 테이블 (각 72px, 전체 504px로 첫 번째 테이블과 동일) */
+    /* 추가 테이블 (두 번째 테이블) 컬럼 너비 설정 - 7열 테이블 (각 71px, 전체 497px) */
     .additional-table {
-      width: 504px; /* 7열 × 72px = 504px (첫 번째 테이블과 동일한 너비) */
+      width: 497px; /* 7열 × 71px = 497px */
     }
     
     .additional-table th:nth-child(1),
     .additional-table td:nth-child(1) {
-      width: 72px;
-      min-width: 72px;
-      max-width: 72px;
+      width: 71px;
+      min-width: 71px;
+      max-width: 71px;
     }
     
     .additional-table th:nth-child(2),
     .additional-table td:nth-child(2) {
-      width: 72px;
-      min-width: 72px;
-      max-width: 72px;
+      width: 71px;
+      min-width: 71px;
+      max-width: 71px;
     }
     
     .additional-table th:nth-child(3),
     .additional-table td:nth-child(3) {
-      width: 72px;
-      min-width: 72px;
-      max-width: 72px;
+      width: 71px;
+      min-width: 71px;
+      max-width: 71px;
     }
     
     .additional-table th:nth-child(4),
     .additional-table td:nth-child(4) {
-      width: 72px;
-      min-width: 72px;
-      max-width: 72px;
+      width: 71px;
+      min-width: 71px;
+      max-width: 71px;
     }
     
     .additional-table th:nth-child(5),
     .additional-table td:nth-child(5) {
-      width: 72px;
-      min-width: 72px;
-      max-width: 72px;
+      width: 71px;
+      min-width: 71px;
+      max-width: 71px;
     }
     
     .additional-table th:nth-child(6),
     .additional-table td:nth-child(6) {
-      width: 72px;
-      min-width: 72px;
-      max-width: 72px;
+      width: 71px;
+      min-width: 71px;
+      max-width: 71px;
     }
     
     .additional-table th:nth-child(7),
     .additional-table td:nth-child(7) {
-      width: 72px;
-      min-width: 72px;
-      max-width: 72px;
+      width: 71px;
+      min-width: 71px;
+      max-width: 71px;
     }
     
     
@@ -1014,9 +1014,9 @@
         <td style="text-align: center;">합계</td>
         <td></td>
         <td></td>
-        <td style="${numberCellStyle}">${formatNumber(totalAmount)}</td>
-        <td style="${numberCellStyle}">${formatNumber(totalTax)}</td>
-        <td style="${numberCellStyle}">${formatNumber(totalTotal)}</td>
+        <td style="${numberCellStyle}"><span>${formatNumber(totalAmount)}</span></td>
+        <td style="${numberCellStyle}"><span>${formatNumber(totalTax)}</span></td>
+        <td style="${numberCellStyle}"><span>${formatNumber(totalTotal)}</span></td>
       `;
       
       tableBody.appendChild(totalRow);
@@ -1047,9 +1047,13 @@
         
         if (amountSpan) {
           purchaseAmount = parseFloat(amountSpan.textContent.replace(/,/g, '')) || 0;
+        } else {
+          purchaseAmount = parseFloat(totalRowCells[3].textContent.replace(/,/g, '')) || 0;
         }
         if (taxSpan) {
           purchaseTax = parseFloat(taxSpan.textContent.replace(/,/g, '')) || 0;
+        } else {
+          purchaseTax = parseFloat(totalRowCells[4].textContent.replace(/,/g, '')) || 0;
         }
       }
       
@@ -1146,14 +1150,26 @@
       // 합계 행 업데이트
       const cells = totalRow.querySelectorAll('td');
       if (cells.length >= 6) {
-        // 합계 행의 4, 5, 6열은 span 안의 텍스트를 업데이트
+        // 합계 행의 4, 5, 6열은 span 안의 텍스트를 업데이트 (없으면 직접 업데이트)
         const amountSpan = cells[3].querySelector('span');
         const taxSpan = cells[4].querySelector('span');
         const totalSpan = cells[5].querySelector('span');
         
-        if (amountSpan) amountSpan.textContent = formatNumber(totalAmount);
-        if (taxSpan) taxSpan.textContent = formatNumber(totalTax);
-        if (totalSpan) totalSpan.textContent = formatNumber(totalTotal);
+        if (amountSpan) {
+          amountSpan.textContent = formatNumber(totalAmount);
+        } else {
+          cells[3].textContent = formatNumber(totalAmount);
+        }
+        if (taxSpan) {
+          taxSpan.textContent = formatNumber(totalTax);
+        } else {
+          cells[4].textContent = formatNumber(totalTax);
+        }
+        if (totalSpan) {
+          totalSpan.textContent = formatNumber(totalTotal);
+        } else {
+          cells[5].textContent = formatNumber(totalTotal);
+        }
       }
     }
     
