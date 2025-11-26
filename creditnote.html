@@ -1113,12 +1113,16 @@
             
             // creditnote.html에서 o/pno 확인하여 추가 Over Payment 로드
             const additionalOverPayments = findAdditionalOverPayments(creditNoteData, overPaymentItems, month, currentYear);
-            overPaymentItems.push(...additionalOverPayments);
+            
+            // orderData에서 온 항목과 creditnote에서 온 항목을 구분하기 위해 source 표시
+            const orderDataItems = overPaymentItems.map(item => ({ ...item, source: 'orderData' }));
+            const creditNoteItems = additionalOverPayments.map(item => ({ ...item, source: 'creditNote' }));
+            const allOverPaymentItems = [...orderDataItems, ...creditNoteItems];
             
             // Over Payment 행들 생성
-            if (overPaymentItems.length > 0) {
+            if (allOverPaymentItems.length > 0) {
                 // 데이터 매핑 및 정렬을 한 번에 처리
-                const enrichedOverPayments = overPaymentItems.map(item => {
+                const enrichedOverPayments = allOverPaymentItems.map(item => {
                     // o/pdollar가 있으면 그것을 사용, 없으면 계산값 사용
                     let overPaymentValue;
                     if (item['o/pdollar'] !== undefined && item['o/pdollar'] !== null) {
@@ -1136,8 +1140,8 @@
                     const creditItem = creditNoteData.find(creditItem => creditItem['o/pno'] === item.invoiceno);
                     const oPeuro = creditItem?.['o/peuro'] || '';
                     
-                    // 배경색 설정 (overPaymentValue가 0보다 크면 모든 행에 연한 초록색 적용)
-                    const backgroundColor = overPaymentValue > 0 ? 'background-color: #d4edda;' : '';
+                    // 배경색 설정 (orderData에서 온 항목만 초록색 적용)
+                    const backgroundColor = (item.source === 'orderData' && overPaymentValue > 0) ? 'background-color: #d4edda;' : '';
                     
                     return {
                         ...item,
