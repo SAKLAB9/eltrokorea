@@ -41,7 +41,8 @@
         "etd": "18.02.2025",
         "eta": "10.04.2025",
         "reportdate": "2025-04-11",
-        "addprice": "2783184"
+        "addprice": "2783184",
+        "complete": true
       },
       {
         "rowNumber": 1,
@@ -77,7 +78,8 @@
         "swiftdate": "17.02.2025",
         "swiftamount": "107082.57",
         "reportdate": "2025-06-02",
-        "addprice": "2742567"
+        "addprice": "2742567",
+        "complete": true
       },
       {
         "rowNumber": 2,
@@ -113,7 +115,8 @@
         "swiftdate": "17.02.2025",
         "swiftamount": "107082.57",
         "reportdate": "2025-06-02",
-        "addprice": "2742567"
+        "addprice": "2742567",
+        "complete": true
       },
       {
         "rowNumber": 3,
@@ -149,13 +152,16 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
         "addprice": "2839973",
-        "defective": false
+        "defective": false,
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 4,
@@ -191,7 +197,8 @@
         "swiftdate": "17.02.2025",
         "swiftamount": "107082.57",
         "reportdate": "2025-06-02",
-        "addprice": "2742567"
+        "addprice": "2742567",
+        "complete": true
       },
       {
         "rowNumber": 4,
@@ -227,12 +234,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 5,
@@ -268,12 +278,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 6,
@@ -309,12 +322,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 7,
@@ -350,12 +366,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 8,
@@ -391,12 +410,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 9,
@@ -432,7 +454,8 @@
         "swiftdate": "17.02.2025",
         "swiftamount": "107082.57",
         "reportdate": "2025-06-02",
-        "addprice": "2742567"
+        "addprice": "2742567",
+        "complete": true
       },
       {
         "rowNumber": 10,
@@ -468,7 +491,8 @@
         "swiftdate": "17.02.2025",
         "swiftamount": "107082.57",
         "reportdate": "2025-06-02",
-        "addprice": "2742567"
+        "addprice": "2742567",
+        "complete": true
       },
       {
         "rowNumber": 11,
@@ -504,7 +528,8 @@
         "swiftdate": "17.02.2025",
         "swiftamount": "107082.57",
         "reportdate": "2025-06-02",
-        "addprice": "2742567"
+        "addprice": "2742567",
+        "complete": true
       },
       {
         "rowNumber": 11,
@@ -540,12 +565,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 12,
@@ -581,7 +609,8 @@
         "swiftdate": "17.02.2025",
         "swiftamount": "107082.57",
         "reportdate": "2025-06-02",
-        "addprice": "2742567"
+        "addprice": "2742567",
+        "complete": true
       },
       {
         "rowNumber": 13,
@@ -609,7 +638,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 14,
@@ -645,12 +680,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 15,
@@ -684,7 +722,8 @@
         "etd": "18.02.2025",
         "eta": "10.04.2025",
         "reportdate": "2025-04-11",
-        "addprice": "2783184"
+        "addprice": "2783184",
+        "complete": true
       },
       {
         "rowNumber": 15,
@@ -720,12 +759,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 16,
@@ -761,12 +803,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 17,
@@ -802,7 +847,8 @@
         "swiftdate": "17.02.2025",
         "swiftamount": "107082.57",
         "reportdate": "2025-06-02",
-        "addprice": "2742567"
+        "addprice": "2742567",
+        "complete": true
       }
     ]
   },
@@ -846,13 +892,16 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
         "addprice": "2839973",
-        "defective": true
+        "defective": false,
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 2,
@@ -884,12 +933,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 3,
@@ -956,7 +1008,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       }
     ]
   },
@@ -1002,7 +1060,11 @@
         "swiftdate": "14.03.2025",
         "swiftamount": "6673.97",
         "reportdate": "2025-03-24",
-        "addprice": "387499"
+        "addprice": "387499",
+        "ntinvoicedate": "2025.03.24",
+        "ntinvoicedue": "2025-05-31",
+        "ntinvoiceprice": "11953231",
+        "complete": true
       },
       {
         "rowNumber": 2,
@@ -1037,7 +1099,11 @@
         "swiftamount": "6673.97",
         "reportdate": "2025-03-24",
         "addprice": "387499",
-        "defective": false
+        "defective": false,
+        "ntinvoicedate": "2025.03.24",
+        "ntinvoicedue": "2025-05-31",
+        "ntinvoiceprice": "11953231",
+        "complete": true
       }
     ]
   },
@@ -1081,12 +1147,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 2,
@@ -1114,7 +1183,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 3,
@@ -1185,12 +1260,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 5,
@@ -1222,12 +1300,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       }
     ]
   },
@@ -1271,12 +1352,16 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502",
+        "defective": true
       }
     ]
   },
@@ -1320,12 +1405,15 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502"
       },
       {
         "rowNumber": 2,
@@ -1357,12 +1445,16 @@
         "etd": "22.07.2025",
         "eta": "10.09.2025",
         "p/iprice": "114023.27",
-        "swiftdate2": "20.11.2025",
+        "swiftdate2": "04.07.2025",
         "swiftamount2": "5855.10",
         "swiftdate": "24.06.2025",
         "swiftamount": "84650.51",
         "reportdate": "2025-10-01",
-        "addprice": "2839973"
+        "addprice": "2839973",
+        "ntinvoicedate": "2025-10-02",
+        "ntinvoicedue": "2025-12-31",
+        "ntinvoiceprice": "206223502",
+        "defective": false
       },
       {
         "rowNumber": 3,
@@ -1390,7 +1482,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 4,
@@ -1457,7 +1555,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 5,
@@ -1485,7 +1589,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 6,
@@ -1552,7 +1662,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 8,
@@ -1658,7 +1774,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 10,
@@ -1725,7 +1847,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 11,
@@ -1843,7 +1971,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 2,
@@ -1910,7 +2044,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 4,
@@ -1938,7 +2078,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 5,
@@ -2044,7 +2190,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 8,
@@ -2098,7 +2250,41 @@
     "tfNo": "71435061",
     "items": [
       {
-        "rowNumber": 1,
+        "rowNumber": 2,
+        "phd": "3",
+        "width": "620",
+        "length": "39000",
+        "x": "3x",
+        "kg": "2000",
+        "quantity": "30",
+        "adjustment": "7",
+        "unitPrice": "13.12",
+        "itemNo": "0001",
+        "w": "36w",
+        "tfkg": "1980",
+        "producedkg": "1933.6",
+        "deliveredkg": "1478.774",
+        "isProductionComplete": false
+      },
+      {
+        "rowNumber": 2,
+        "phd": "3",
+        "width": "620",
+        "length": "39000",
+        "x": "3x",
+        "kg": "2000",
+        "quantity": "30",
+        "adjustment": "7",
+        "unitPrice": "13.12",
+        "itemNo": "0001.1",
+        "w": "36w",
+        "tfkg": "1980.000",
+        "producedkg": "1933.600",
+        "deliveredkg": "0.0",
+        "isProductionComplete": false
+      },
+      {
+        "rowNumber": 2,
         "phd": "3",
         "width": "620",
         "length": "39000",
@@ -2123,27 +2309,14 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
-        "rowNumber": 1,
-        "phd": "3",
-        "width": "620",
-        "length": "39000",
-        "x": "3x",
-        "kg": "2000",
-        "quantity": "30",
-        "adjustment": "7",
-        "unitPrice": "13.12",
-        "itemNo": "0001.1",
-        "w": "36w",
-        "tfkg": "501.226",
-        "producedkg": "454.826",
-        "deliveredkg": "0.0",
-        "isProductionComplete": false
-      },
-      {
-        "rowNumber": 2,
+        "rowNumber": 3,
         "phd": "4.5",
         "width": "620",
         "length": "36400",
@@ -2159,7 +2332,41 @@
         "isProductionComplete": false
       },
       {
-        "rowNumber": 3,
+        "rowNumber": 5,
+        "phd": "4.5",
+        "width": "920",
+        "length": "36400",
+        "x": "4x",
+        "kg": "2000",
+        "quantity": "15",
+        "adjustment": "9",
+        "unitPrice": "6.67",
+        "itemNo": "0003",
+        "w": "33w",
+        "tfkg": "1571",
+        "producedkg": "389.9",
+        "deliveredkg": "389.940",
+        "isProductionComplete": false
+      },
+      {
+        "rowNumber": 5,
+        "phd": "4.5",
+        "width": "920",
+        "length": "36400",
+        "x": "4x",
+        "kg": "2000",
+        "quantity": "15",
+        "adjustment": "9",
+        "unitPrice": "6.67",
+        "itemNo": "0003.1",
+        "w": "33w",
+        "tfkg": "1181.100",
+        "producedkg": "0.000",
+        "deliveredkg": "0.0",
+        "isProductionComplete": false
+      },
+      {
+        "rowNumber": 5,
         "phd": "4.5",
         "width": "920",
         "length": "36400",
@@ -2198,24 +2405,7 @@
         "swiftamount2": "62622.24"
       },
       {
-        "rowNumber": 3,
-        "phd": "4.5",
-        "width": "920",
-        "length": "36400",
-        "x": "4x",
-        "kg": "2000",
-        "quantity": "15",
-        "adjustment": "9",
-        "unitPrice": "6.67",
-        "itemNo": "0003.1",
-        "w": "33w",
-        "tfkg": "1181.060",
-        "producedkg": "-0.040",
-        "deliveredkg": "0.0",
-        "isProductionComplete": false
-      },
-      {
-        "rowNumber": 4,
+        "rowNumber": 6,
         "phd": "5",
         "width": "850",
         "length": "32400",
@@ -2254,7 +2444,7 @@
         "swiftamount2": "62622.24"
       },
       {
-        "rowNumber": 5,
+        "rowNumber": 7,
         "phd": "6",
         "width": "620",
         "length": "40500",
@@ -2279,10 +2469,16 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
-        "rowNumber": 6,
+        "rowNumber": 8,
         "phd": "6",
         "width": "820",
         "length": "40500",
@@ -2321,7 +2517,7 @@
         "swiftamount2": "62622.24"
       },
       {
-        "rowNumber": 7,
+        "rowNumber": 9,
         "phd": "7",
         "width": "620",
         "length": "34500",
@@ -2337,7 +2533,7 @@
         "isProductionComplete": true
       },
       {
-        "rowNumber": 8,
+        "rowNumber": 10,
         "phd": "7",
         "width": "920",
         "length": "34500",
@@ -2352,22 +2548,7 @@
         "producedkg": "192.1"
       },
       {
-        "rowNumber": 9,
-        "phd": "7.5",
-        "width": "620",
-        "length": "32100",
-        "x": "6x",
-        "kg": "",
-        "quantity": "",
-        "adjustment": "6",
-        "unitPrice": "5.69",
-        "itemNo": "0009",
-        "w": "44w",
-        "tfkg": "793",
-        "producedkg": "0.0"
-      },
-      {
-        "rowNumber": 10,
+        "rowNumber": 11,
         "phd": "7.5",
         "width": "820",
         "length": "32100",
@@ -2406,7 +2587,7 @@
         "swiftamount2": "62622.24"
       },
       {
-        "rowNumber": 11,
+        "rowNumber": 12,
         "phd": "12",
         "width": "620",
         "length": "13400",
@@ -2431,10 +2612,16 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
-        "rowNumber": 12,
+        "rowNumber": 13,
         "phd": "12",
         "width": "820",
         "length": "13400",
@@ -2485,7 +2672,41 @@
     "tfNo": "71435894",
     "items": [
       {
-        "rowNumber": 1,
+        "rowNumber": 2,
+        "phd": "4",
+        "width": "620",
+        "length": "30000",
+        "x": "3x",
+        "kg": "500",
+        "quantity": "8",
+        "adjustment": "6",
+        "unitPrice": "6.96",
+        "itemNo": "0001",
+        "w": "40w",
+        "tfkg": "528",
+        "producedkg": "130.2",
+        "deliveredkg": "130.176",
+        "isProductionComplete": false
+      },
+      {
+        "rowNumber": 2,
+        "phd": "4",
+        "width": "620",
+        "length": "30000",
+        "x": "3x",
+        "kg": "500",
+        "quantity": "8",
+        "adjustment": "6",
+        "unitPrice": "6.96",
+        "itemNo": "0001.1",
+        "w": "40w",
+        "tfkg": "528.000",
+        "producedkg": "130.200",
+        "deliveredkg": "0.0",
+        "isProductionComplete": false
+      },
+      {
+        "rowNumber": 2,
         "phd": "4",
         "width": "620",
         "length": "30000",
@@ -2510,27 +2731,14 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
-        "rowNumber": 1,
-        "phd": "4",
-        "width": "620",
-        "length": "30000",
-        "x": "3x",
-        "kg": "500",
-        "quantity": "8",
-        "adjustment": "6",
-        "unitPrice": "6.96",
-        "itemNo": "0001.1",
-        "w": "40w",
-        "tfkg": "397.824",
-        "producedkg": "0.024",
-        "deliveredkg": "0.0",
-        "isProductionComplete": false
-      },
-      {
-        "rowNumber": 2,
+        "rowNumber": 3,
         "phd": "4",
         "width": "620",
         "length": "40000",
@@ -2545,7 +2753,7 @@
         "producedkg": "0.0"
       },
       {
-        "rowNumber": 3,
+        "rowNumber": 4,
         "phd": "4",
         "width": "920",
         "length": "40000",
@@ -2560,7 +2768,7 @@
         "producedkg": "0.0"
       },
       {
-        "rowNumber": 4,
+        "rowNumber": 5,
         "phd": "4.5",
         "width": "620",
         "length": "36400",
@@ -2585,22 +2793,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
-      },
-      {
-        "rowNumber": 5,
-        "phd": "4.5",
-        "width": "920",
-        "length": "36400",
-        "x": "4x",
-        "kg": "2000",
-        "quantity": "15",
-        "adjustment": "16",
-        "unitPrice": "6.96",
-        "itemNo": "0005",
-        "w": "44w",
-        "tfkg": "2095",
-        "producedkg": "0.0"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 6,
@@ -2628,7 +2827,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 7,
@@ -2671,7 +2876,13 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
         "rowNumber": 9,
@@ -2752,7 +2963,41 @@
         "swiftamount2": "62622.24"
       },
       {
-        "rowNumber": 11,
+        "rowNumber": 12,
+        "phd": "7",
+        "width": "620",
+        "length": "17250",
+        "x": "3x",
+        "kg": "500",
+        "quantity": "8",
+        "adjustment": "5",
+        "unitPrice": "6.00",
+        "itemNo": "0011",
+        "w": "40w",
+        "tfkg": "525",
+        "producedkg": "196.6",
+        "deliveredkg": "196.614",
+        "isProductionComplete": false
+      },
+      {
+        "rowNumber": 12,
+        "phd": "7",
+        "width": "620",
+        "length": "17250",
+        "x": "3x",
+        "kg": "500",
+        "quantity": "8",
+        "adjustment": "5",
+        "unitPrice": "6.00",
+        "itemNo": "0011.1",
+        "w": "40w",
+        "tfkg": "525.000",
+        "producedkg": "196.600",
+        "deliveredkg": "0.0",
+        "isProductionComplete": false
+      },
+      {
+        "rowNumber": 12,
         "phd": "7",
         "width": "620",
         "length": "17250",
@@ -2777,27 +3022,14 @@
         "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
-        "eta": "27.01.2026"
+        "eta": "27.01.2026",
+        "invoiceno": "93069096",
+        "invoicedate": "25.11.2025",
+        "invoicedue": "25.11.2025",
+        "invoiceprice": "73805.99"
       },
       {
-        "rowNumber": 11,
-        "phd": "7",
-        "width": "620",
-        "length": "17250",
-        "x": "3x",
-        "kg": "500",
-        "quantity": "8",
-        "adjustment": "5",
-        "unitPrice": "6.00",
-        "itemNo": "0011.1",
-        "w": "40w",
-        "tfkg": "328.386",
-        "producedkg": "-0.014",
-        "deliveredkg": "0.0",
-        "isProductionComplete": false
-      },
-      {
-        "rowNumber": 12,
+        "rowNumber": 13,
         "phd": "7",
         "width": "820",
         "length": "34500",
@@ -2812,7 +3044,7 @@
         "producedkg": "170.4"
       },
       {
-        "rowNumber": 13,
+        "rowNumber": 14,
         "phd": "7",
         "width": "920",
         "length": "34500",
@@ -2824,36 +3056,6 @@
         "itemNo": "0013",
         "w": "46w",
         "tfkg": "780",
-        "producedkg": "0.0"
-      },
-      {
-        "rowNumber": 14,
-        "phd": "7.5",
-        "width": "620",
-        "length": "32100",
-        "x": "6x",
-        "kg": "",
-        "quantity": "",
-        "adjustment": "3",
-        "unitPrice": "6.00",
-        "itemNo": "0014",
-        "w": "40w",
-        "tfkg": "396",
-        "producedkg": "0.0"
-      },
-      {
-        "rowNumber": 15,
-        "phd": "7.5",
-        "width": "820",
-        "length": "32100",
-        "x": "6x",
-        "kg": "1000",
-        "quantity": "6",
-        "adjustment": "3",
-        "unitPrice": "6.00",
-        "itemNo": "0015",
-        "w": "40w",
-        "tfkg": "524",
         "producedkg": "0.0"
       }
     ]
@@ -2941,6 +3143,93 @@
         "itemNo": "0005",
         "w": "02w",
         "tfkg": "780",
+        "producedkg": "0.0"
+      }
+    ]
+  },
+  {
+    "mode": "NT",
+    "orderId": "25-TF-11-01",
+    "orderDate": "2025.11.19",
+    "expectedDate": "3",
+    "orderNo": "EK-2025-10",
+    "finalDate": "21-Nov-2025",
+    "cif": "FCA Neunkirchen",
+    "tfNo": "71437267",
+    "items": [
+      {
+        "rowNumber": 1,
+        "phd": "5",
+        "width": "620",
+        "length": "32400",
+        "x": "4x",
+        "kg": "",
+        "quantity": "",
+        "adjustment": "10",
+        "unitPrice": "6.50",
+        "itemNo": "0001",
+        "w": "05w",
+        "tfkg": "886",
+        "producedkg": "0.0"
+      },
+      {
+        "rowNumber": 2,
+        "phd": "5",
+        "width": "770",
+        "length": "32400",
+        "x": "4x",
+        "kg": "2000",
+        "quantity": "18",
+        "adjustment": "16",
+        "unitPrice": "6.50",
+        "itemNo": "0002",
+        "w": "05w",
+        "tfkg": "1760",
+        "producedkg": "0.0"
+      },
+      {
+        "rowNumber": 3,
+        "phd": "5",
+        "width": "820",
+        "length": "32400",
+        "x": "4x",
+        "kg": "2000",
+        "quantity": "17",
+        "adjustment": "18",
+        "unitPrice": "6.50",
+        "itemNo": "0003",
+        "w": "05w",
+        "tfkg": "2109",
+        "producedkg": "0.0"
+      },
+      {
+        "rowNumber": 4,
+        "phd": "5",
+        "width": "850",
+        "length": "32400",
+        "x": "4x",
+        "kg": "1000",
+        "quantity": "8",
+        "adjustment": "10",
+        "unitPrice": "6.50",
+        "itemNo": "0004",
+        "w": "05w",
+        "tfkg": "1215",
+        "producedkg": "0.0"
+      },
+      {
+        "rowNumber": 5,
+        "phd": "5",
+        "width": "920",
+        "length": "32400",
+        "x": "4x",
+        "kg": "3000",
+        "quantity": "23",
+        "adjustment": "20",
+        "unitPrice": "6.50",
+        "itemNo": "0005",
+        "w": "05w",
+        "tfkg": "2629",
         "producedkg": "0.0"
       }
     ]
@@ -3047,7 +3336,7 @@
         "eta": "21.05.2025",
         "swiftdate": "27.05.2025",
         "swiftamount": "76660.96",
-        "defective": true
+        "defective": false
       },
       {
         "rowNumber": 4,
@@ -3403,7 +3692,7 @@
         "itemNo": "0002",
         "w": "48w",
         "tfkg": "13799",
-        "producedkg": "13777.4",
+        "producedkg": "13777.360",
         "isProductionComplete": true
       },
       {
@@ -3451,11 +3740,15 @@
         "tfkg": "1586",
         "producedkg": "132.6",
         "deliveredkg": "132.638",
-        "isProductionComplete": false,
+        "isProductionComplete": true,
         "deliveryNo": "EK-06",
         "d/nno": "83079418",
         "d/ndate": "23.10.2025",
-        "deliveredR": "1"
+        "deliveredR": "1",
+        "p/ino": "8993014177",
+        "p/idate": "23.10.2025",
+        "p/iprice": "57324.03",
+        "U/P": "6.19"
       },
       {
         "rowNumber": 5,
@@ -3489,11 +3782,15 @@
         "tfkg": "8628",
         "producedkg": "392.3",
         "deliveredkg": "392.260",
-        "isProductionComplete": false,
+        "isProductionComplete": true,
         "deliveryNo": "EK-06",
         "d/nno": "83079418",
         "d/ndate": "23.10.2025",
-        "deliveredR": "2"
+        "deliveredR": "2",
+        "p/ino": "8993014177",
+        "p/idate": "23.10.2025",
+        "p/iprice": "57324.03",
+        "U/P": "6.19"
       },
       {
         "rowNumber": 6,
@@ -3593,7 +3890,8 @@
         "itemNo": "0001",
         "w": "01w",
         "tfkg": "2841",
-        "producedkg": "391.5"
+        "producedkg": "2710.598",
+        "isProductionComplete": true
       },
       {
         "rowNumber": 2,
@@ -3608,7 +3906,7 @@
         "itemNo": "0002",
         "w": "48w",
         "tfkg": "16866",
-        "producedkg": "13684.9",
+        "producedkg": "16737.884",
         "isProductionComplete": true
       },
       {
