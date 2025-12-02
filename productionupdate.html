@@ -1040,16 +1040,44 @@ producedkg: ${data.tfkg}`;
     try {
       console.log(`🔍 주문 ${orderNo} 처리 시작 (${items.length}개 아이템)`);
       
-      // 1. 데이터 검증 및 정리
+      // 0. orderData.json에서 해당 orderNo의 모든 아이템 로드하여 .1 버전 확인
+      let orderData = null;
+      try {
+        const response = await fetch('orderData.json');
+        const allOrders = await response.json();
+        const order = allOrders.find(o => o.orderNo === orderNo);
+        if (order && order.items) {
+          orderData = order.items;
+        }
+      } catch (error) {
+        console.log(`⚠️ orderData.json 로드 실패, 기본 로직 사용`);
+      }
+      
+      // 1. 데이터 검증 및 정리, .1 버전 확인
       const validItems = items.filter(item => {
         const phd = parseFloat(item.phd);
         return !isNaN(phd) && item.width && item.length;
       }).map(item => {
+        let itemNo = item.no || '';
+        
+        // .1 버전이 있는지 확인
+        if (orderData && itemNo) {
+          const itemNoWithDot1 = itemNo + '.1';
+          const hasDot1Version = orderData.some(orderItem => 
+            orderItem.itemNo === itemNoWithDot1
+          );
+          
+          if (hasDot1Version) {
+            console.log(`🔄 itemNo ${itemNo} → ${itemNoWithDot1}로 변경 (주문 ${orderNo})`);
+            itemNo = itemNoWithDot1;
+          }
+        }
+        
         const processedItem = {
           phd: parseFloat(item.phd).toString(),
           width: item.width,
           length: item.length,
-          itemNo: item.no || '',
+          itemNo: itemNo,
           w: item.w || '',
           tfkg: item.tfkg || '',
           producedkg: item.producedkg || ''
