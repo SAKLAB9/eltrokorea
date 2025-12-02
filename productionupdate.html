@@ -1054,11 +1054,16 @@ producedkg: ${data.tfkg}`;
       }
       
       // 1. 데이터 검증 및 정리, .1 버전 확인
-      const validItems = items.filter(item => {
+      const validItems = [];
+      
+      items.forEach(item => {
         const phd = parseFloat(item.phd);
-        return !isNaN(phd) && item.width && item.length;
-      }).map(item => {
-        let itemNo = item.no || '';
+        if (isNaN(phd) || !item.width || !item.length) {
+          return; // 유효하지 않은 항목은 건너뛰기
+        }
+        
+        const itemNo = item.no || '';
+        let targetItemNo = itemNo;
         
         // .1 버전이 있는지 확인
         if (orderData && itemNo) {
@@ -1068,8 +1073,12 @@ producedkg: ${data.tfkg}`;
           );
           
           if (hasDot1Version) {
-            console.log(`🔄 itemNo ${itemNo} → ${itemNoWithDot1}로 변경 (주문 ${orderNo})`);
-            itemNo = itemNoWithDot1;
+            // .1 버전이 있으면 원본은 건너뛰고 .1 버전만 업데이트
+            console.log(`⏭️ itemNo ${itemNo} 건너뜀, ${itemNoWithDot1}에 업데이트 (주문 ${orderNo})`);
+            targetItemNo = itemNoWithDot1;
+          } else {
+            // .1 버전이 없으면 원본 항목 업데이트
+            targetItemNo = itemNo;
           }
         }
         
@@ -1077,7 +1086,7 @@ producedkg: ${data.tfkg}`;
           phd: parseFloat(item.phd).toString(),
           width: item.width,
           length: item.length,
-          itemNo: itemNo,
+          itemNo: targetItemNo,
           w: item.w || '',
           tfkg: item.tfkg || '',
           producedkg: item.producedkg || ''
@@ -1088,7 +1097,13 @@ producedkg: ${data.tfkg}`;
           processedItem.deliveredkg = item.deliveredkg;
         }
         
-        return processedItem;
+        // 중복 제거: 같은 itemNo가 이미 있으면 건너뛰기
+        const alreadyExists = validItems.some(vi => vi.itemNo === targetItemNo);
+        if (!alreadyExists) {
+          validItems.push(processedItem);
+        } else {
+          console.log(`⚠️ itemNo ${targetItemNo} 중복 제거 (주문 ${orderNo})`);
+        }
       });
 
       const invalidItemsCount = items.length - validItems.length;
