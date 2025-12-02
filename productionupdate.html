@@ -1190,14 +1190,14 @@ producedkg: ${data.tfkg}`;
       console.log(`🔍 itemUpdateFields: ${itemUpdateFields.join(', ')}`);
       console.log(`🔍 deliveredkg 포함 아이템: ${hasDeliveredkg ? '있음' : '없음'}`);
 
-      // 4. 서버에 직접 배치 요청 (서버에서 매칭 처리)
+      // 4. 서버에 직접 배치 요청 (orderNo와 itemNo로만 아이템 찾기)
       const saveResponse = await fetch('/api/updateOrder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           searchOrderBy: 'orderNo',
           orderNo: orderNo,
-          searchMethod: 'phdWidthLength',
+          searchMethod: 'itemNo', // orderNo와 itemNo로만 찾기
           updateFields: ['tfNo'],
           tfNo: tfNo,
           itemUpdateFields: itemUpdateFields,
