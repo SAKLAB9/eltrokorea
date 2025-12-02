@@ -1056,55 +1056,118 @@ producedkg: ${data.tfkg}`;
       // 1. 데이터 검증 및 정리, .1 버전 확인
       const validItems = [];
       
-      items.forEach(item => {
+      console.log(`🔍 [디버깅] 주문 ${orderNo} 처리 시작`);
+      console.log(`🔍 [디버깅] orderData 아이템 개수:`, orderData ? orderData.length : 0);
+      if (orderData) {
+        console.log(`🔍 [디버깅] orderData의 itemNo 목록:`, orderData.map(i => i.itemNo));
+      }
+      
+      items.forEach((item, index) => {
+        console.log(`\n🔍 [디버깅] 아이템 ${index + 1} 처리 시작:`, item);
+        
         const phd = parseFloat(item.phd);
         if (isNaN(phd) || !item.width || !item.length) {
+          console.log(`❌ [디버깅] 아이템 ${index + 1} 유효하지 않음 - 건너뜀`);
           return; // 유효하지 않은 항목은 건너뛰기
         }
         
         const itemNo = item.no || '';
-        let targetItemNo = itemNo;
+        console.log(`🔍 [디버깅] 원본 itemNo: "${itemNo}"`);
+        
+        if (!orderData || !itemNo) {
+          console.log(`🔍 [디버깅] orderData 없음 또는 itemNo 없음 - 원본 사용`);
+          // orderData가 없거나 itemNo가 없으면 원본 사용
+          const processedItem = {
+            phd: parseFloat(item.phd).toString(),
+            width: item.width,
+            length: item.length,
+            itemNo: itemNo,
+            w: item.w || '',
+            tfkg: item.tfkg || '',
+            producedkg: item.producedkg || ''
+          };
+          
+          if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
+            processedItem.deliveredkg = item.deliveredkg;
+          }
+          
+          validItems.push(processedItem);
+          return;
+        }
         
         // .1 버전이 있는지 확인
-        if (orderData && itemNo) {
-          const itemNoWithDot1 = itemNo + '.1';
-          const hasDot1Version = orderData.some(orderItem => 
-            orderItem.itemNo === itemNoWithDot1
-          );
-          
-          if (hasDot1Version) {
-            // .1 버전이 있으면 원본은 건너뛰고 .1 버전만 업데이트
-            console.log(`⏭️ itemNo ${itemNo} 건너뜀, ${itemNoWithDot1}에 업데이트 (주문 ${orderNo})`);
-            targetItemNo = itemNoWithDot1;
-          } else {
-            // .1 버전이 없으면 원본 항목 업데이트
-            targetItemNo = itemNo;
+        const itemNoWithDot1 = itemNo + '.1';
+        console.log(`🔍 [디버깅] 확인할 .1 버전: "${itemNoWithDot1}"`);
+        
+        const hasDot1Version = orderData.some(orderItem => {
+          const match = orderItem.itemNo === itemNoWithDot1;
+          if (match) {
+            console.log(`✅ [디버깅] "${itemNoWithDot1}" 발견!`, orderItem);
           }
-        }
+          return match;
+        });
         
-        const processedItem = {
-          phd: parseFloat(item.phd).toString(),
-          width: item.width,
-          length: item.length,
-          itemNo: targetItemNo,
-          w: item.w || '',
-          tfkg: item.tfkg || '',
-          producedkg: item.producedkg || ''
-        };
+        console.log(`🔍 [디버깅] hasDot1Version: ${hasDot1Version}`);
         
-        // deliveredkg 조건부 처리: 값이 있고 0이 아닐 때만 포함
-        if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
-          processedItem.deliveredkg = item.deliveredkg;
-        }
-        
-        // 중복 제거: 같은 itemNo가 이미 있으면 건너뛰기
-        const alreadyExists = validItems.some(vi => vi.itemNo === targetItemNo);
-        if (!alreadyExists) {
+        if (hasDot1Version) {
+          // .1 버전이 있으면 원본은 완전히 건너뛰고 .1 버전만 추가
+          console.log(`⏭️ [디버깅] itemNo "${itemNo}" 건너뜀 (${itemNoWithDot1} 존재)`);
+          
+          // .1 버전이 이미 validItems에 있는지 확인
+          const alreadyExists = validItems.some(vi => vi.itemNo === itemNoWithDot1);
+          if (alreadyExists) {
+            console.log(`⚠️ [디버깅] itemNo "${itemNoWithDot1}" 이미 존재 - 건너뜀`);
+            return;
+          }
+          
+          // .1 버전 항목 추가
+          const processedItem = {
+            phd: parseFloat(item.phd).toString(),
+            width: item.width,
+            length: item.length,
+            itemNo: itemNoWithDot1, // .1 버전으로 설정
+            w: item.w || '',
+            tfkg: item.tfkg || '',
+            producedkg: item.producedkg || ''
+          };
+          
+          if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
+            processedItem.deliveredkg = item.deliveredkg;
+          }
+          
+          console.log(`✅ [디버깅] processedItem 추가 (.1 버전):`, processedItem);
           validItems.push(processedItem);
         } else {
-          console.log(`⚠️ itemNo ${targetItemNo} 중복 제거 (주문 ${orderNo})`);
+          // .1 버전이 없으면 원본 항목 업데이트
+          console.log(`✅ [디버깅] itemNo "${itemNo}" 사용 (${itemNoWithDot1} 없음)`);
+          
+          // 중복 제거: 같은 itemNo가 이미 있으면 건너뛰기
+          const alreadyExists = validItems.some(vi => vi.itemNo === itemNo);
+          if (alreadyExists) {
+            console.log(`⚠️ [디버깅] itemNo "${itemNo}" 이미 존재 - 건너뜀`);
+            return;
+          }
+          
+          const processedItem = {
+            phd: parseFloat(item.phd).toString(),
+            width: item.width,
+            length: item.length,
+            itemNo: itemNo,
+            w: item.w || '',
+            tfkg: item.tfkg || '',
+            producedkg: item.producedkg || ''
+          };
+          
+          if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
+            processedItem.deliveredkg = item.deliveredkg;
+          }
+          
+          console.log(`✅ [디버깅] processedItem 추가 (원본):`, processedItem);
+          validItems.push(processedItem);
         }
       });
+      
+      console.log(`\n🔍 [디버깅] 최종 validItems:`, validItems.map(vi => vi.itemNo));
 
       const invalidItemsCount = items.length - validItems.length;
       
