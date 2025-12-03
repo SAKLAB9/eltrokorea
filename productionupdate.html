@@ -1055,14 +1055,23 @@ producedkg: ${data.tfkg}`;
         
         const itemNo = item.no || '';
         
-        if (itemNo) {
-          // itemNo가 있는 경우
-          itemsWithItemNo.push(item);
-        } else {
-          // itemNo가 없는 경우
+        // 디버깅: itemNo 값 확인
+        if (!itemNo || itemNo.trim() === '') {
+          console.log('[디버깅] itemNo 없는 항목 발견:', { 
+            phd: item.phd, 
+            width: item.width, 
+            length: item.length,
+            no: item.no,
+            noType: typeof item.no,
+            noValue: item.no
+          });
           itemsWithoutItemNo.push(item);
+        } else {
+          itemsWithItemNo.push(item);
         }
       });
+      
+      console.log('[디버깅] 초기 분류 결과 - itemsWithItemNo:', itemsWithItemNo.length, 'itemsWithoutItemNo:', itemsWithoutItemNo.length);
       
       // itemNo가 있는 항목들 처리 (.1 버전 확인)
       itemsWithItemNo.forEach((item) => {
@@ -1179,8 +1188,12 @@ producedkg: ${data.tfkg}`;
         
         if (saveResponse.ok) {
           const saveResult = await saveResponse.json();
+          console.log('[디버깅] itemNo로 업데이트 결과:', saveResult);
           totalUpdated += saveResult.updatedItems || 0;
           totalSkipped += saveResult.skippedItems || 0;
+          if (saveResult.skippedItems > 0) {
+            console.log('[디버깅] itemNo로 매칭 안된 항목:', itemsWithItemNoForUpdate);
+          }
         } else if (saveResponse.status !== 404) {
           const errorText = await saveResponse.text();
           throw new Error(`HTTP error! status: ${saveResponse.status}, message: ${errorText}`);
