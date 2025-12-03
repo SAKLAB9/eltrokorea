@@ -1055,23 +1055,12 @@ producedkg: ${data.tfkg}`;
         
         const itemNo = item.no || '';
         
-        // 디버깅: itemNo 값 확인
         if (!itemNo || itemNo.trim() === '') {
-          console.log('[디버깅] itemNo 없는 항목 발견:', { 
-            phd: item.phd, 
-            width: item.width, 
-            length: item.length,
-            no: item.no,
-            noType: typeof item.no,
-            noValue: item.no
-          });
           itemsWithoutItemNo.push(item);
         } else {
           itemsWithItemNo.push(item);
         }
       });
-      
-      console.log('[디버깅] 초기 분류 결과 - itemsWithItemNo:', itemsWithItemNo.length, 'itemsWithoutItemNo:', itemsWithoutItemNo.length);
       
       // itemNo가 있는 항목들 처리 (.1 버전 확인)
       itemsWithItemNo.forEach((item) => {
@@ -1112,9 +1101,7 @@ producedkg: ${data.tfkg}`;
       });
       
       // itemNo가 없는 항목들 처리 (phdWidthLength로 찾기)
-      console.log('[디버깅] itemsWithoutItemNo 개수:', itemsWithoutItemNo.length);
       itemsWithoutItemNo.forEach((item) => {
-        console.log('[디버깅] itemNo 없는 항목 처리:', item);
         const processedItem = {
           phd: parseFloat(item.phd).toString(),
           width: item.width,
@@ -1129,13 +1116,8 @@ producedkg: ${data.tfkg}`;
           processedItem.deliveredkg = item.deliveredkg;
         }
         
-        console.log('[디버깅] processedItem (itemNo 없음):', processedItem);
-        console.log('[디버깅] processedItem에 itemNo 필드 있는지:', 'itemNo' in processedItem, processedItem.itemNo);
         validItems.push(processedItem);
       });
-      
-      console.log('[디버깅] validItems 최종 개수:', validItems.length);
-      console.log('[디버깅] validItems 각 항목의 itemNo:', validItems.map(item => ({ hasItemNo: 'itemNo' in item, itemNo: item.itemNo, phd: item.phd })));
 
       const invalidItemsCount = items.length - validItems.length;
       
@@ -1155,17 +1137,8 @@ producedkg: ${data.tfkg}`;
       
 
       // 4. itemNo가 있는 항목과 없는 항목 분리
-      console.log('[디버깅] validItems 전체:', validItems);
-      console.log('[디버깅] validItems의 itemNo 필드들:', validItems.map(item => ({ hasItemNo: !!item.itemNo, itemNo: item.itemNo, phd: item.phd, width: item.width, length: item.length })));
-      
       const itemsWithItemNoForUpdate = validItems.filter(item => item.itemNo && item.itemNo.trim() !== '');
       const itemsWithoutItemNoForUpdate = validItems.filter(item => !item.itemNo || item.itemNo.trim() === '');
-      
-      console.log('[디버깅] itemsWithItemNoForUpdate 개수:', itemsWithItemNoForUpdate.length);
-      console.log('[디버깅] itemsWithoutItemNoForUpdate 개수:', itemsWithoutItemNoForUpdate.length);
-      if (itemsWithoutItemNoForUpdate.length > 0) {
-        console.log('[디버깅] itemNo 없는 항목들:', itemsWithoutItemNoForUpdate);
-      }
       
       let totalUpdated = 0;
       let totalSkipped = 0;
@@ -1190,19 +1163,11 @@ producedkg: ${data.tfkg}`;
         
         if (saveResponse.ok) {
           const saveResult = await saveResponse.json();
-          console.log('[디버깅] itemNo로 업데이트 결과:', saveResult);
           const itemNoUpdated = saveResult.updatedItems || 0;
           totalUpdated += itemNoUpdated;
           totalSkipped += saveResult.skippedItems || 0;
           if (saveResult.skippedItems > 0 && saveResult.skippedItemsDetails) {
-            console.log('[디버깅] itemNo로 매칭 안된 항목 상세:', saveResult.skippedItemsDetails);
-            saveResult.skippedItemsDetails.forEach((detail, index) => {
-              console.log(`[디버깅] 매칭 실패 ${index + 1}:`, {
-                searchMethod: detail.searchMethod,
-                searchValue: detail.searchValue,
-                item: detail.item,
-                availableItemNos: detail.availableItemNos
-              });
+            saveResult.skippedItemsDetails.forEach((detail) => {
               // phdWidthLength로 재시도할 항목 수집 (phd, width, length가 모두 있어야 함)
               if (detail.item && detail.item.phd && detail.item.width && detail.item.length) {
                 failedItemsForRetry.push(detail.item);
@@ -1217,7 +1182,6 @@ producedkg: ${data.tfkg}`;
       
       // itemNo로 매칭 실패한 항목들을 phdWidthLength로 재시도
       if (failedItemsForRetry.length > 0) {
-        console.log('[디버깅] itemNo 매칭 실패 항목을 phdWidthLength로 재시도:', failedItemsForRetry.length, '개');
         const retryResponse = await fetch('/api/updateOrder', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1234,31 +1198,16 @@ producedkg: ${data.tfkg}`;
         
         if (retryResponse.ok) {
           const retryResult = await retryResponse.json();
-          console.log('[디버깅] phdWidthLength 재시도 결과:', retryResult);
           const retryUpdated = retryResult.updatedItems || 0;
           itemNoAddedCount += retryUpdated; // itemNo가 없어서 phdWidthLength로 찾아서 itemNo 추가
           totalUpdated += retryUpdated;
           // 재시도에서도 실패한 항목은 최종 skippedItems에 포함
           totalSkipped = totalSkipped - failedItemsForRetry.length + (retryResult.skippedItems || 0);
-        } else if (retryResponse.status !== 404) {
-          const errorText = await retryResponse.text();
-          console.log('[디버깅] phdWidthLength 재시도 에러:', errorText);
         }
       }
       
       // itemNo가 없는 항목들은 phdWidthLength로 찾기
       if (itemsWithoutItemNoForUpdate.length > 0) {
-        console.log('[디버깅] phdWidthLength로 업데이트 요청 시작');
-        console.log('[디버깅] 요청 데이터:', {
-          searchOrderBy: 'orderNo',
-          orderNo: orderNo,
-          searchMethod: 'phdWidthLength',
-          updateFields: ['tfNo'],
-          tfNo: tfNo,
-          itemUpdateFields: itemUpdateFields,
-          items: itemsWithoutItemNoForUpdate
-        });
-        
         const saveResponse = await fetch('/api/updateOrder', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1273,21 +1222,15 @@ producedkg: ${data.tfkg}`;
           })
         });
         
-        console.log('[디버깅] 서버 응답 상태:', saveResponse.status);
-        
         if (saveResponse.ok) {
           const saveResult = await saveResponse.json();
-          console.log('[디버깅] 서버 응답 결과:', saveResult);
           const phdWidthLengthUpdated = saveResult.updatedItems || 0;
           itemNoAddedCount += phdWidthLengthUpdated; // itemNo가 없어서 phdWidthLength로 찾아서 itemNo 추가
           totalUpdated += phdWidthLengthUpdated;
           totalSkipped += saveResult.skippedItems || 0;
         } else if (saveResponse.status !== 404) {
           const errorText = await saveResponse.text();
-          console.log('[디버깅] 서버 에러 응답:', errorText);
           throw new Error(`HTTP error! status: ${saveResponse.status}, message: ${errorText}`);
-        } else {
-          console.log('[디버깅] 404 에러 - 주문을 찾을 수 없음');
         }
       }
       
