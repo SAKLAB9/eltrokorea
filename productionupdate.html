@@ -1202,9 +1202,9 @@ producedkg: ${data.tfkg}`;
                 availableItemNos: detail.availableItemNos
               });
               // itemNo로 매칭 실패한 항목을 phdWidthLength로 재시도하기 위해 수집
-              // itemNo 필드를 제거하고 phdWidthLength로 검색할 수 있도록 함
+              // phdWidthLength 검색은 phd, width, length만 사용하므로 itemNo 필드는 그대로 둬도 됨
               const retryItem = { ...detail.item };
-              delete retryItem.itemNo; // itemNo 필드 제거
+              // itemNo 필드는 그대로 유지 (phdWidthLength 검색에는 영향 없음)
               failedItemsForRetry.push(retryItem);
             });
           }
