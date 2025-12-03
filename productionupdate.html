@@ -1065,72 +1065,31 @@ producedkg: ${data.tfkg}`;
       });
       
       // itemNo가 있는 항목들 처리 (.1 버전 확인)
-      if (orderData) {
-        itemsWithItemNo.forEach((item) => {
-          const itemNo = item.no || '';
+      itemsWithItemNo.forEach((item) => {
+        const itemNo = item.no || '';
+        let targetItemNo = itemNo;
+        
+        // orderData가 있으면 .1 버전 확인
+        if (orderData) {
           const itemNoWithDot1 = itemNo + '.1';
           const hasDot1Version = orderData.some(orderItem => orderItem.itemNo === itemNoWithDot1);
-          
-          let targetItemNo;
           if (hasDot1Version) {
             // .1 버전이 있으면 .1에 업데이트
             targetItemNo = itemNoWithDot1;
-          } else {
-            // .1 버전이 없으면 원래 itemNo에 업데이트
-            targetItemNo = itemNo;
           }
-          
-          // 중복 제거
-          const alreadyExists = validItems.some(vi => vi.itemNo === targetItemNo);
-          if (alreadyExists) {
-            return;
-          }
-          
-          const processedItem = {
-            phd: parseFloat(item.phd).toString(),
-            width: item.width,
-            length: item.length,
-            itemNo: targetItemNo,
-            w: item.w || '',
-            tfkg: item.tfkg || '',
-            producedkg: item.producedkg || ''
-          };
-          
-          if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
-            processedItem.deliveredkg = item.deliveredkg;
-          }
-          
-          validItems.push(processedItem);
-        });
-      } else {
-        // orderData가 없으면 itemNo 그대로 사용
-        itemsWithItemNo.forEach((item) => {
-          const itemNo = item.no || '';
-          const processedItem = {
-            phd: parseFloat(item.phd).toString(),
-            width: item.width,
-            length: item.length,
-            itemNo: itemNo,
-            w: item.w || '',
-            tfkg: item.tfkg || '',
-            producedkg: item.producedkg || ''
-          };
-          
-          if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
-            processedItem.deliveredkg = item.deliveredkg;
-          }
-          
-          validItems.push(processedItem);
-        });
-      }
-      
-      // itemNo가 없는 항목들 처리 (phdWidthLength로 찾기)
-      itemsWithoutItemNo.forEach((item) => {
-        console.log('[디버깅] itemNo 없는 항목 처리:', item);
+        }
+        
+        // 중복 제거
+        const alreadyExists = validItems.some(vi => vi.itemNo === targetItemNo);
+        if (alreadyExists) {
+          return;
+        }
+        
         const processedItem = {
           phd: parseFloat(item.phd).toString(),
           width: item.width,
           length: item.length,
+          itemNo: targetItemNo,
           w: item.w || '',
           tfkg: item.tfkg || '',
           producedkg: item.producedkg || ''
@@ -1140,9 +1099,34 @@ producedkg: ${data.tfkg}`;
           processedItem.deliveredkg = item.deliveredkg;
         }
         
-        console.log('[디버깅] processedItem (itemNo 없음):', processedItem);
         validItems.push(processedItem);
       });
+      
+      // itemNo가 없는 항목들 처리 (phdWidthLength로 찾기)
+      console.log('[디버깅] itemsWithoutItemNo 개수:', itemsWithoutItemNo.length);
+      itemsWithoutItemNo.forEach((item) => {
+        console.log('[디버깅] itemNo 없는 항목 처리:', item);
+        const processedItem = {
+          phd: parseFloat(item.phd).toString(),
+          width: item.width,
+          length: item.length,
+          w: item.w || '',
+          tfkg: item.tfkg || '',
+          producedkg: item.producedkg || ''
+          // itemNo 필드를 명시적으로 포함하지 않음
+        };
+        
+        if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
+          processedItem.deliveredkg = item.deliveredkg;
+        }
+        
+        console.log('[디버깅] processedItem (itemNo 없음):', processedItem);
+        console.log('[디버깅] processedItem에 itemNo 필드 있는지:', 'itemNo' in processedItem, processedItem.itemNo);
+        validItems.push(processedItem);
+      });
+      
+      console.log('[디버깅] validItems 최종 개수:', validItems.length);
+      console.log('[디버깅] validItems 각 항목의 itemNo:', validItems.map(item => ({ hasItemNo: 'itemNo' in item, itemNo: item.itemNo, phd: item.phd })));
 
       const invalidItemsCount = items.length - validItems.length;
       
@@ -1162,8 +1146,11 @@ producedkg: ${data.tfkg}`;
       
 
       // 4. itemNo가 있는 항목과 없는 항목 분리
-      const itemsWithItemNoForUpdate = validItems.filter(item => item.itemNo);
-      const itemsWithoutItemNoForUpdate = validItems.filter(item => !item.itemNo);
+      console.log('[디버깅] validItems 전체:', validItems);
+      console.log('[디버깅] validItems의 itemNo 필드들:', validItems.map(item => ({ hasItemNo: !!item.itemNo, itemNo: item.itemNo, phd: item.phd, width: item.width, length: item.length })));
+      
+      const itemsWithItemNoForUpdate = validItems.filter(item => item.itemNo && item.itemNo.trim() !== '');
+      const itemsWithoutItemNoForUpdate = validItems.filter(item => !item.itemNo || item.itemNo.trim() === '');
       
       console.log('[디버깅] itemsWithItemNoForUpdate 개수:', itemsWithItemNoForUpdate.length);
       console.log('[디버깅] itemsWithoutItemNoForUpdate 개수:', itemsWithoutItemNoForUpdate.length);
