@@ -984,6 +984,8 @@ producedkg: ${data.tfkg}`;
       let totalUpdated = 0;
       let totalSkipped = 0;
       let totalInvalid = 0;
+      let totalUpdatedByItemNo = 0;
+      let totalUpdatedByPhdWidthLength = 0;
       
       for (const [orderNo, items] of Object.entries(orderGroups)) {
         
@@ -991,17 +993,24 @@ producedkg: ${data.tfkg}`;
         totalUpdated += result.updatedItems;
         totalSkipped += result.skippedItems;
         totalInvalid += result.invalidItems;
+        totalUpdatedByItemNo += result.updatedByItemNo || 0;
+        totalUpdatedByPhdWidthLength += result.updatedByPhdWidthLength || 0;
       }
       
       // 4. 결과 메시지 표시
-      let message = `OIP 모드 Export 완료!\n업데이트된 아이템: ${totalUpdated}개`;
+      let message = `OIP 모드 Export 완료!\n\n업데이트된 아이템: ${totalUpdated}개`;
+      
+      if (totalUpdatedByItemNo > 0 || totalUpdatedByPhdWidthLength > 0) {
+        message += `\n  - itemNo로 찾은 항목: ${totalUpdatedByItemNo}개`;
+        message += `\n  - phdWidthLength로 찾은 항목: ${totalUpdatedByPhdWidthLength}개`;
+      }
       
       if (totalSkipped > 0) {
-        message += `\n매칭되지 않은 아이템: ${totalSkipped}개`;
+        message += `\n\n매칭되지 않은 아이템: ${totalSkipped}개`;
       }
       
       if (totalInvalid > 0) {
-        message += `\n유효하지 않은 아이템: ${totalInvalid}개`;
+        message += `\n유효하지 않은 아이템: ${totalInvalid}개 (PHD/Width/Length 누락)`;
       }
       
       alert(message);
@@ -1169,6 +1178,8 @@ producedkg: ${data.tfkg}`;
       
       let totalUpdated = 0;
       let totalSkipped = 0;
+      let updatedByItemNo = 0;
+      let updatedByPhdWidthLength = 0;
       
       // itemNo가 있는 항목들은 itemNo로 찾기
       let failedItemsForRetry = [];
@@ -1190,7 +1201,9 @@ producedkg: ${data.tfkg}`;
         if (saveResponse.ok) {
           const saveResult = await saveResponse.json();
           console.log('[디버깅] itemNo로 업데이트 결과:', saveResult);
-          totalUpdated += saveResult.updatedItems || 0;
+          const itemNoUpdated = saveResult.updatedItems || 0;
+          updatedByItemNo += itemNoUpdated;
+          totalUpdated += itemNoUpdated;
           totalSkipped += saveResult.skippedItems || 0;
           if (saveResult.skippedItems > 0 && saveResult.skippedItemsDetails) {
             console.log('[디버깅] itemNo로 매칭 안된 항목 상세:', saveResult.skippedItemsDetails);
@@ -1233,12 +1246,11 @@ producedkg: ${data.tfkg}`;
         if (retryResponse.ok) {
           const retryResult = await retryResponse.json();
           console.log('[디버깅] phdWidthLength 재시도 결과:', retryResult);
-          totalUpdated += retryResult.updatedItems || 0;
-          // 재시도 성공한 항목은 totalSkipped에서 제외, 실패한 항목만 포함
-          const retrySuccessCount = retryResult.updatedItems || 0;
-          const retryFailedCount = retryResult.skippedItems || 0;
-          totalSkipped = totalSkipped - retrySuccessCount + retryFailedCount;
-          console.log('[디버깅] 재시도 후 totalSkipped:', totalSkipped, '(성공:', retrySuccessCount, ', 실패:', retryFailedCount, ')');
+          const retryUpdated = retryResult.updatedItems || 0;
+          updatedByPhdWidthLength += retryUpdated;
+          totalUpdated += retryUpdated;
+          // 재시도에서도 실패한 항목은 최종 skippedItems에 포함
+          totalSkipped = totalSkipped - failedItemsForRetry.length + (retryResult.skippedItems || 0);
         } else if (retryResponse.status !== 404) {
           const errorText = await retryResponse.text();
           console.log('[디버깅] phdWidthLength 재시도 에러:', errorText);
@@ -1277,7 +1289,9 @@ producedkg: ${data.tfkg}`;
         if (saveResponse.ok) {
           const saveResult = await saveResponse.json();
           console.log('[디버깅] 서버 응답 결과:', saveResult);
-          totalUpdated += saveResult.updatedItems || 0;
+          const phdWidthLengthUpdated = saveResult.updatedItems || 0;
+          updatedByPhdWidthLength += phdWidthLengthUpdated;
+          totalUpdated += phdWidthLengthUpdated;
           totalSkipped += saveResult.skippedItems || 0;
         } else if (saveResponse.status !== 404) {
           const errorText = await saveResponse.text();
@@ -1296,7 +1310,9 @@ producedkg: ${data.tfkg}`;
       return {
         updatedItems: updatedItems,
         skippedItems: skippedItems,
-        invalidItems: invalidItemsCount
+        invalidItems: invalidItemsCount,
+        updatedByItemNo: updatedByItemNo,
+        updatedByPhdWidthLength: updatedByPhdWidthLength
       };
 
     } catch (error) {
