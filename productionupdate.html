@@ -1191,8 +1191,16 @@ producedkg: ${data.tfkg}`;
           console.log('[디버깅] itemNo로 업데이트 결과:', saveResult);
           totalUpdated += saveResult.updatedItems || 0;
           totalSkipped += saveResult.skippedItems || 0;
-          if (saveResult.skippedItems > 0) {
-            console.log('[디버깅] itemNo로 매칭 안된 항목:', itemsWithItemNoForUpdate);
+          if (saveResult.skippedItems > 0 && saveResult.skippedItemsDetails) {
+            console.log('[디버깅] itemNo로 매칭 안된 항목 상세:', saveResult.skippedItemsDetails);
+            saveResult.skippedItemsDetails.forEach((detail, index) => {
+              console.log(`[디버깅] 매칭 실패 ${index + 1}:`, {
+                searchMethod: detail.searchMethod,
+                searchValue: detail.searchValue,
+                item: detail.item,
+                availableItemNos: detail.availableItemNos
+              });
+            });
           }
         } else if (saveResponse.status !== 404) {
           const errorText = await saveResponse.text();

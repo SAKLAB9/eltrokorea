@@ -1117,6 +1117,7 @@ app.post("/api/updateOrder", (req, res) => {
     
     // 아이템 레벨 필드 업데이트
     let skippedItems = 0;
+    const skippedItemsDetails = [];
     if (data.items && data.items.length > 0) {
       data.items.forEach((newItem) => {
         let existingItemIndex = -1;
@@ -1155,6 +1156,11 @@ app.post("/api/updateOrder", (req, res) => {
             updatedItems += matchingItems.length;
           } else {
             skippedItems++;
+            skippedItemsDetails.push({
+              searchMethod: data.searchMethod,
+              searchValue: newItem.deliveryNo,
+              item: newItem
+            });
           }
           
           // findIndex는 사용하지 않음 (이미 처리했으므로)
@@ -1194,6 +1200,16 @@ app.post("/api/updateOrder", (req, res) => {
         } else {
           // 아이템을 찾지 못하면 건너뛰기 (오류 대신)
           skippedItems++;
+          let searchValue = '';
+          if (data.searchMethod === 'rowNumber') searchValue = newItem.rowNumber;
+          else if (data.searchMethod === 'itemNo') searchValue = newItem.itemNo;
+          else if (data.searchMethod === 'phdWidthLength') searchValue = `${newItem.phd}-${newItem.width}-${newItem.length}`;
+          skippedItemsDetails.push({
+            searchMethod: data.searchMethod,
+            searchValue: searchValue,
+            item: newItem,
+            availableItemNos: existingOrder.items.map(item => item.itemNo).filter(no => no)
+          });
         }
       });
     }
@@ -1207,7 +1223,8 @@ app.post("/api/updateOrder", (req, res) => {
       orderId: data.orderId || data.orderNo || data.deliveryNo || 'unknown',
       updatedFields: updatedFields,
       updatedItems: updatedItems,
-      skippedItems: skippedItems
+      skippedItems: skippedItems,
+      skippedItemsDetails: skippedItemsDetails.length > 0 ? skippedItemsDetails : undefined
     });
   } catch (error) {
     res.status(500).json({ error: "Failed to update order", details: error.message });
