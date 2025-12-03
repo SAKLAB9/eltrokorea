@@ -547,7 +547,6 @@ Customer Order No.: SM-2025-01`;
       globalParsedData.push(extractedData);
     }
     
-    console.log(`🔍 OIP Convert 완료: 총 ${globalParsedData.length}개 데이터 세트 누적됨`);
   }
   
   // ========================================
@@ -556,7 +555,6 @@ Customer Order No.: SM-2025-01`;
   function clearOIPData() {
     globalParsedData = [];
     document.getElementById("outputArea").value = "";
-    console.log("🔍 OIP 데이터 초기화 완료");
   }
   
   // producedkg 소수점 첫째자리까지 포맷팅 함수
@@ -855,7 +853,6 @@ producedkg: ${data.tfkg}`;
       }
       
       // 2. 데이터 검증 및 정리
-      console.log("🔍 O/C Export - 원본 데이터:", actualParsedData);
       
       const validItems = actualParsedData.filter(data => {
         const phd = parseFloat(data.phd);
@@ -869,7 +866,6 @@ producedkg: ${data.tfkg}`;
           w: data.w || '',
           tfkg: data.tfkg || ''
         };
-        console.log("🔍 O/C Export - 처리된 아이템:", processedItem);
         return processedItem;
       });
 
@@ -957,7 +953,6 @@ producedkg: ${data.tfkg}`;
   // ========================================
   async function saveOIPDataToOrderData() {
     try {
-      console.log("🔍 OIP Export 시작 - 최적화 모드");
       
       // 1. 데이터 정리 및 검증
       let allItems = [];
@@ -973,7 +968,6 @@ producedkg: ${data.tfkg}`;
         allItems.push(globalParsedData);
       }
       
-      console.log(`📊 총 ${allItems.length}개 아이템 처리 시작`);
       
       // 2. orderNo로 카테고라이즈 (배치 처리용)
       const orderGroups = {};
@@ -985,7 +979,6 @@ producedkg: ${data.tfkg}`;
         orderGroups[orderNo].push(item);
       });
       
-      console.log(`📋 주문별 그룹화 완료: ${Object.keys(orderGroups).length}개 주문`);
       
       // 3. 각 주문별로 직접 서버에 배치 요청 (전체 주문 데이터 로드 제거)
       let totalUpdated = 0;
@@ -993,7 +986,6 @@ producedkg: ${data.tfkg}`;
       let totalInvalid = 0;
       
       for (const [orderNo, items] of Object.entries(orderGroups)) {
-        console.log(`📝 주문 처리 중: ${orderNo} (${items.length}개 아이템)`);
         
         const result = await processOIPOrderOptimized(orderNo, items);
         totalUpdated += result.updatedItems;
@@ -1028,7 +1020,6 @@ producedkg: ${data.tfkg}`;
       window.location.href = 'production.html';
       
     } catch (error) {
-      console.error("❌ OIP Export 오류:", error);
       alert("OIP 모드 저장 중 오류가 발생했습니다: " + error.message);
     }
   }
@@ -1038,7 +1029,6 @@ producedkg: ${data.tfkg}`;
   // ========================================
   async function processOIPOrderOptimized(orderNo, items) {
     try {
-      console.log(`🔍 주문 ${orderNo} 처리 시작 (${items.length}개 아이템)`);
       
       // 0. orderData.json에서 해당 orderNo의 모든 아이템 로드하여 .1 버전 확인
       let orderData = null;
@@ -1050,7 +1040,6 @@ producedkg: ${data.tfkg}`;
           orderData = order.items;
         }
       } catch (error) {
-        console.log(`⚠️ orderData.json 로드 실패, 기본 로직 사용`);
       }
       
       // 1. 데이터 검증 및 정리, itemNo 유무에 따라 다른 로직 적용
@@ -1156,13 +1145,11 @@ producedkg: ${data.tfkg}`;
       const invalidItemsCount = items.length - validItems.length;
       
       if (validItems.length === 0) {
-        console.log(`❌ 주문 ${orderNo}: 유효한 아이템이 없습니다.`);
         return { updatedItems: 0, skippedItems: 0, invalidItems: invalidItemsCount };
       }
 
       // 2. tfNo 추출 (첫 번째 아이템의 tfno 사용)
       const tfNo = items[0].tfno;
-      console.log(`🔍 tfNo 업데이트: ${tfNo}`);
 
       // 3. deliveredkg가 포함된 아이템이 있는지 확인하여 itemUpdateFields 동적 설정
       const hasDeliveredkg = validItems.some(item => item.deliveredkg !== undefined);
@@ -1171,8 +1158,6 @@ producedkg: ${data.tfkg}`;
         itemUpdateFields.push('deliveredkg');
       }
       
-      console.log(`🔍 itemUpdateFields: ${itemUpdateFields.join(', ')}`);
-      console.log(`🔍 deliveredkg 포함 아이템: ${hasDeliveredkg ? '있음' : '없음'}`);
 
       // 4. itemNo가 있는 항목과 없는 항목 분리
       const itemsWithItemNoForUpdate = validItems.filter(item => item.itemNo);
@@ -1234,7 +1219,9 @@ producedkg: ${data.tfkg}`;
       }
       
 
-      console.log(`✅ 주문 ${orderNo} 처리 완료: 업데이트 ${updatedItems}개, 스킵 ${skippedItems}개, 무효 ${invalidItemsCount}개`);
+      const updatedItems = totalUpdated;
+      const skippedItems = totalSkipped;
+
 
       return {
         updatedItems: updatedItems,
@@ -1243,7 +1230,6 @@ producedkg: ${data.tfkg}`;
       };
 
     } catch (error) {
-      console.error(`❌ 주문 ${orderNo} 처리 오류:`, error);
       throw error;
     }
   }
@@ -1253,7 +1239,6 @@ producedkg: ${data.tfkg}`;
   // ========================================
   async function saveCModeDataToOrderData(parsedData) {
     try {
-      console.log("🔍 분석표 모드 Export 시작 - 최적화 모드");
       
       if (!parsedData || parsedData.length === 0) {
         alert("분석표 모드 데이터가 없습니다.");
@@ -1264,8 +1249,6 @@ producedkg: ${data.tfkg}`;
       const orderno = data.orderno;
       const itemno = data.itemno;
       
-      console.log("🔍 분석표 데이터:", data);
-      console.log("🔍 producedkg 값:", data.producedkg);
       
       if (!orderno || !itemno) {
         alert("분석표 모드: Order No 또는 Item No가 없습니다.");
@@ -1278,8 +1261,6 @@ producedkg: ${data.tfkg}`;
         producedkg: data.producedkg || ''
       };
       
-      console.log("🔍 처리할 아이템:", validItem);
-      console.log("🔍 producedkg 최종 값:", validItem.producedkg);
       
       // 2. 서버에 직접 업데이트 요청 (서버에서 주문/아이템 찾기 및 매칭 처리)
       const requestData = {
@@ -1290,7 +1271,6 @@ producedkg: ${data.tfkg}`;
         items: [validItem]
       };
       
-      console.log("🔍 서버로 전송할 데이터:", requestData);
       
       const saveResponse = await fetch('/api/updateOrder', {
         method: 'POST',
@@ -1342,7 +1322,6 @@ producedkg: ${data.tfkg}`;
       window.location.href = 'production.html';
       
     } catch (error) {
-      console.error("❌ 분석표 모드 Export 오류:", error);
       alert("분석표 모드 저장 중 오류가 발생했습니다: " + error.message);
     }
   }
