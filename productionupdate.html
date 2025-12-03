@@ -1053,8 +1053,10 @@ producedkg: ${data.tfkg}`;
         console.log(`⚠️ orderData.json 로드 실패, 기본 로직 사용`);
       }
       
-      // 1. 데이터 검증 및 정리, .1 버전 확인
+      // 1. 데이터 검증 및 정리, itemNo 유무에 따라 다른 로직 적용
       const validItems = [];
+      const itemsWithItemNo = [];
+      const itemsWithoutItemNo = [];
       
       items.forEach((item) => {
         const phd = parseFloat(item.phd);
@@ -1064,62 +1066,57 @@ producedkg: ${data.tfkg}`;
         
         const itemNo = item.no || '';
         
-        if (!orderData || !itemNo) {
-          // orderData가 없거나 itemNo가 없으면 원본 사용
-          const processedItem = {
-            phd: parseFloat(item.phd).toString(),
-            width: item.width,
-            length: item.length,
-            itemNo: itemNo,
-            w: item.w || '',
-            tfkg: item.tfkg || '',
-            producedkg: item.producedkg || ''
-          };
-          
-          if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
-            processedItem.deliveredkg = item.deliveredkg;
-          }
-          
-          validItems.push(processedItem);
-          return;
-        }
-        
-        // .1 버전이 있는지 확인
-        const itemNoWithDot1 = itemNo + '.1';
-        const hasDot1Version = orderData.some(orderItem => orderItem.itemNo === itemNoWithDot1);
-        
-        if (hasDot1Version) {
-          // .1 버전이 있으면 원본은 완전히 건너뛰고 .1 버전만 추가
-          // .1 버전이 이미 validItems에 있는지 확인
-          const alreadyExists = validItems.some(vi => vi.itemNo === itemNoWithDot1);
-          if (alreadyExists) {
-            return;
-          }
-          
-          // .1 버전 항목 추가
-          const processedItem = {
-            phd: parseFloat(item.phd).toString(),
-            width: item.width,
-            length: item.length,
-            itemNo: itemNoWithDot1, // .1 버전으로 설정
-            w: item.w || '',
-            tfkg: item.tfkg || '',
-            producedkg: item.producedkg || ''
-          };
-          
-          if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
-            processedItem.deliveredkg = item.deliveredkg;
-          }
-          
-          validItems.push(processedItem);
+        if (itemNo) {
+          // itemNo가 있는 경우
+          itemsWithItemNo.push(item);
         } else {
-          // .1 버전이 없으면 원본 항목 업데이트
-          // 중복 제거: 같은 itemNo가 이미 있으면 건너뛰기
-          const alreadyExists = validItems.some(vi => vi.itemNo === itemNo);
+          // itemNo가 없는 경우
+          itemsWithoutItemNo.push(item);
+        }
+      });
+      
+      // itemNo가 있는 항목들 처리 (.1 버전 확인)
+      if (orderData) {
+        itemsWithItemNo.forEach((item) => {
+          const itemNo = item.no || '';
+          const itemNoWithDot1 = itemNo + '.1';
+          const hasDot1Version = orderData.some(orderItem => orderItem.itemNo === itemNoWithDot1);
+          
+          let targetItemNo;
+          if (hasDot1Version) {
+            // .1 버전이 있으면 .1에 업데이트
+            targetItemNo = itemNoWithDot1;
+          } else {
+            // .1 버전이 없으면 원래 itemNo에 업데이트
+            targetItemNo = itemNo;
+          }
+          
+          // 중복 제거
+          const alreadyExists = validItems.some(vi => vi.itemNo === targetItemNo);
           if (alreadyExists) {
             return;
           }
           
+          const processedItem = {
+            phd: parseFloat(item.phd).toString(),
+            width: item.width,
+            length: item.length,
+            itemNo: targetItemNo,
+            w: item.w || '',
+            tfkg: item.tfkg || '',
+            producedkg: item.producedkg || ''
+          };
+          
+          if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
+            processedItem.deliveredkg = item.deliveredkg;
+          }
+          
+          validItems.push(processedItem);
+        });
+      } else {
+        // orderData가 없으면 itemNo 그대로 사용
+        itemsWithItemNo.forEach((item) => {
+          const itemNo = item.no || '';
           const processedItem = {
             phd: parseFloat(item.phd).toString(),
             width: item.width,
@@ -1135,7 +1132,25 @@ producedkg: ${data.tfkg}`;
           }
           
           validItems.push(processedItem);
+        });
+      }
+      
+      // itemNo가 없는 항목들 처리 (phdWidthLength로 찾기)
+      itemsWithoutItemNo.forEach((item) => {
+        const processedItem = {
+          phd: parseFloat(item.phd).toString(),
+          width: item.width,
+          length: item.length,
+          w: item.w || '',
+          tfkg: item.tfkg || '',
+          producedkg: item.producedkg || ''
+        };
+        
+        if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
+          processedItem.deliveredkg = item.deliveredkg;
         }
+        
+        validItems.push(processedItem);
       });
 
       const invalidItemsCount = items.length - validItems.length;
@@ -1159,49 +1174,65 @@ producedkg: ${data.tfkg}`;
       console.log(`🔍 itemUpdateFields: ${itemUpdateFields.join(', ')}`);
       console.log(`🔍 deliveredkg 포함 아이템: ${hasDeliveredkg ? '있음' : '없음'}`);
 
-      // 4. 서버에 직접 배치 요청 (orderNo와 itemNo로만 아이템 찾기)
-      const saveResponse = await fetch('/api/updateOrder', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          searchOrderBy: 'orderNo',
-          orderNo: orderNo,
-          searchMethod: 'itemNo', // orderNo와 itemNo로만 찾기
-          updateFields: ['tfNo'],
-          tfNo: tfNo,
-          itemUpdateFields: itemUpdateFields,
-          items: validItems
-        })
-      });
-
-      let updatedItems = 0;
-      let skippedItems = 0;
-
-      if (!saveResponse.ok) {
-        // 404 에러가 발생해도 일부 업데이트가 성공했을 수 있음
-        if (saveResponse.status === 404) {
-          updatedItems = 0;
-          skippedItems = validItems.length;
-        } else {
+      // 4. itemNo가 있는 항목과 없는 항목 분리
+      const itemsWithItemNoForUpdate = validItems.filter(item => item.itemNo);
+      const itemsWithoutItemNoForUpdate = validItems.filter(item => !item.itemNo);
+      
+      let totalUpdated = 0;
+      let totalSkipped = 0;
+      
+      // itemNo가 있는 항목들은 itemNo로 찾기
+      if (itemsWithItemNoForUpdate.length > 0) {
+        const saveResponse = await fetch('/api/updateOrder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            searchOrderBy: 'orderNo',
+            orderNo: orderNo,
+            searchMethod: 'itemNo',
+            updateFields: ['tfNo'],
+            tfNo: tfNo,
+            itemUpdateFields: itemUpdateFields,
+            items: itemsWithItemNoForUpdate
+          })
+        });
+        
+        if (saveResponse.ok) {
+          const saveResult = await saveResponse.json();
+          totalUpdated += saveResult.updatedItems || 0;
+          totalSkipped += saveResult.skippedItems || 0;
+        } else if (saveResponse.status !== 404) {
           const errorText = await saveResponse.text();
-          let errorMessage = `HTTP error! status: ${saveResponse.status}`;
-          
-          if (errorText) {
-            try {
-              const errorData = JSON.parse(errorText);
-              errorMessage += `, message: ${errorData.message || errorData.error || errorText}`;
-            } catch {
-              errorMessage += `, message: ${errorText}`;
-            }
-          }
-          
-          throw new Error(errorMessage);
+          throw new Error(`HTTP error! status: ${saveResponse.status}, message: ${errorText}`);
         }
-      } else {
-        const saveResult = await saveResponse.json();
-        updatedItems = saveResult.updatedItems || 0;
-        skippedItems = saveResult.skippedItems || 0;
       }
+      
+      // itemNo가 없는 항목들은 phdWidthLength로 찾기
+      if (itemsWithoutItemNoForUpdate.length > 0) {
+        const saveResponse = await fetch('/api/updateOrder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            searchOrderBy: 'orderNo',
+            orderNo: orderNo,
+            searchMethod: 'phdWidthLength',
+            updateFields: ['tfNo'],
+            tfNo: tfNo,
+            itemUpdateFields: itemUpdateFields,
+            items: itemsWithoutItemNoForUpdate
+          })
+        });
+        
+        if (saveResponse.ok) {
+          const saveResult = await saveResponse.json();
+          totalUpdated += saveResult.updatedItems || 0;
+          totalSkipped += saveResult.skippedItems || 0;
+        } else if (saveResponse.status !== 404) {
+          const errorText = await saveResponse.text();
+          throw new Error(`HTTP error! status: ${saveResponse.status}, message: ${errorText}`);
+        }
+      }
+      
 
       console.log(`✅ 주문 ${orderNo} 처리 완료: 업데이트 ${updatedItems}개, 스킵 ${skippedItems}개, 무효 ${invalidItemsCount}개`);
 
