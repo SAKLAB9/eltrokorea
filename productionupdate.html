@@ -983,34 +983,25 @@ producedkg: ${data.tfkg}`;
       // 3. 각 주문별로 직접 서버에 배치 요청 (전체 주문 데이터 로드 제거)
       let totalUpdated = 0;
       let totalSkipped = 0;
-      let totalInvalid = 0;
-      let totalUpdatedByItemNo = 0;
-      let totalUpdatedByPhdWidthLength = 0;
+      let totalItemNoAdded = 0;
       
       for (const [orderNo, items] of Object.entries(orderGroups)) {
         
         const result = await processOIPOrderOptimized(orderNo, items);
         totalUpdated += result.updatedItems;
         totalSkipped += result.skippedItems;
-        totalInvalid += result.invalidItems;
-        totalUpdatedByItemNo += result.updatedByItemNo || 0;
-        totalUpdatedByPhdWidthLength += result.updatedByPhdWidthLength || 0;
+        totalItemNoAdded += result.itemNoAddedCount || 0;
       }
       
       // 4. 결과 메시지 표시
-      let message = `OIP 모드 Export 완료!\n\n업데이트된 아이템: ${totalUpdated}개`;
+      let message = `OIP 모드 Export 완료!\n\n업데이트 총 ${totalUpdated}개`;
       
-      if (totalUpdatedByItemNo > 0 || totalUpdatedByPhdWidthLength > 0) {
-        message += `\n  - itemNo로 찾은 항목: ${totalUpdatedByItemNo}개`;
-        message += `\n  - phdWidthLength로 찾은 항목: ${totalUpdatedByPhdWidthLength}개`;
+      if (totalItemNoAdded > 0) {
+        message += `\n(itemNo 업데이트 ${totalItemNoAdded}개)`;
       }
       
       if (totalSkipped > 0) {
-        message += `\n\n매칭되지 않은 아이템: ${totalSkipped}개`;
-      }
-      
-      if (totalInvalid > 0) {
-        message += `\n유효하지 않은 아이템: ${totalInvalid}개 (PHD/Width/Length 누락)`;
+        message += `\n매칭 실패 ${totalSkipped}개`;
       }
       
       alert(message);
@@ -1178,8 +1169,7 @@ producedkg: ${data.tfkg}`;
       
       let totalUpdated = 0;
       let totalSkipped = 0;
-      let updatedByItemNo = 0;
-      let updatedByPhdWidthLength = 0;
+      let itemNoAddedCount = 0; // itemNo가 없어서 phdWidthLength로 찾아서 itemNo를 추가한 개수
       
       // itemNo가 있는 항목들은 itemNo로 찾기
       let failedItemsForRetry = [];
@@ -1202,7 +1192,6 @@ producedkg: ${data.tfkg}`;
           const saveResult = await saveResponse.json();
           console.log('[디버깅] itemNo로 업데이트 결과:', saveResult);
           const itemNoUpdated = saveResult.updatedItems || 0;
-          updatedByItemNo += itemNoUpdated;
           totalUpdated += itemNoUpdated;
           totalSkipped += saveResult.skippedItems || 0;
           if (saveResult.skippedItems > 0 && saveResult.skippedItemsDetails) {
@@ -1247,7 +1236,7 @@ producedkg: ${data.tfkg}`;
           const retryResult = await retryResponse.json();
           console.log('[디버깅] phdWidthLength 재시도 결과:', retryResult);
           const retryUpdated = retryResult.updatedItems || 0;
-          updatedByPhdWidthLength += retryUpdated;
+          itemNoAddedCount += retryUpdated; // itemNo가 없어서 phdWidthLength로 찾아서 itemNo 추가
           totalUpdated += retryUpdated;
           // 재시도에서도 실패한 항목은 최종 skippedItems에 포함
           totalSkipped = totalSkipped - failedItemsForRetry.length + (retryResult.skippedItems || 0);
@@ -1290,7 +1279,7 @@ producedkg: ${data.tfkg}`;
           const saveResult = await saveResponse.json();
           console.log('[디버깅] 서버 응답 결과:', saveResult);
           const phdWidthLengthUpdated = saveResult.updatedItems || 0;
-          updatedByPhdWidthLength += phdWidthLengthUpdated;
+          itemNoAddedCount += phdWidthLengthUpdated; // itemNo가 없어서 phdWidthLength로 찾아서 itemNo 추가
           totalUpdated += phdWidthLengthUpdated;
           totalSkipped += saveResult.skippedItems || 0;
         } else if (saveResponse.status !== 404) {
@@ -1311,8 +1300,7 @@ producedkg: ${data.tfkg}`;
         updatedItems: updatedItems,
         skippedItems: skippedItems,
         invalidItems: invalidItemsCount,
-        updatedByItemNo: updatedByItemNo,
-        updatedByPhdWidthLength: updatedByPhdWidthLength
+        itemNoAddedCount: itemNoAddedCount
       };
 
     } catch (error) {
