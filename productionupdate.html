@@ -1234,8 +1234,11 @@ producedkg: ${data.tfkg}`;
           const retryResult = await retryResponse.json();
           console.log('[디버깅] phdWidthLength 재시도 결과:', retryResult);
           totalUpdated += retryResult.updatedItems || 0;
-          // 재시도에서도 실패한 항목은 최종 skippedItems에 포함
-          totalSkipped = totalSkipped - failedItemsForRetry.length + (retryResult.skippedItems || 0);
+          // 재시도 성공한 항목은 totalSkipped에서 제외, 실패한 항목만 포함
+          const retrySuccessCount = retryResult.updatedItems || 0;
+          const retryFailedCount = retryResult.skippedItems || 0;
+          totalSkipped = totalSkipped - retrySuccessCount + retryFailedCount;
+          console.log('[디버깅] 재시도 후 totalSkipped:', totalSkipped, '(성공:', retrySuccessCount, ', 실패:', retryFailedCount, ')');
         } else if (retryResponse.status !== 404) {
           const errorText = await retryResponse.text();
           console.log('[디버깅] phdWidthLength 재시도 에러:', errorText);
