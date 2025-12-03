@@ -1171,6 +1171,7 @@ producedkg: ${data.tfkg}`;
       let totalSkipped = 0;
       
       // itemNo가 있는 항목들은 itemNo로 찾기
+      const failedItemsForRetry = [];
       if (itemsWithItemNoForUpdate.length > 0) {
         const saveResponse = await fetch('/api/updateOrder', {
           method: 'POST',
@@ -1190,7 +1191,7 @@ producedkg: ${data.tfkg}`;
           const saveResult = await saveResponse.json();
           console.log('[디버깅] itemNo로 업데이트 결과:', saveResult);
           totalUpdated += saveResult.updatedItems || 0;
-          totalSkipped += saveResult.skippedItems || 0;
+          
           if (saveResult.skippedItems > 0 && saveResult.skippedItemsDetails) {
             console.log('[디버깅] itemNo로 매칭 안된 항목 상세:', saveResult.skippedItemsDetails);
             saveResult.skippedItemsDetails.forEach((detail, index) => {
@@ -1200,11 +1201,47 @@ producedkg: ${data.tfkg}`;
                 item: detail.item,
                 availableItemNos: detail.availableItemNos
               });
+              // itemNo로 매칭 실패한 항목을 phdWidthLength로 재시도하기 위해 수집
+              // itemNo 필드를 제거하고 phdWidthLength로 검색할 수 있도록 함
+              const retryItem = { ...detail.item };
+              delete retryItem.itemNo; // itemNo 필드 제거
+              failedItemsForRetry.push(retryItem);
             });
           }
         } else if (saveResponse.status !== 404) {
           const errorText = await saveResponse.text();
           throw new Error(`HTTP error! status: ${saveResponse.status}, message: ${errorText}`);
+        }
+      }
+      
+      // itemNo로 매칭 실패한 항목들을 phdWidthLength로 재시도
+      if (failedItemsForRetry.length > 0) {
+        console.log('[디버깅] itemNo 매칭 실패 항목을 phdWidthLength로 재시도:', failedItemsForRetry.length, '개');
+        const retryResponse = await fetch('/api/updateOrder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            searchOrderBy: 'orderNo',
+            orderNo: orderNo,
+            searchMethod: 'phdWidthLength',
+            updateFields: ['tfNo'],
+            tfNo: tfNo,
+            itemUpdateFields: itemUpdateFields,
+            items: failedItemsForRetry
+          })
+        });
+        
+        if (retryResponse.ok) {
+          const retryResult = await retryResponse.json();
+          console.log('[디버깅] phdWidthLength 재시도 결과:', retryResult);
+          totalUpdated += retryResult.updatedItems || 0;
+          // 재시도에서도 실패한 항목만 skippedItems에 추가
+          totalSkipped += (retryResult.skippedItems || 0);
+        } else if (retryResponse.status !== 404) {
+          const errorText = await retryResponse.text();
+          console.log('[디버깅] phdWidthLength 재시도 에러:', errorText);
+          // 재시도 요청 자체가 실패하면 모든 항목이 실패한 것으로 간주
+          totalSkipped += failedItemsForRetry.length;
         }
       }
       
