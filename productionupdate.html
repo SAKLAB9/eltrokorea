@@ -1065,31 +1065,72 @@ producedkg: ${data.tfkg}`;
       });
       
       // itemNo가 있는 항목들 처리 (.1 버전 확인)
-      itemsWithItemNo.forEach((item) => {
-        const itemNo = item.no || '';
-        let targetItemNo = itemNo;
-        
-        // orderData가 있으면 .1 버전 확인
-        if (orderData) {
+      if (orderData) {
+        itemsWithItemNo.forEach((item) => {
+          const itemNo = item.no || '';
           const itemNoWithDot1 = itemNo + '.1';
           const hasDot1Version = orderData.some(orderItem => orderItem.itemNo === itemNoWithDot1);
+          
+          let targetItemNo;
           if (hasDot1Version) {
             // .1 버전이 있으면 .1에 업데이트
             targetItemNo = itemNoWithDot1;
+          } else {
+            // .1 버전이 없으면 원래 itemNo에 업데이트
+            targetItemNo = itemNo;
           }
-        }
-        
-        // 중복 제거
-        const alreadyExists = validItems.some(vi => vi.itemNo === targetItemNo);
-        if (alreadyExists) {
-          return;
-        }
-        
+          
+          // 중복 제거
+          const alreadyExists = validItems.some(vi => vi.itemNo === targetItemNo);
+          if (alreadyExists) {
+            return;
+          }
+          
+          const processedItem = {
+            phd: parseFloat(item.phd).toString(),
+            width: item.width,
+            length: item.length,
+            itemNo: targetItemNo,
+            w: item.w || '',
+            tfkg: item.tfkg || '',
+            producedkg: item.producedkg || ''
+          };
+          
+          if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
+            processedItem.deliveredkg = item.deliveredkg;
+          }
+          
+          validItems.push(processedItem);
+        });
+      } else {
+        // orderData가 없으면 itemNo 그대로 사용
+        itemsWithItemNo.forEach((item) => {
+          const itemNo = item.no || '';
+          const processedItem = {
+            phd: parseFloat(item.phd).toString(),
+            width: item.width,
+            length: item.length,
+            itemNo: itemNo,
+            w: item.w || '',
+            tfkg: item.tfkg || '',
+            producedkg: item.producedkg || ''
+          };
+          
+          if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
+            processedItem.deliveredkg = item.deliveredkg;
+          }
+          
+          validItems.push(processedItem);
+        });
+      }
+      
+      // itemNo가 없는 항목들 처리 (phdWidthLength로 찾기)
+      itemsWithoutItemNo.forEach((item) => {
+        console.log('[디버깅] itemNo 없는 항목 처리:', item);
         const processedItem = {
           phd: parseFloat(item.phd).toString(),
           width: item.width,
           length: item.length,
-          itemNo: targetItemNo,
           w: item.w || '',
           tfkg: item.tfkg || '',
           producedkg: item.producedkg || ''
@@ -1099,46 +1140,7 @@ producedkg: ${data.tfkg}`;
           processedItem.deliveredkg = item.deliveredkg;
         }
         
-        validItems.push(processedItem);
-      });
-      
-      // itemNo가 없는 항목들 처리 (orderData에서 phdWidthLength로 찾아서 itemNo 설정)
-      itemsWithoutItemNo.forEach((item) => {
-        const itemPhd = parseFloat(item.phd).toString();
-        const itemWidth = item.width;
-        const itemLength = item.length;
-        
-        // orderData에서 phdWidthLength로 매칭되는 항목 찾기
-        let matchedItemNo = null;
-        if (orderData) {
-          const matchedItem = orderData.find(orderItem => 
-            orderItem.phd === itemPhd && 
-            orderItem.width === itemWidth && 
-            orderItem.length === itemLength
-          );
-          if (matchedItem && matchedItem.itemNo) {
-            matchedItemNo = matchedItem.itemNo;
-          }
-        }
-        
-        const processedItem = {
-          phd: itemPhd,
-          width: itemWidth,
-          length: itemLength,
-          w: item.w || '',
-          tfkg: item.tfkg || '',
-          producedkg: item.producedkg || ''
-        };
-        
-        // 매칭된 itemNo가 있으면 포함
-        if (matchedItemNo) {
-          processedItem.itemNo = matchedItemNo;
-        }
-        
-        if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
-          processedItem.deliveredkg = item.deliveredkg;
-        }
-        
+        console.log('[디버깅] processedItem (itemNo 없음):', processedItem);
         validItems.push(processedItem);
       });
 
@@ -1162,6 +1164,12 @@ producedkg: ${data.tfkg}`;
       // 4. itemNo가 있는 항목과 없는 항목 분리
       const itemsWithItemNoForUpdate = validItems.filter(item => item.itemNo);
       const itemsWithoutItemNoForUpdate = validItems.filter(item => !item.itemNo);
+      
+      console.log('[디버깅] itemsWithItemNoForUpdate 개수:', itemsWithItemNoForUpdate.length);
+      console.log('[디버깅] itemsWithoutItemNoForUpdate 개수:', itemsWithoutItemNoForUpdate.length);
+      if (itemsWithoutItemNoForUpdate.length > 0) {
+        console.log('[디버깅] itemNo 없는 항목들:', itemsWithoutItemNoForUpdate);
+      }
       
       let totalUpdated = 0;
       let totalSkipped = 0;
@@ -1194,6 +1202,17 @@ producedkg: ${data.tfkg}`;
       
       // itemNo가 없는 항목들은 phdWidthLength로 찾기
       if (itemsWithoutItemNoForUpdate.length > 0) {
+        console.log('[디버깅] phdWidthLength로 업데이트 요청 시작');
+        console.log('[디버깅] 요청 데이터:', {
+          searchOrderBy: 'orderNo',
+          orderNo: orderNo,
+          searchMethod: 'phdWidthLength',
+          updateFields: ['tfNo'],
+          tfNo: tfNo,
+          itemUpdateFields: itemUpdateFields,
+          items: itemsWithoutItemNoForUpdate
+        });
+        
         const saveResponse = await fetch('/api/updateOrder', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1208,13 +1227,19 @@ producedkg: ${data.tfkg}`;
           })
         });
         
+        console.log('[디버깅] 서버 응답 상태:', saveResponse.status);
+        
         if (saveResponse.ok) {
           const saveResult = await saveResponse.json();
+          console.log('[디버깅] 서버 응답 결과:', saveResult);
           totalUpdated += saveResult.updatedItems || 0;
           totalSkipped += saveResult.skippedItems || 0;
         } else if (saveResponse.status !== 404) {
           const errorText = await saveResponse.text();
+          console.log('[디버깅] 서버 에러 응답:', errorText);
           throw new Error(`HTTP error! status: ${saveResponse.status}, message: ${errorText}`);
+        } else {
+          console.log('[디버깅] 404 에러 - 주문을 찾을 수 없음');
         }
       }
       
