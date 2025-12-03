@@ -1124,7 +1124,7 @@ producedkg: ${data.tfkg}`;
         });
       }
       
-      // itemNo가 없는 항목들 처리 (phdWidthLength로 찾기)
+      // itemNo가 없는 항목들 처리 (phdWidthLength로 찾기, itemNo 필드는 포함하지 않음)
       itemsWithoutItemNo.forEach((item) => {
         const processedItem = {
           phd: parseFloat(item.phd).toString(),
@@ -1134,6 +1134,8 @@ producedkg: ${data.tfkg}`;
           tfkg: item.tfkg || '',
           producedkg: item.producedkg || ''
         };
+        
+        // itemNo 필드는 포함하지 않음 (phdWidthLength로 찾은 항목의 기존 itemNo 유지)
         
         if (item.deliveredkg && item.deliveredkg !== '' && item.deliveredkg !== '0' && item.deliveredkg !== '0.0') {
           processedItem.deliveredkg = item.deliveredkg;
@@ -1151,13 +1153,8 @@ producedkg: ${data.tfkg}`;
       // 2. tfNo 추출 (첫 번째 아이템의 tfno 사용)
       const tfNo = items[0].tfno;
 
-      // 3. deliveredkg가 포함된 아이템이 있는지 확인하여 itemUpdateFields 동적 설정
+      // 3. deliveredkg가 포함된 아이템이 있는지 확인
       const hasDeliveredkg = validItems.some(item => item.deliveredkg !== undefined);
-      const itemUpdateFields = ['itemNo', 'w', 'tfkg', 'producedkg'];
-      if (hasDeliveredkg) {
-        itemUpdateFields.push('deliveredkg');
-      }
-      
 
       // 4. itemNo가 있는 항목과 없는 항목 분리
       const itemsWithItemNoForUpdate = validItems.filter(item => item.itemNo);
@@ -1168,6 +1165,11 @@ producedkg: ${data.tfkg}`;
       
       // itemNo가 있는 항목들은 itemNo로 찾기
       if (itemsWithItemNoForUpdate.length > 0) {
+        const itemUpdateFields = ['itemNo', 'w', 'tfkg', 'producedkg'];
+        if (hasDeliveredkg) {
+          itemUpdateFields.push('deliveredkg');
+        }
+        
         const saveResponse = await fetch('/api/updateOrder', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1192,8 +1194,14 @@ producedkg: ${data.tfkg}`;
         }
       }
       
-      // itemNo가 없는 항목들은 phdWidthLength로 찾기
+      // itemNo가 없는 항목들은 phdWidthLength로 찾기 (itemNo는 업데이트하지 않음)
       if (itemsWithoutItemNoForUpdate.length > 0) {
+        // itemNo 필드는 제외하고 나머지만 업데이트
+        const itemUpdateFields = ['w', 'tfkg', 'producedkg'];
+        if (hasDeliveredkg) {
+          itemUpdateFields.push('deliveredkg');
+        }
+        
         const saveResponse = await fetch('/api/updateOrder', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
