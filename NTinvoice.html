@@ -854,20 +854,31 @@
           '#totalAmountInput'
         ].map(selector => document.querySelector(selector));
         
-        // p/idate와 p/idate2 수집 (중복 제거)
-        const pIdateSet = new Set();
+        // p/idate와 p/idate2 수집 (날짜와 출처 정보 저장)
+        const pIdateList = []; // [{ date: string, source: 'p/idate' | 'p/idate2', item: {} }]
         allItems.forEach(item => {
           if (item['p/idate'] && item['p/idate'].trim()) {
-            pIdateSet.add(item['p/idate']);
+            pIdateList.push({ date: item['p/idate'], source: 'p/idate', item: item });
           }
           if (item['p/idate2'] && item['p/idate2'].trim()) {
-            pIdateSet.add(item['p/idate2']);
+            pIdateList.push({ date: item['p/idate2'], source: 'p/idate2', item: item });
+          }
+        });
+        
+        // 중복 제거 (같은 날짜와 source 조합은 하나만)
+        const uniquePIdates = [];
+        const seen = new Set();
+        pIdateList.forEach(entry => {
+          const key = `${entry.date}_${entry.source}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            uniquePIdates.push(entry);
           }
         });
         
         // 드롭다운 업데이트
         if (pIdateSelect) {
-          const sortedPIdates = Array.from(pIdateSet).sort((a, b) => {
+          const sortedPIdates = uniquePIdates.sort((a, b) => {
             // 날짜 형식: DD.MM.YYYY
             const parseDate = (dateStr) => {
               const match = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
@@ -875,22 +886,51 @@
               const [, day, month, year] = match;
               return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
             };
-            const dateA = parseDate(a);
-            const dateB = parseDate(b);
+            const dateA = parseDate(a.date);
+            const dateB = parseDate(b.date);
             if (!dateA || !dateB) return 0;
             return dateB.getTime() - dateA.getTime(); // 최신순
           });
           
           pIdateSelect.innerHTML = '<option value="">Choose</option>' + 
-            sortedPIdates.map(date => `<option value="${date}">${date}</option>`).join('');
+            sortedPIdates.map(entry => {
+              const label = entry.source === 'p/idate2' ? `${entry.date} (p/idate2)` : entry.date;
+              return `<option value="${entry.date}" data-source="${entry.source}">${label}</option>`;
+            }).join('');
           
-          // 첫 번째 날짜를 기본 선택
+          // 첫 번째 날짜를 기본 선택하고 swiftdate 로드
           if (sortedPIdates.length > 0) {
-            pIdateSelect.value = sortedPIdates[0];
+            const firstEntry = sortedPIdates[0];
+            pIdateSelect.value = firstEntry.date;
+            if (swiftDateInput) {
+              if (firstEntry.source === 'p/idate2') {
+                swiftDateInput.value = firstEntry.item.swiftdate2 || '';
+              } else {
+                swiftDateInput.value = firstEntry.item.swiftdate || '';
+              }
+            }
           }
+          
+          // p/idate 선택 변경 시 swiftdate 업데이트
+          pIdateSelect.onchange = function() {
+            const selectedDate = this.value;
+            if (selectedDate && swiftDateInput) {
+              const selectedOption = this.options[this.selectedIndex];
+              const source = selectedOption.getAttribute('data-source');
+              const entry = sortedPIdates.find(e => e.date === selectedDate && e.source === source);
+              if (entry) {
+                if (entry.source === 'p/idate2') {
+                  swiftDateInput.value = entry.item.swiftdate2 || '';
+                } else {
+                  swiftDateInput.value = entry.item.swiftdate || '';
+                }
+              }
+            } else if (swiftDateInput) {
+              swiftDateInput.value = '';
+            }
+          };
         }
         
-        if (swiftDateInput) swiftDateInput.value = firstItem.swiftdate || '';
         if (airInput) airInput.value = selectedDeliveryNo.toUpperCase().includes('AIR') ? '4000' : '';
         
         // addprice 저장 (통관 열 4행에 표시되는 addprice 값 사용)
