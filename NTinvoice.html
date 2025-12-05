@@ -1142,8 +1142,6 @@
         }
         
         const itemRows = getItemRows();
-        let foundCount = 0;
-        let notFoundPhds = [];
         
         itemRows.forEach(row => {
           const productCell = row.querySelector('td:first-child input');
@@ -1163,21 +1161,12 @@
           if (priceItem) {
             unitPriceCell.value = priceItem.price;
             calculateRowAmount(row);
-            foundCount++;
-          } else {
-            notFoundPhds.push(phdValue);
           }
         });
-        
-        if (notFoundPhds.length > 0) {
-          console.warn(`[Price1] ${year}년 ${monthKey}월에 다음 PHD 값의 가격을 찾을 수 없습니다:`, notFoundPhds);
-          console.warn(`[Price1] 사용 가능한 PHD 값:`, priceArray.map(item => item.phd));
-        }
         
         updateTotalRow();
         
       } catch (error) {
-        console.error('[Price1] 오류:', error);
         alert('가격 데이터를 로드하는 중 오류가 발생했습니다.');
       }
     });
