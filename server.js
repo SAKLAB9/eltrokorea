@@ -1,4 +1,7 @@
 // server.js
+// 환경 변수 로드 (가장 먼저 실행)
+require('dotenv').config();
+
 const express = require("express");
 // const { MongoClient } = require("mongodb"); // 추후 MongoDB 사용 시
 const fs = require("fs");
@@ -48,12 +51,12 @@ app.use(session({
   proxy: isProduction // Railway 프록시 사용
 }));
 
-// 비밀번호 설정
+// 비밀번호 설정 (환경 변수에서 로드)
 const passwords = {
-  "EK": "eltrokorea9",
-  "TF": "treofan1",
-  "SM": "sungmoon2",
-  "NT": "nuintek3"
+  "EK": process.env.PASSWORD_EK || "eltrokorea9",
+  "TF": process.env.PASSWORD_TF || "treofan1",
+  "SM": process.env.PASSWORD_SM || "sungmoon2",
+  "NT": process.env.PASSWORD_NT || "nuintek3"
 };
 
 // 인증 미들웨어
