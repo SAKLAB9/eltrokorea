@@ -416,11 +416,9 @@
       text-align: center;
     }
     
-    /* 카테고리 3의 숫자 컬럼들 오른쪽 정렬 (3열, 5열, 6열) */
+    /* 카테고리 3의 숫자 컬럼들 오른쪽 정렬 (3열, 6열) - 5열은 가운데 정렬 */
     #category3TableBody td:nth-child(3),
     #category3TableBody td:nth-child(3) input,
-    #category3TableBody td:nth-child(5),
-    #category3TableBody td:nth-child(5) input,
     #category3TableBody td:nth-child(6),
     #category3TableBody td:nth-child(6) input {
       text-align: right;
@@ -2021,14 +2019,26 @@
       
       // 원본 문자열에 소수점이 있는지 확인 (입력 중일 때 소수점 유지)
       const originalString = String(amount);
-      const hasDecimalPoint = originalString.includes('.');
+      const cleanedString = originalString.replace(/,/g, ''); // 콤마 제거
+      
+      // "-"만 입력된 경우 그대로 반환 (입력 중 상태 유지)
+      if (cleanedString === '-') {
+        return '-';
+      }
+      
+      const hasDecimalPoint = cleanedString.includes('.');
       
       // 소수점이 있으면 원본 문자열을 그대로 반환 (콤마만 제거)
       if (hasDecimalPoint) {
-        return originalString.replace(/,/g, '');
+        return cleanedString;
       }
       
-      const num = Number(amount);
+      const num = Number(cleanedString);
+      
+      // NaN인 경우 (예: "-"만 입력 후 숫자 입력 중) 원본 문자열 반환
+      if (isNaN(num)) {
+        return cleanedString;
+      }
       
       // 음수인 경우 음수 기호를 유지하면서 포맷팅
       if (num < 0) {
@@ -2070,6 +2080,18 @@
       
       // 숫자와 마이너스, 소수점만 추출
       let cleanValue = input.value.replace(/[^0-9.-]/g, '');
+      
+      // 마이너스는 맨 앞에만 허용 (중간이나 뒤에 있는 마이너스 제거)
+      const minusCount = (cleanValue.match(/-/g) || []).length;
+      if (minusCount > 0) {
+        if (cleanValue.startsWith('-')) {
+          // 맨 앞에 마이너스가 있으면 중간/뒤의 마이너스만 제거
+          cleanValue = '-' + cleanValue.substring(1).replace(/-/g, '');
+        } else {
+          // 맨 앞에 마이너스가 없으면 모든 마이너스 제거
+          cleanValue = cleanValue.replace(/-/g, '');
+        }
+      }
       
       // 소수점이 여러 개인 경우 첫 번째 소수점만 유지
       const firstDotIndex = cleanValue.indexOf('.');
