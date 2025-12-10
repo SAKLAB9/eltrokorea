@@ -1859,11 +1859,9 @@ Thank you.`;
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        orderId: currentOrder.orderId,
-                        phd: item.phd,
-                        width: item.width,
-                        length: item.length,
-                        adjustment: item.adjustment
+                        orderNo: orderNo,
+                        searchMethod: 'itemNo',
+                        itemNo: itemNo
                     })
                 });
                 
@@ -1873,7 +1871,7 @@ Thank you.`;
                     loadOrderData();
                 } else {
                     const errorData = await response.json();
-                    alert(`삭제 실패: ${errorData.error || '알 수 없는 오류가 발생했습니다.'}`);
+                    alert(`삭제 실패: ${errorData.message || errorData.error || '알 수 없는 오류가 발생했습니다.'}`);
                 }
             } catch (error) {
                 console.error('삭제 중 오류:', error);
