@@ -1272,14 +1272,40 @@ producedkg: ${data.tfkg}`;
         return;
       }
       
-      // 1. 데이터 검증 및 정리
+      // 0. orderData.json에서 해당 orderNo의 모든 아이템 로드하여 .1 버전 확인
+      let orderData = null;
+      try {
+        const allOrdersResponse = await fetch('/api/orders');
+        if (allOrdersResponse.ok) {
+          const allOrders = await allOrdersResponse.json();
+          const order = allOrders.find(o => o.orderNo === orderno);
+          if (order && order.items) {
+            orderData = order.items;
+          }
+        }
+      } catch (error) {
+        console.error('주문 데이터 로드 실패:', error);
+      }
+      
+      // 1. .1 버전 확인 및 targetItemNo 결정
+      let targetItemNo = itemno;
+      if (orderData) {
+        const itemNoWithDot1 = itemno + '.1';
+        const hasDot1Version = orderData.some(orderItem => orderItem.itemNo === itemNoWithDot1);
+        if (hasDot1Version) {
+          // .1 버전이 있으면 .1에 업데이트
+          targetItemNo = itemNoWithDot1;
+        }
+      }
+      
+      // 2. 데이터 검증 및 정리
       const validItem = {
-        itemNo: itemno,
+        itemNo: targetItemNo,
         producedkg: data.producedkg || ''
       };
       
       
-      // 2. 서버에 직접 업데이트 요청 (서버에서 주문/아이템 찾기 및 매칭 처리)
+      // 3. 서버에 직접 업데이트 요청 (서버에서 주문/아이템 찾기 및 매칭 처리)
       const requestData = {
         searchOrderBy: 'orderNo',
         orderNo: orderno,
