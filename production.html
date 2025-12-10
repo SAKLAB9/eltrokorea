@@ -28,7 +28,7 @@
     .page {
       max-width: 1200px;
       margin: 40px auto;
-      padding: 20px;
+      padding: 20px 20px 20px 30px;
       background: #fff;
       border: 1px solid #ccc;
       box-sizing: border-box;
@@ -216,10 +216,11 @@
       overflow: hidden; 
     }
     
+    /* No 열 - 4번째 열 (헤더 포함) */
     #orderTable th:nth-child(4), #orderTable td:nth-child(4) { 
-      width: 40px; 
-      max-width: 40px; 
-      min-width: 40px; 
+      width: 50px; 
+      max-width: 50px; 
+      min-width: 50px; 
       text-align: center; 
       white-space: nowrap; 
       overflow: hidden; 
@@ -290,10 +291,11 @@
       min-width: 70px !important; 
     }
     
+    /* TF KG 열 - 8번째 열 (헤더 포함) */
     #orderTable th:nth-child(8), #orderTable td:nth-child(8) { 
-      width: 70px; 
-      max-width: 70px; 
-      min-width: 70px; 
+      width: 80px; 
+      max-width: 80px; 
+      min-width: 80px; 
       text-align: center; 
       white-space: nowrap; 
       overflow: hidden; 
@@ -301,9 +303,9 @@
     
     /* ProducedKG 열 - 9번째 열 (헤더 포함) */
     #orderTable th:nth-child(9), #orderTable td:nth-child(9) {
-      width: 70px; 
-      max-width: 70px; 
-      min-width: 70px; 
+      width: 80px; 
+      max-width: 80px; 
+      min-width: 80px; 
       text-align: center; 
       white-space: nowrap; 
       overflow: hidden; 
@@ -311,23 +313,32 @@
     
     /* DeliveredKG 열 - 10번째 열 (헤더 포함) */
     #orderTable th:nth-child(10), #orderTable td:nth-child(10) {
-      width: 70px; 
-      max-width: 70px; 
-      min-width: 70px; 
+      width: 80px; 
+      max-width: 80px; 
+      min-width: 80px; 
       text-align: center; 
       white-space: nowrap; 
       overflow: hidden; 
     }
     
+    /* W 열 - 11번째 열 (헤더 포함) */
     #orderTable th:nth-child(11), #orderTable td:nth-child(11) { 
-      width: 40px; 
-      max-width: 40px; 
-      min-width: 40px; 
+      width: 60px; 
+      max-width: 60px; 
+      min-width: 60px; 
       text-align: center; 
       white-space: nowrap; 
       overflow: hidden; 
     }
     
+    /* W 셀 (rowspan 때문에 열 번호가 달라질 수 있으므로 클래스로 고정) */
+    #orderTable tbody td.w-cell {
+      width: 60px !important; 
+      max-width: 60px !important; 
+      min-width: 60px !important; 
+    }
+    
+    /* 생산 열 - 12번째 열 (헤더 포함) */
     #orderTable th:nth-child(12), #orderTable td:nth-child(12) { 
       width: 60px; 
       max-width: 60px; 
@@ -1227,7 +1238,7 @@
                             <td style="${qtyStyle}">${col6Value}</td>
                             <td>${col7Value}</td>
                             <td>${col8Value}</td>
-                            <td ${weekTooltip}>${col9Value}</td>
+                            <td class="w-cell" ${weekTooltip}>${col9Value}</td>
                             <td>${checkboxValue}</td>
                             <td>${col11Value}</td>
                             <td>
