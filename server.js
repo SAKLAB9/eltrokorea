@@ -1,7 +1,4 @@
 // server.js
-// 환경 변수 로드 (가장 먼저 실행)
-require('dotenv').config();
-
 const express = require("express");
 // const { MongoClient } = require("mongodb"); // 추후 MongoDB 사용 시
 const fs = require("fs");
@@ -51,12 +48,12 @@ app.use(session({
   proxy: isProduction // Railway 프록시 사용
 }));
 
-// 비밀번호 설정 (환경 변수에서 로드)
+// 비밀번호 설정
 const passwords = {
-  "EK": process.env.PASSWORD_EK || "eltrokorea9",
-  "TF": process.env.PASSWORD_TF || "treofan1",
-  "SM": process.env.PASSWORD_SM || "sungmoon2",
-  "NT": process.env.PASSWORD_NT || "nuintek3"
+  "EK": "eltrokorea9",
+  "TF": "treofan1",
+  "SM": "sungmoon2",
+  "NT": "nuintek3"
 };
 
 // 인증 미들웨어
@@ -917,18 +914,13 @@ app.post("/api/saveOrder", (req, res) => {
 // DELETE /api/deleteItem - 특정 아이템 삭제
 app.delete('/api/deleteItem', (req, res) => {
   try {
-    const { orderId, orderNo, searchMethod, itemNo, phd, width, length, adjustment } = req.body;
+    const { orderId, phd, width, length, adjustment } = req.body;
     
     // 1. 서버 메모리에서 데이터 읽기 (다른 API와 일관성 유지)
     // 전역 orderStore 사용 (서버 시작 시 이미 로드됨)
     
-    // orderId 또는 orderNo로 주문 찾기
-    let existingOrderIndex = -1;
-    if (orderId) {
-      existingOrderIndex = orderStore.findIndex(order => order.orderId === orderId);
-    } else if (orderNo) {
-      existingOrderIndex = orderStore.findIndex(order => order.orderNo === orderNo);
-    }
+    // orderId로 주문 찾기
+    const existingOrderIndex = orderStore.findIndex(order => order.orderId === orderId);
     
     if (existingOrderIndex === -1) {
       return res.status(404).json({ success: false, message: '주문을 찾을 수 없습니다.' });
@@ -936,39 +928,24 @@ app.delete('/api/deleteItem', (req, res) => {
     
     const existingOrder = orderStore[existingOrderIndex];
     
-    // 해당 아이템 찾아서 삭제
+    // 해당 아이템 찾아서 삭제 (phd + width + length + adjustment로 고유 식별)
     const originalLength = existingOrder.items.length;
-    const searchMethodToUse = searchMethod || 'phdWidthLength'; // 기본값은 기존 방식
     
     existingOrder.items = existingOrder.items.filter(item => {
-      if (searchMethodToUse === 'itemNo' && itemNo) {
-        // itemNo로 검색
-        return String(item.itemNo) !== String(itemNo);
-      } else if (searchMethodToUse === 'phdWidthLength' && phd && width && length) {
-        // phd + width + length + adjustment로 검색 (기존 방식)
-        const phdMatch = String(item.phd) === String(phd);
-        const widthMatch = String(item.width) === String(width);
-        const lengthMatch = String(item.length) === String(length);
-        const adjustmentMatch = adjustment !== undefined 
-          ? String(item.adjustment) === String(adjustment)
-          : true; // adjustment가 없으면 무시
-        const isMatch = phdMatch && widthMatch && lengthMatch && adjustmentMatch;
-        return !isMatch;
-      } else {
-        // 검색 방법이 명확하지 않으면 유지
-        return true;
-      }
+      // 데이터 타입을 고려한 비교 (문자열과 숫자 모두 처리)
+      const phdMatch = String(item.phd) === String(phd);
+      const widthMatch = String(item.width) === String(width);
+      const lengthMatch = String(item.length) === String(length);
+      const adjustmentMatch = String(item.adjustment) === String(adjustment);
+      const isMatch = phdMatch && widthMatch && lengthMatch && adjustmentMatch;
+      
+      return !isMatch;
     });
     
     // 아이템이 실제로 삭제되었는지 확인
     const deletedCount = originalLength - existingOrder.items.length;
     if (deletedCount === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        message: '삭제할 아이템을 찾을 수 없습니다.',
-        searchMethod: searchMethodToUse,
-        searchValue: searchMethodToUse === 'itemNo' ? itemNo : `${phd}-${width}-${length}-${adjustment}`
-      });
+      return res.status(404).json({ success: false, message: '삭제할 아이템을 찾을 수 없습니다.' });
     }
     
     // 3. 서버 메모리에서 정렬
@@ -979,7 +956,7 @@ app.delete('/api/deleteItem', (req, res) => {
     
     res.json({ success: true, message: '아이템이 삭제되었습니다.' });
   } catch (error) {
-    res.status(500).json({ success: false, message: '서버 오류', details: error.message });
+    res.status(500).json({ success: false, message: '서버 오류' });
   }
 });
 

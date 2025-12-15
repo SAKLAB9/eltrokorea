@@ -47,13 +47,61 @@
       overflow: visible; /* 넘치는 내용 표시 */
     }
 
+    /* 문서 제목 영역 */
+    .title-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    
     /* 문서 제목 */
     .document-title {
-      text-align: center;
       font-size: 1.8rem;
       font-weight: bold;
-      margin-bottom: 10px;
       color: #333;
+      text-align: center;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+    }
+    
+    /* 결제 박스 스타일 */
+    .approval-box {
+      font-size: 0.7rem; /* 카테고리 1 테이블과 동일 */
+      margin-left: auto;
+      z-index: 1;
+    }
+    
+    .approval-box table {
+      border-collapse: collapse;
+      width: auto;
+    }
+    
+    .approval-box td {
+      border: 1px solid #333;
+      padding: 2px 8px;
+      text-align: center;
+      vertical-align: middle;
+      width: 60px; /* 승인권자 길이에 맞춘 절대값 */
+      min-width: 60px;
+      max-width: 60px;
+    }
+    
+    .approval-box .label-row {
+      height: auto;
+      font-size: 0.7rem; /* 카테고리 1 테이블과 동일 */
+      line-height: 1.2;
+    }
+    
+    .approval-box .label-row td {
+      padding: 2px 8px;
+    }
+    
+    .approval-box .signature-row {
+      height: 40px; /* 도장 찍을 공간 */
     }
 
     /* 하단 버튼 영역 전체 */
@@ -729,8 +777,22 @@
 <body>
   <div class="page-container">
     <div class="page">
-      <!-- 문서 제목 -->
-      <div class="document-title">입출금내역서</div>
+      <!-- 문서 제목 및 결제 박스 -->
+      <div class="title-section">
+        <div class="document-title">입출금내역서</div>
+        <div class="approval-box">
+          <table>
+            <tr class="label-row">
+              <td>작성자</td>
+              <td>승인권자</td>
+            </tr>
+            <tr class="signature-row">
+              <td></td>
+              <td></td>
+            </tr>
+          </table>
+        </div>
+      </div>
       
       <!-- 회사 정보 (ntinvoice.html 스타일) -->
       <div class="company-info">

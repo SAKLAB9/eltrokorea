@@ -644,7 +644,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 14,
@@ -970,7 +970,7 @@
         "invoicedue": "05.11.2025",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/iprice": "106910.98",
         "U/P": "3.01",
         "invoiceprice": "119798.36",
@@ -1014,7 +1014,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       }
     ]
   },
@@ -1189,7 +1189,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 3,
@@ -1213,7 +1213,7 @@
         "deliveredkg": "782.120",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -1488,7 +1488,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 4,
@@ -1512,7 +1512,7 @@
         "deliveredR": "6",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -1561,7 +1561,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 5,
@@ -1595,7 +1595,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 6,
@@ -1619,7 +1619,7 @@
         "deliveredkg": "524.696",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -1668,7 +1668,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 8,
@@ -1692,7 +1692,7 @@
         "deliveredkg": "517.896",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -1731,7 +1731,7 @@
         "deliveredR": "2",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -1780,7 +1780,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 10,
@@ -1804,7 +1804,7 @@
         "deliveredR": "2",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -1853,7 +1853,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 11,
@@ -1877,7 +1877,7 @@
         "deliveredkg": "1046.988",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -1916,7 +1916,7 @@
         "deliveredkg": "781.980",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -1977,7 +1977,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 2,
@@ -2001,7 +2001,7 @@
         "deliveredkg": "1943.572",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -2050,7 +2050,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 4,
@@ -2084,7 +2084,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 5,
@@ -2108,7 +2108,7 @@
         "deliveredkg": "2101.584",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -2147,7 +2147,7 @@
         "deliveredkg": "1535.440",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -2196,7 +2196,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 8,
@@ -2220,7 +2220,7 @@
         "deliveredkg": "2052.376",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -2257,40 +2257,6 @@
         "x": "3x",
         "kg": "2000",
         "quantity": "30",
-        "adjustment": "7",
-        "unitPrice": "13.12",
-        "itemNo": "0001",
-        "w": "36w",
-        "tfkg": "1980",
-        "producedkg": "1933.6",
-        "deliveredkg": "1478.774",
-        "isProductionComplete": false
-      },
-      {
-        "rowNumber": 2,
-        "phd": "3",
-        "width": "620",
-        "length": "39000",
-        "x": "3x",
-        "kg": "2000",
-        "quantity": "30",
-        "adjustment": "7",
-        "unitPrice": "13.12",
-        "itemNo": "0001.1",
-        "w": "36w",
-        "tfkg": "1980.000",
-        "producedkg": "1933.600",
-        "deliveredkg": "0.0",
-        "isProductionComplete": false
-      },
-      {
-        "rowNumber": 2,
-        "phd": "3",
-        "width": "620",
-        "length": "39000",
-        "x": "3x",
-        "kg": "2000",
-        "quantity": "30",
         "adjustment": "30",
         "unitPrice": "13.12",
         "itemNo": "0001",
@@ -2313,7 +2279,26 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025"
+      },
+      {
+        "rowNumber": 2,
+        "phd": "3",
+        "width": "620",
+        "length": "39000",
+        "x": "3x",
+        "kg": "2000",
+        "quantity": "30",
+        "adjustment": "7",
+        "unitPrice": "13.12",
+        "itemNo": "0001.1",
+        "w": "36w",
+        "tfkg": "1980",
+        "producedkg": "1933.6",
+        "deliveredkg": "1478.8",
+        "isProductionComplete": false
       },
       {
         "rowNumber": 3,
@@ -2345,7 +2330,7 @@
         "w": "33w",
         "tfkg": "1571",
         "producedkg": "389.9",
-        "deliveredkg": "389.940",
+        "deliveredkg": "389.9",
         "isProductionComplete": false
       },
       {
@@ -2360,9 +2345,9 @@
         "unitPrice": "6.67",
         "itemNo": "0003.1",
         "w": "33w",
-        "tfkg": "1181.100",
-        "producedkg": "0.000",
-        "deliveredkg": "0.0",
+        "tfkg": "1571",
+        "producedkg": "389.9",
+        "deliveredkg": "389.9",
         "isProductionComplete": false
       },
       {
@@ -2387,7 +2372,7 @@
         "deliveredR": "3",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -2426,7 +2411,7 @@
         "deliveredkg": "1824.805",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -2475,7 +2460,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 8,
@@ -2499,7 +2484,7 @@
         "deliveredkg": "514.096",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -2569,7 +2554,7 @@
         "deliveredkg": "1040.692",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -2618,7 +2603,7 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
         "rowNumber": 13,
@@ -2642,7 +2627,7 @@
         "deliveredkg": "1045.088",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -2672,7 +2657,7 @@
     "tfNo": "71435894",
     "items": [
       {
-        "rowNumber": 2,
+        "rowNumber": 1,
         "phd": "4",
         "width": "620",
         "length": "30000",
@@ -2686,59 +2671,38 @@
         "tfkg": "528",
         "producedkg": "130.2",
         "deliveredkg": "130.176",
-        "isProductionComplete": false
-      },
-      {
-        "rowNumber": 2,
-        "phd": "4",
-        "width": "620",
-        "length": "30000",
-        "x": "3x",
-        "kg": "500",
-        "quantity": "8",
-        "adjustment": "6",
-        "unitPrice": "6.96",
-        "itemNo": "0001.1",
-        "w": "40w",
-        "tfkg": "528.000",
-        "producedkg": "130.200",
-        "deliveredkg": "0.0",
-        "isProductionComplete": false
-      },
-      {
-        "rowNumber": 2,
-        "phd": "4",
-        "width": "620",
-        "length": "30000",
-        "x": "3x",
-        "kg": "500",
-        "quantity": "8",
-        "adjustment": "8",
-        "unitPrice": "6.96",
-        "itemNo": "0001",
-        "w": "40w",
-        "tfkg": "528",
-        "producedkg": "130.2",
         "isProductionComplete": true,
         "deliveryNo": "EK-05",
-        "p/ino": "8993014167",
-        "p/idate": "21.10.2025",
-        "p/iprice": "73805.99",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
         "deliveredR": "2",
-        "deliveredkg": "130.176",
-        "U/P": "3.47",
-        "swiftdate": "28.10.2025",
-        "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
         "eta": "27.01.2026",
-        "invoiceno": "93069096",
-        "invoicedate": "25.11.2025",
-        "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "p/ino": "8993014167",
+        "p/idate": "21.10.2025",
+        "p/iprice": "73805.99",
+        "U/P": "3.47"
       },
       {
-        "rowNumber": 3,
+        "rowNumber": 1,
+        "phd": "4",
+        "width": "620",
+        "length": "30000",
+        "x": "3x",
+        "kg": "500",
+        "quantity": "8",
+        "adjustment": "4",
+        "unitPrice": "6.96",
+        "itemNo": "0001.1",
+        "w": "40w",
+        "tfkg": "528",
+        "producedkg": "130.2",
+        "deliveredkg": "130.2",
+        "isProductionComplete": false
+      },
+      {
+        "rowNumber": 2,
         "phd": "4",
         "width": "620",
         "length": "40000",
@@ -2753,7 +2717,7 @@
         "producedkg": "0.0"
       },
       {
-        "rowNumber": 4,
+        "rowNumber": 3,
         "phd": "4",
         "width": "920",
         "length": "40000",
@@ -2768,7 +2732,7 @@
         "producedkg": "0.0"
       },
       {
-        "rowNumber": 5,
+        "rowNumber": 4,
         "phd": "4.5",
         "width": "620",
         "length": "36400",
@@ -2799,10 +2763,10 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
-        "rowNumber": 6,
+        "rowNumber": 5,
         "phd": "5",
         "width": "620",
         "length": "32400",
@@ -2833,10 +2797,10 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
-        "rowNumber": 7,
+        "rowNumber": 6,
         "phd": "5",
         "width": "850",
         "length": "32400",
@@ -2851,7 +2815,7 @@
         "producedkg": "0.0"
       },
       {
-        "rowNumber": 8,
+        "rowNumber": 7,
         "phd": "5",
         "width": "920",
         "length": "32400",
@@ -2870,7 +2834,7 @@
         "p/idate": "21.10.2025",
         "p/iprice": "73805.99",
         "deliveredR": "7",
-        "deliveredkg": "903.060",
+        "deliveredkg": "903.1",
         "U/P": "3.31",
         "swiftdate": "28.10.2025",
         "swiftamount": "72329.87",
@@ -2882,10 +2846,10 @@
         "invoiceno": "93069096",
         "invoicedate": "25.11.2025",
         "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "invoiceprice": "121272.63"
       },
       {
-        "rowNumber": 9,
+        "rowNumber": 8,
         "phd": "6",
         "width": "820",
         "length": "40500",
@@ -2906,7 +2870,7 @@
         "deliveredkg": "1044.692",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -2924,7 +2888,7 @@
         "swiftamount2": "62622.24"
       },
       {
-        "rowNumber": 10,
+        "rowNumber": 9,
         "phd": "6",
         "width": "920",
         "length": "40500",
@@ -2945,7 +2909,7 @@
         "deliveredkg": "781.620",
         "etd": "11.11.2025",
         "vessel": "COSCO SHIPPING VIRGO",
-        "eta": "20.12.2025",
+        "eta": "27.12.2025",
         "p/ino": "8993014021",
         "p/idate": "01.09.2025",
         "p/iprice": "106910.98",
@@ -2963,41 +2927,7 @@
         "swiftamount2": "62622.24"
       },
       {
-        "rowNumber": 12,
-        "phd": "7",
-        "width": "620",
-        "length": "17250",
-        "x": "3x",
-        "kg": "500",
-        "quantity": "8",
-        "adjustment": "5",
-        "unitPrice": "6.00",
-        "itemNo": "0011",
-        "w": "40w",
-        "tfkg": "525",
-        "producedkg": "196.6",
-        "deliveredkg": "196.614",
-        "isProductionComplete": false
-      },
-      {
-        "rowNumber": 12,
-        "phd": "7",
-        "width": "620",
-        "length": "17250",
-        "x": "3x",
-        "kg": "500",
-        "quantity": "8",
-        "adjustment": "5",
-        "unitPrice": "6.00",
-        "itemNo": "0011.1",
-        "w": "40w",
-        "tfkg": "525.000",
-        "producedkg": "196.600",
-        "deliveredkg": "0.0",
-        "isProductionComplete": false
-      },
-      {
-        "rowNumber": 12,
+        "rowNumber": 11,
         "phd": "7",
         "width": "620",
         "length": "17250",
@@ -3005,31 +2935,42 @@
         "kg": "500",
         "quantity": "8",
         "adjustment": "8",
-        "unitPrice": "6.00",
         "itemNo": "0011",
         "w": "40w",
         "tfkg": "525",
-        "producedkg": "196.6",
+        "producedkg": "525.2",
+        "deliveredkg": "196.614",
         "isProductionComplete": true,
         "deliveryNo": "EK-05",
-        "p/ino": "8993014167",
-        "p/idate": "21.10.2025",
-        "p/iprice": "73805.99",
+        "d/nno": "83079343",
+        "d/ndate": "21.10.2025",
         "deliveredR": "3",
-        "deliveredkg": "196.614",
-        "U/P": "2.99",
-        "swiftdate": "28.10.2025",
-        "swiftamount": "72329.87",
         "vessel": "CMA CGM JACOUES SAADE",
         "etd": "02.12.2025",
         "eta": "27.01.2026",
-        "invoiceno": "93069096",
-        "invoicedate": "25.11.2025",
-        "invoicedue": "25.11.2025",
-        "invoiceprice": "73805.99"
+        "p/ino": "8993014167",
+        "p/idate": "21.10.2025",
+        "p/iprice": "73805.99",
+        "U/P": "2.99"
       },
       {
-        "rowNumber": 13,
+        "rowNumber": 11,
+        "phd": "7",
+        "width": "620",
+        "length": "17250",
+        "x": "3x",
+        "kg": "500",
+        "quantity": "8",
+        "adjustment": "5",
+        "itemNo": "0011.1",
+        "w": "40w",
+        "tfkg": "525",
+        "producedkg": "525.2",
+        "deliveredkg": "196.6",
+        "isProductionComplete": false
+      },
+      {
+        "rowNumber": 12,
         "phd": "7",
         "width": "820",
         "length": "34500",
@@ -3044,7 +2985,7 @@
         "producedkg": "170.4"
       },
       {
-        "rowNumber": 14,
+        "rowNumber": 13,
         "phd": "7",
         "width": "920",
         "length": "34500",
@@ -3524,7 +3465,7 @@
         "d/nno": "83079418",
         "d/ndate": "23.10.2025",
         "deliveredR": "1",
-        "U/P": "5.50",
+        "U/P": "6.19",
         "invoiceno": "93068719",
         "invoicedate": "04.11.2025",
         "invoicedue": "04.11.2025",
@@ -3692,7 +3633,7 @@
         "itemNo": "0002",
         "w": "48w",
         "tfkg": "13799",
-        "producedkg": "13777.360",
+        "producedkg": "13777.4",
         "isProductionComplete": true
       },
       {
@@ -3708,7 +3649,8 @@
         "itemNo": "0003",
         "w": "51w",
         "tfkg": "1576",
-        "producedkg": "0.0"
+        "producedkg": "1537.656",
+        "isProductionComplete": true
       },
       {
         "rowNumber": 4,
@@ -3722,8 +3664,9 @@
         "unitPrice": "5.63",
         "itemNo": "0004",
         "tfkg": "8575",
-        "producedkg": "0.0",
-        "w": "51w"
+        "producedkg": "8532.220",
+        "w": "51w",
+        "isProductionComplete": true
       },
       {
         "rowNumber": 5,
@@ -3739,7 +3682,7 @@
         "w": "43w",
         "tfkg": "1586",
         "producedkg": "132.6",
-        "deliveredkg": "132.638",
+        "deliveredkg": "132.6",
         "isProductionComplete": true,
         "deliveryNo": "EK-06",
         "d/nno": "83079418",
@@ -3748,7 +3691,11 @@
         "p/ino": "8993014177",
         "p/idate": "23.10.2025",
         "p/iprice": "57324.03",
-        "U/P": "6.19"
+        "U/P": "6.19",
+        "invoiceno": "93068719",
+        "invoicedate": "04.11.2025",
+        "invoicedue": "04.11.2025",
+        "invoiceprice": "57234.93"
       },
       {
         "rowNumber": 5,
@@ -3762,9 +3709,9 @@
         "unitPrice": "5.63",
         "itemNo": "0005.1",
         "w": "43w",
-        "tfkg": "1453.362",
-        "producedkg": "-0.038",
-        "deliveredkg": "0.0",
+        "tfkg": "1586",
+        "producedkg": "132.6",
+        "deliveredkg": "132.6",
         "isProductionComplete": false
       },
       {
@@ -3781,7 +3728,7 @@
         "w": "43w",
         "tfkg": "8628",
         "producedkg": "392.3",
-        "deliveredkg": "392.260",
+        "deliveredkg": "392.3",
         "isProductionComplete": true,
         "deliveryNo": "EK-06",
         "d/nno": "83079418",
@@ -3790,7 +3737,11 @@
         "p/ino": "8993014177",
         "p/idate": "23.10.2025",
         "p/iprice": "57324.03",
-        "U/P": "6.19"
+        "U/P": "6.19",
+        "invoiceno": "93068719",
+        "invoicedate": "04.11.2025",
+        "invoicedue": "04.11.2025",
+        "invoiceprice": "57234.93"
       },
       {
         "rowNumber": 6,
@@ -3804,9 +3755,9 @@
         "unitPrice": "5.63",
         "itemNo": "0006.1",
         "w": "43w",
-        "tfkg": "8235.740",
-        "producedkg": "0.040",
-        "deliveredkg": "0.0",
+        "tfkg": "8628",
+        "producedkg": "392.3",
+        "deliveredkg": "392.3",
         "isProductionComplete": false
       },
       {
@@ -3861,9 +3812,9 @@
         "adjustment": "150",
         "unitPrice": "5.81",
         "itemNo": "0001",
-        "w": "39w",
+        "w": "52w",
         "tfkg": "19987",
-        "producedkg": "533.1"
+        "producedkg": "799.1"
       }
     ]
   },
@@ -3890,7 +3841,7 @@
         "itemNo": "0001",
         "w": "01w",
         "tfkg": "2841",
-        "producedkg": "2710.598",
+        "producedkg": "2710.6",
         "isProductionComplete": true
       },
       {
@@ -3906,7 +3857,7 @@
         "itemNo": "0002",
         "w": "48w",
         "tfkg": "16866",
-        "producedkg": "16737.884",
+        "producedkg": "16737.9",
         "isProductionComplete": true
       },
       {
@@ -3922,7 +3873,8 @@
         "itemNo": "0003",
         "w": "51w",
         "tfkg": "1182",
-        "producedkg": "0.0"
+        "producedkg": "1176.442",
+        "isProductionComplete": true
       },
       {
         "rowNumber": 4,
@@ -3937,7 +3889,8 @@
         "itemNo": "0004",
         "w": "51w",
         "tfkg": "7016",
-        "producedkg": "0.0"
+        "producedkg": "6981.280",
+        "isProductionComplete": true
       },
       {
         "rowNumber": 5,
@@ -3965,7 +3918,7 @@
         "adjustment": "52",
         "unitPrice": "6.22",
         "itemNo": "0006",
-        "w": "14w",
+        "w": "01w",
         "tfkg": "10197",
         "producedkg": "0.0"
       }
