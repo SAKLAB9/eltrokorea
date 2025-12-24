@@ -1,6 +1,6 @@
 [
   {
-    "l/pno": "29308692",
+    "l/pno": "20250624",
     "l/pdate": "24.06.2025",
     "l/pdollar": "109.07",
     "isused": true
@@ -16,6 +16,11 @@
     "o/pdate": "09.07.2025",
     "o/pdollar": 220.52,
     "isused": true
+  },
+  {
+    "o/pno": "93068765",
+    "o/pdate": "05.11.2025",
+    "o/pdollar": 51012.87
   },
   {
     "c/nno": "29308474",
@@ -71,22 +76,13 @@
     "c/ndate": "2025.03.10",
     "c/neuro": "5363.63",
     "c/ndollar": "",
-    "data": {
-      "nttotalcommission": "29.81",
-      "invoiceno1": "93063047",
-      "smcommission1": "3164.17",
-      "invoiceno2": "93063339",
-      "smcommission2": "2169.65",
-      "smtotalcommission": "5333.82",
-      "totalcommission": "5363.63"
-    },
     "isused": true
   },
   {
     "c/nno": "29308692",
     "c/ndate": "2025.03.18",
-    "c/neuro": "",
-    "c/ndollar": "681.71",
+    "c/neuro": "681.71",
+    "c/ndollar": "",
     "isused": true
   },
   {

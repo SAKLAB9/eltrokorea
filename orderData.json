@@ -2250,7 +2250,7 @@
     "tfNo": "71435061",
     "items": [
       {
-        "rowNumber": 2,
+        "rowNumber": 1,
         "phd": "3",
         "width": "620",
         "length": "39000",
@@ -2284,7 +2284,7 @@
         "d/ndate": "21.10.2025"
       },
       {
-        "rowNumber": 2,
+        "rowNumber": 1,
         "phd": "3",
         "width": "620",
         "length": "39000",
@@ -2301,7 +2301,7 @@
         "isProductionComplete": false
       },
       {
-        "rowNumber": 3,
+        "rowNumber": 2,
         "phd": "4.5",
         "width": "620",
         "length": "36400",
@@ -2317,7 +2317,7 @@
         "isProductionComplete": false
       },
       {
-        "rowNumber": 5,
+        "rowNumber": 4,
         "phd": "4.5",
         "width": "920",
         "length": "36400",
@@ -2325,40 +2325,6 @@
         "kg": "2000",
         "quantity": "15",
         "adjustment": "9",
-        "unitPrice": "6.67",
-        "itemNo": "0003",
-        "w": "33w",
-        "tfkg": "1571",
-        "producedkg": "389.9",
-        "deliveredkg": "389.9",
-        "isProductionComplete": false
-      },
-      {
-        "rowNumber": 5,
-        "phd": "4.5",
-        "width": "920",
-        "length": "36400",
-        "x": "4x",
-        "kg": "2000",
-        "quantity": "15",
-        "adjustment": "9",
-        "unitPrice": "6.67",
-        "itemNo": "0003.1",
-        "w": "33w",
-        "tfkg": "1571",
-        "producedkg": "389.9",
-        "deliveredkg": "389.9",
-        "isProductionComplete": false
-      },
-      {
-        "rowNumber": 5,
-        "phd": "4.5",
-        "width": "920",
-        "length": "36400",
-        "x": "4x",
-        "kg": "2000",
-        "quantity": "15",
-        "adjustment": "12",
         "unitPrice": "6.67",
         "itemNo": "0003",
         "w": "33w",
@@ -2390,7 +2356,24 @@
         "swiftamount2": "62622.24"
       },
       {
-        "rowNumber": 6,
+        "rowNumber": 4,
+        "phd": "4.5",
+        "width": "920",
+        "length": "36400",
+        "x": "4x",
+        "kg": "2000",
+        "quantity": "15",
+        "adjustment": "6",
+        "unitPrice": "6.67",
+        "itemNo": "0003.1",
+        "w": "33w",
+        "tfkg": "1571",
+        "producedkg": "389.9",
+        "deliveredkg": "389.9",
+        "isProductionComplete": false
+      },
+      {
+        "rowNumber": 5,
         "phd": "5",
         "width": "850",
         "length": "32400",
@@ -2429,7 +2412,7 @@
         "swiftamount2": "62622.24"
       },
       {
-        "rowNumber": 7,
+        "rowNumber": 6,
         "phd": "6",
         "width": "620",
         "length": "40500",
@@ -2463,7 +2446,7 @@
         "invoiceprice": "121272.63"
       },
       {
-        "rowNumber": 8,
+        "rowNumber": 7,
         "phd": "6",
         "width": "820",
         "length": "40500",
@@ -2502,7 +2485,7 @@
         "swiftamount2": "62622.24"
       },
       {
-        "rowNumber": 9,
+        "rowNumber": 8,
         "phd": "7",
         "width": "620",
         "length": "34500",
@@ -2518,7 +2501,7 @@
         "isProductionComplete": true
       },
       {
-        "rowNumber": 10,
+        "rowNumber": 9,
         "phd": "7",
         "width": "920",
         "length": "34500",
@@ -2528,12 +2511,12 @@
         "adjustment": "8",
         "unitPrice": "5.69",
         "itemNo": "0008",
-        "w": "38w",
+        "w": "52w",
         "tfkg": "1559",
-        "producedkg": "192.1"
+        "producedkg": "1550.7"
       },
       {
-        "rowNumber": 11,
+        "rowNumber": 10,
         "phd": "7.5",
         "width": "820",
         "length": "32100",
@@ -2572,7 +2555,7 @@
         "swiftamount2": "62622.24"
       },
       {
-        "rowNumber": 12,
+        "rowNumber": 11,
         "phd": "12",
         "width": "620",
         "length": "13400",
@@ -2606,7 +2589,7 @@
         "invoiceprice": "121272.63"
       },
       {
-        "rowNumber": 13,
+        "rowNumber": 12,
         "phd": "12",
         "width": "820",
         "length": "13400",
@@ -2664,7 +2647,7 @@
         "x": "3x",
         "kg": "500",
         "quantity": "8",
-        "adjustment": "6",
+        "adjustment": "8",
         "unitPrice": "6.96",
         "itemNo": "0001",
         "w": "40w",
@@ -2692,7 +2675,7 @@
         "x": "3x",
         "kg": "500",
         "quantity": "8",
-        "adjustment": "4",
+        "adjustment": "6",
         "unitPrice": "6.96",
         "itemNo": "0001.1",
         "w": "40w",
@@ -2778,7 +2761,7 @@
         "itemNo": "0007",
         "w": "40w",
         "tfkg": "177",
-        "producedkg": "172.7",
+        "producedkg": "172.676",
         "isProductionComplete": true,
         "deliveryNo": "EK-05",
         "p/ino": "8993014167",
@@ -2934,7 +2917,7 @@
         "x": "3x",
         "kg": "500",
         "quantity": "8",
-        "adjustment": "8",
+        "adjustment": "5",
         "itemNo": "0011",
         "w": "40w",
         "tfkg": "525",
@@ -2961,7 +2944,7 @@
         "x": "3x",
         "kg": "500",
         "quantity": "8",
-        "adjustment": "5",
+        "adjustment": "2",
         "itemNo": "0011.1",
         "w": "40w",
         "tfkg": "525",
@@ -2980,9 +2963,10 @@
         "adjustment": "6",
         "unitPrice": "6.00",
         "itemNo": "0012",
-        "w": "46w",
+        "w": "52w",
         "tfkg": "1042",
-        "producedkg": "170.4"
+        "producedkg": "1030.4",
+        "isProductionComplete": true
       },
       {
         "rowNumber": 13,
@@ -2995,9 +2979,9 @@
         "adjustment": "4",
         "unitPrice": "6.00",
         "itemNo": "0013",
-        "w": "46w",
+        "w": "52w",
         "tfkg": "780",
-        "producedkg": "0.0"
+        "producedkg": "585.0"
       }
     ]
   },
@@ -3067,9 +3051,9 @@
         "adjustment": "1",
         "unitPrice": "5.85",
         "itemNo": "0004",
-        "w": "02w",
+        "w": "52w",
         "tfkg": "131",
-        "producedkg": "0.0"
+        "producedkg": "129.6"
       },
       {
         "rowNumber": 5,
@@ -3082,9 +3066,10 @@
         "adjustment": "4",
         "unitPrice": "5.85",
         "itemNo": "0005",
-        "w": "02w",
+        "w": "01w",
         "tfkg": "780",
-        "producedkg": "0.0"
+        "producedkg": "778.120",
+        "isProductionComplete": true
       }
     ]
   },
@@ -3616,8 +3601,8 @@
         "unitPrice": "5.81",
         "itemNo": "0001",
         "tfkg": "2841",
-        "producedkg": "0.0",
-        "w": "43w",
+        "producedkg": "2710.6",
+        "w": "06w",
         "isProductionComplete": false
       },
       {
@@ -3634,7 +3619,14 @@
         "w": "48w",
         "tfkg": "13799",
         "producedkg": "13777.4",
-        "isProductionComplete": true
+        "isProductionComplete": true,
+        "deliveryNo": "EK-07",
+        "p/ino": "8993014243",
+        "p/idate": "24.11.2025",
+        "deliveredR": "70",
+        "deliveredkg": "13777.360",
+        "U/P": "7.71",
+        "invoicedate": "01.12.2025"
       },
       {
         "rowNumber": 3,
@@ -3649,7 +3641,7 @@
         "itemNo": "0003",
         "w": "51w",
         "tfkg": "1576",
-        "producedkg": "1537.656",
+        "producedkg": "1537.7",
         "isProductionComplete": true
       },
       {
@@ -3664,7 +3656,7 @@
         "unitPrice": "5.63",
         "itemNo": "0004",
         "tfkg": "8575",
-        "producedkg": "8532.220",
+        "producedkg": "8532.2",
         "w": "51w",
         "isProductionComplete": true
       },
@@ -3682,7 +3674,7 @@
         "w": "43w",
         "tfkg": "1586",
         "producedkg": "132.6",
-        "deliveredkg": "132.6",
+        "deliveredkg": "132.638",
         "isProductionComplete": true,
         "deliveryNo": "EK-06",
         "d/nno": "83079418",
@@ -3708,10 +3700,10 @@
         "adjustment": "11",
         "unitPrice": "5.63",
         "itemNo": "0005.1",
-        "w": "43w",
+        "w": "01w",
         "tfkg": "1586",
-        "producedkg": "132.6",
-        "deliveredkg": "132.6",
+        "producedkg": "1576.1",
+        "deliveredkg": "0.0",
         "isProductionComplete": false
       },
       {
@@ -3728,7 +3720,7 @@
         "w": "43w",
         "tfkg": "8628",
         "producedkg": "392.3",
-        "deliveredkg": "392.3",
+        "deliveredkg": "392.260",
         "isProductionComplete": true,
         "deliveryNo": "EK-06",
         "d/nno": "83079418",
@@ -3754,10 +3746,10 @@
         "adjustment": "42",
         "unitPrice": "5.63",
         "itemNo": "0006.1",
-        "w": "43w",
+        "w": "01w",
         "tfkg": "8628",
-        "producedkg": "392.3",
-        "deliveredkg": "392.3",
+        "producedkg": "392.260",
+        "deliveredkg": "0.0",
         "isProductionComplete": false
       },
       {
@@ -3814,7 +3806,8 @@
         "itemNo": "0001",
         "w": "52w",
         "tfkg": "19987",
-        "producedkg": "799.1"
+        "producedkg": "19261.9",
+        "isProductionComplete": true
       }
     ]
   },
@@ -3839,9 +3832,9 @@
         "adjustment": "22",
         "unitPrice": "6.42",
         "itemNo": "0001",
-        "w": "01w",
+        "w": "11w",
         "tfkg": "2841",
-        "producedkg": "2710.6",
+        "producedkg": "0.0",
         "isProductionComplete": true
       },
       {
@@ -3858,7 +3851,31 @@
         "w": "48w",
         "tfkg": "16866",
         "producedkg": "16737.9",
-        "isProductionComplete": true
+        "isProductionComplete": true,
+        "deliveredkg": "3794.500",
+        "deliveryNo": "EK-07",
+        "p/ino": "8993014243",
+        "p/idate": "24.11.2025",
+        "deliveredR": "20",
+        "U/P": "7.71",
+        "invoicedate": "01.12.2025"
+      },
+      {
+        "rowNumber": 2,
+        "phd": "6.5",
+        "width": "920",
+        "length": "37200",
+        "x": "6x",
+        "kg": "20000",
+        "quantity": "102",
+        "adjustment": "0",
+        "unitPrice": "6.42",
+        "itemNo": "0002.1",
+        "w": "48w",
+        "tfkg": "13071.500",
+        "producedkg": "12943.400",
+        "deliveredkg": "0.0",
+        "isProductionComplete": false
       },
       {
         "rowNumber": 3,
@@ -3873,7 +3890,7 @@
         "itemNo": "0003",
         "w": "51w",
         "tfkg": "1182",
-        "producedkg": "1176.442",
+        "producedkg": "1176.4",
         "isProductionComplete": true
       },
       {
@@ -3889,7 +3906,7 @@
         "itemNo": "0004",
         "w": "51w",
         "tfkg": "7016",
-        "producedkg": "6981.280",
+        "producedkg": "6981.3",
         "isProductionComplete": true
       },
       {
@@ -3903,9 +3920,9 @@
         "adjustment": "13",
         "unitPrice": "6.22",
         "itemNo": "0005",
-        "w": "45w",
+        "w": "01w",
         "tfkg": "1718",
-        "producedkg": "0.0"
+        "producedkg": "1840.9"
       },
       {
         "rowNumber": 6,
@@ -3920,7 +3937,8 @@
         "itemNo": "0006",
         "w": "01w",
         "tfkg": "10197",
-        "producedkg": "0.0"
+        "producedkg": "9969.4",
+        "isProductionComplete": true
       }
     ]
   }
