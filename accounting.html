@@ -2386,38 +2386,84 @@
     }
 
     // 날짜 옵션 생성 함수들
-    function updateYearOptions() {
+    function updateYearOptions(preserveValue = false) {
       const yearSelect = document.getElementById('yearSelect');
-      const currentYear = new Date().getFullYear();
+      const availableDates = getAvailableDates();
+      const currentValue = preserveValue ? yearSelect.value : null;
+      
+      // availableDates에서 모든 년도 추출
+      const years = new Set();
+      availableDates.forEach(date => {
+        const year = date.split('-')[0];
+        years.add(parseInt(year));
+      });
+      
+      // 년도가 없으면 현재 년도부터 3년 표시
+      if (years.size === 0) {
+        const currentYear = new Date().getFullYear();
+        for (let i = 0; i < 3; i++) {
+          years.add(currentYear + i);
+        }
+      }
+      
+      const sortedYears = Array.from(years).sort();
       yearSelect.innerHTML = '';
       
-      for (let i = 0; i < 3; i++) {
-        const year = currentYear + i;
+      sortedYears.forEach(year => {
         yearSelect.innerHTML += `<option value="${year}">${year}년</option>`;
+      });
+      
+      // 값 보존 또는 첫 번째 년도 선택
+      if (preserveValue && sortedYears.includes(parseInt(currentValue))) {
+        yearSelect.value = currentValue;
+      } else if (sortedYears.length > 0) {
+        yearSelect.value = sortedYears[0];
       }
-      yearSelect.value = currentYear;
     }
 
-    function updateMonthOptions() {
+    function updateMonthOptions(preserveValue = false) {
       const monthSelect = document.getElementById('monthSelect');
-      const currentMonth = new Date().getMonth() + 1;
-      monthSelect.innerHTML = '';
+      const currentValue = preserveValue ? monthSelect.value : null;
       
+      monthSelect.innerHTML = '';
       for (let month = 1; month <= 12; month++) {
         monthSelect.innerHTML += `<option value="${month}">${month}월</option>`;
       }
-      monthSelect.value = currentMonth;
+      
+      if (preserveValue && currentValue) {
+        monthSelect.value = currentValue;
+      } else {
+        const currentMonth = new Date().getMonth() + 1;
+        monthSelect.value = currentMonth;
+      }
     }
 
-    function updateDayOptions() {
+    function updateDayOptions(preserveValue = false, targetDay = null) {
       const daySelect = document.getElementById('daySelect');
-      const currentDay = new Date().getDate();
+      const yearSelect = document.getElementById('yearSelect');
+      const monthSelect = document.getElementById('monthSelect');
+      
+      const year = parseInt(yearSelect.value);
+      const month = parseInt(monthSelect.value);
+      const currentValue = preserveValue ? daySelect.value : null;
+      
+      // 해당 월의 마지막 날짜 계산
+      const lastDay = new Date(year, month, 0).getDate();
       
       daySelect.innerHTML = '';
-      for (let day = 1; day <= 31; day++) {
+      for (let day = 1; day <= lastDay; day++) {
         daySelect.innerHTML += `<option value="${day}">${day}일</option>`;
       }
-      daySelect.value = currentDay;
+      
+      // 값 설정 우선순위: targetDay > preserveValue > 현재 날짜
+      if (targetDay !== null && targetDay <= lastDay) {
+        daySelect.value = targetDay;
+      } else if (preserveValue && currentValue && parseInt(currentValue) <= lastDay) {
+        daySelect.value = currentValue;
+      } else {
+        const currentDay = new Date().getDate();
+        daySelect.value = Math.min(currentDay, lastDay);
+      }
     }
 
     // 모든 카테고리에서 사용 가능한 날짜들을 가져오는 함수
@@ -2496,19 +2542,41 @@
       
       let currentIndex = availableDates.indexOf(currentDate);
       if (currentIndex === -1) {
+        // 현재 날짜가 availableDates에 없으면 가장 가까운 이전 날짜 찾기
         currentIndex = availableDates.findIndex(date => date < currentDate);
         if (currentIndex === -1) {
+          // 현재 날짜보다 이전 날짜가 없으면 마지막 날짜로
           currentIndex = availableDates.length - 1;
         }
       }
       
-      const targetDate = currentIndex > 0 ? availableDates[currentIndex - 1] : availableDates[availableDates.length - 1];
+      // 이전 날짜로 이동 (순환)
+      const targetIndex = currentIndex > 0 ? currentIndex - 1 : availableDates.length - 1;
+      const targetDate = availableDates[targetIndex];
       
       const [year, month, day] = targetDate.split('-');
+      const yearNum = parseInt(year);
+      const monthNum = parseInt(month);
+      const dayNum = parseInt(day);
+      
+      // 년도 옵션 업데이트 (값 보존)
+      updateYearOptions(true);
+      // 년도가 옵션에 없으면 추가
+      if (!Array.from(yearSelect.options).some(opt => opt.value === year)) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = `${year}년`;
+        yearSelect.appendChild(option);
+      }
       yearSelect.value = year;
-      monthSelect.value = parseInt(month);
-      updateDayOptions();
-      daySelect.value = parseInt(day);
+      
+      // 월 옵션 업데이트 (값 보존)
+      updateMonthOptions(true);
+      monthSelect.value = monthNum;
+      
+      // 일 옵션 업데이트 (targetDay 전달)
+      updateDayOptions(false, dayNum);
+      
       loadAccountingData();
     }
 
@@ -2524,21 +2592,43 @@
       
       let currentIndex = availableDates.indexOf(currentDate);
       if (currentIndex === -1) {
-        currentIndex = availableDates.findIndex(date => date > currentDate);
-        if (currentIndex === -1) {
+        // 현재 날짜가 availableDates에 없으면 가장 가까운 다음 날짜 찾기
+        const nextIndex = availableDates.findIndex(date => date > currentDate);
+        if (nextIndex === -1) {
+          // 현재 날짜보다 이후 날짜가 없으면 첫 번째 날짜로
           currentIndex = 0;
         } else {
-          currentIndex = currentIndex - 1;
+          currentIndex = nextIndex - 1;
         }
       }
       
-      const targetDate = currentIndex < availableDates.length - 1 ? availableDates[currentIndex + 1] : availableDates[0];
+      // 다음 날짜로 이동 (순환)
+      const targetIndex = currentIndex < availableDates.length - 1 ? currentIndex + 1 : 0;
+      const targetDate = availableDates[targetIndex];
       
       const [year, month, day] = targetDate.split('-');
+      const yearNum = parseInt(year);
+      const monthNum = parseInt(month);
+      const dayNum = parseInt(day);
+      
+      // 년도 옵션 업데이트 (값 보존)
+      updateYearOptions(true);
+      // 년도가 옵션에 없으면 추가
+      if (!Array.from(yearSelect.options).some(opt => opt.value === year)) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = `${year}년`;
+        yearSelect.appendChild(option);
+      }
       yearSelect.value = year;
-      monthSelect.value = parseInt(month);
-      updateDayOptions();
-      daySelect.value = parseInt(day);
+      
+      // 월 옵션 업데이트 (값 보존)
+      updateMonthOptions(true);
+      monthSelect.value = monthNum;
+      
+      // 일 옵션 업데이트 (targetDay 전달)
+      updateDayOptions(false, dayNum);
+      
       loadAccountingData();
     }
 
