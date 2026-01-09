@@ -576,7 +576,7 @@
       <!-- 선박운임 VAT 수정 영역 -->
       <div class="ship-fee-settings">
         <label for="shipFeeDefault">선박운임 VAT:</label>
-        <input type="text" id="shipFeeDefault" value="14,000" class="input-field">
+        <input type="text" id="shipFeeDefault" value="0" class="input-field">
         <button id="updateShipFeeDefault" type="button" class="small-btn">수정</button>
       </div>
     </div>
@@ -848,8 +848,8 @@
       expandBtn.textContent = isExpanded ? "▼" : "▲";
     });
     
-    // 선박운임 기본값 전역 변수 (localStorage에서 불러오기)
-    let shipFeeDefaultValue = parseInt(localStorage.getItem('shipFeeDefaultValue')) || 14000;
+    // 선박운임 기본값 전역 변수 (localStorage에서 불러오기, 기본값 0)
+    let shipFeeDefaultValue = parseInt(localStorage.getItem('shipFeeDefaultValue')) || 0;
     
     // 선박운임 기본값 수정 기능 (최적화)
     function setupShipFeeSettings() {
@@ -903,7 +903,11 @@
             supplyPriceCell.value = supplyValue.toLocaleString();
           }
           
-          alert(`선박운임 기본값이 ${newValue}로 변경되었습니다.`);
+          // NT비용합계와 총부대비용합계 재계산
+          calculateCostTotal();
+          calculateTotalCost();
+          
+          alert(`선박운임 VAT가 ${newValue}로 변경되었습니다.`);
         });
         
         // 페이지 로드 시 전역 변수 값으로 초기화
@@ -1062,7 +1066,7 @@
         }
       }
       
-      // 선박운임 설정 (3열 고정값 14000, 2열 = 4열 - 3열)
+      // 선박운임 설정 (3열은 하단 확장 메뉴의 값 사용, 2열 = 4열 - 3열)
       if (data["선박운임"]) {
         const shipFeeRow = dataRows.find(row => 
           row.querySelector('td:first-child input')?.value === "선박운임"
@@ -1083,11 +1087,13 @@
               // 4열에 값 설정
               totalCell.value = totalValue;
               
-              // 3열에 전역 변수 기본값 설정
-              vatCell.value = shipFeeDefaultValue.toLocaleString();
+              // 3열에 하단 확장 메뉴의 현재 값 사용 (없으면 0)
+              const shipFeeInput = document.getElementById('shipFeeDefault');
+              const currentVatValue = shipFeeInput ? parseFloat(shipFeeInput.value.replace(/,/g, '')) || 0 : 0;
+              vatCell.value = currentVatValue.toLocaleString();
               
               // 2열 = 4열 - 3열 (공급가)
-              const supplyPrice = totalAmount - shipFeeDefaultValue;
+              const supplyPrice = totalAmount - currentVatValue;
               supplyPriceCell.value = supplyPrice.toLocaleString();
             }
           }
