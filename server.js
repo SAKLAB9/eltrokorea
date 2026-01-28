@@ -634,9 +634,49 @@ app.post("/api/price", (req, res) => {
       // 기존 데이터에서 해당 PHD 찾기
       const existingIndex = priceStore[mode][year][month].findIndex(item => item.phd === phd);
       
+      // price가 빈 문자열이면 삭제 처리
+      if (price === '' || price === null) {
+        if (existingIndex !== -1) {
+          // 기존 데이터 삭제
+          priceStore[mode][year][month].splice(existingIndex, 1);
+          
+          // 파일에 저장
+          fs.writeFileSync(DATA_FILE, JSON.stringify(priceStore, null, 2), "utf8");
+          
+          return res.json({
+            success: true,
+            message: "Individual price deleted successfully",
+            mode: mode,
+            year: year,
+            month: month,
+            phd: phd,
+            deleted: true
+          });
+        } else {
+          // 삭제할 데이터가 없음
+          return res.json({
+            success: true,
+            message: "No data to delete",
+            mode: mode,
+            year: year,
+            month: month,
+            phd: phd
+          });
+        }
+      }
+      
+      // 정상적인 가격 업데이트
+      const parsedPrice = parseFloat(price);
+      if (isNaN(parsedPrice)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid price value"
+        });
+      }
+      
       const newItem = {
         phd: phd,
-        price: parseFloat(price).toFixed(2)
+        price: parsedPrice.toFixed(2)
       };
       
       if (existingIndex !== -1) {

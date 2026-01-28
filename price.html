@@ -542,7 +542,7 @@ async function loadPriceData() {
         }
         
         if (isEditable) {
-          tableHTML += `<td class="editable-cell"><input type="text" value="${price}" data-phd="${phd}" data-month="${month}" /></td>`;
+          tableHTML += `<td class="editable-cell"><input type="text" value="${price}" data-phd="${phd}" data-month="${month}" data-original-value="${price}" /></td>`;
         } else {
           tableHTML += `<td>${price}</td>`;
         }
@@ -639,19 +639,37 @@ async function saveAllChanges() {
   const inputs = document.querySelectorAll('input[data-phd]');
   const updates = [];
   
-  // 모든 입력 필드의 변경사항 수집 (빈칸 포함)
+  // 값이 있는 입력 필드 또는 삭제할 필드 수집
   inputs.forEach(input => {
     const phd = parseFloat(input.dataset.phd);
     const month = parseInt(input.dataset.month);
     const newPrice = input.value.trim();
+    const originalValue = input.dataset.originalValue || '';
     
-    // 빈칸이면 빈 문자열로, 값이 있으면 숫자로 저장
-    updates.push({
-      phd: phd,
-      month: month,
-      price: newPrice === '' ? '' : parseFloat(newPrice)
-    });
+    // 경우 1: 값이 있으면 저장
+    if (newPrice !== '' && !isNaN(parseFloat(newPrice))) {
+      updates.push({
+        phd: phd,
+        month: month,
+        price: parseFloat(newPrice),
+        delete: false
+      });
+    }
+    // 경우 2: 원래 값이 있었는데 빈칸으로 바뀌면 삭제
+    else if (originalValue !== '' && newPrice === '') {
+      updates.push({
+        phd: phd,
+        month: month,
+        price: '',
+        delete: true
+      });
+    }
   });
+  
+  if (updates.length === 0) {
+    alert('저장할 데이터가 없습니다.');
+    return;
+  }
   
   // 각 업데이트를 순차적으로 처리
   for (const update of updates) {
@@ -666,7 +684,7 @@ async function saveAllChanges() {
           year: currentYear,
           month: update.month.toString(),
           phd: update.phd,
-          price: update.price
+          price: update.price  // 삭제인 경우 빈 문자열(''), 저장인 경우 숫자
         })
       });
       
@@ -674,7 +692,11 @@ async function saveAllChanges() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      console.log(`가격 업데이트 완료: ${selectedMode} ${currentYear}년 ${update.month}월 PHD ${update.phd} = ${update.price}`);
+      if (update.delete) {
+        console.log(`가격 삭제 완료: ${selectedMode} ${currentYear}년 ${update.month}월 PHD ${update.phd}`);
+      } else {
+        console.log(`가격 업데이트 완료: ${selectedMode} ${currentYear}년 ${update.month}월 PHD ${update.phd} = ${update.price}`);
+      }
       
     } catch (error) {
       console.error('Error updating price data:', error);
