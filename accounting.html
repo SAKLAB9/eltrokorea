@@ -2683,12 +2683,14 @@
       
       // 뉴인텍 행들 생성
       let rowsHTML = '';
+      let nuintekRowCount = 0;
       
       // 뉴인텍 1행 로직
       if (!isPastDate) {
         // 오늘 포함 미래 날짜: orderData.json에서 complete true가 아닌 데이터 로드
         incompleteDeliveries.forEach(item => {
           rowsHTML += createNuintekRowHTML(item, null, false, currentDate, '', currentDate);
+          nuintekRowCount++;
         });
       } else {
         // 과거 날짜: accounting.json에서 현재 날짜보다 과거 날짜 중 최신 데이터 로드
@@ -2715,6 +2717,7 @@
                   depositAmount,
                   latestPreviousDate
                 );
+                nuintekRowCount++;
               }
             });
           }
@@ -2755,10 +2758,16 @@
                   depositAmount,
                   latestPreviousDate
                 );
+                nuintekRowCount++;
               }
             });
           }
         }
+      }
+      
+      // 뉴인텍 행이 하나도 없으면 빈 행 1개 추가 (성문처럼)
+      if (nuintekRowCount === 0) {
+        rowsHTML += createCategory3RowHTML('뉴인텍', '', '', '', '', '');
       }
       
       // 성문 행 추가
