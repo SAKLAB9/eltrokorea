@@ -2400,7 +2400,7 @@
       
       // 년도가 없으면 현재 년도부터 3년 표시
       if (years.size === 0) {
-        const currentYear = new Date().getFullYear();
+      const currentYear = new Date().getFullYear();
         for (let i = 0; i < 3; i++) {
           years.add(currentYear + i);
         }
@@ -2434,7 +2434,7 @@
         monthSelect.value = currentValue;
       } else {
         const currentMonth = new Date().getMonth() + 1;
-        monthSelect.value = currentMonth;
+      monthSelect.value = currentMonth;
       }
     }
 
@@ -2697,22 +2697,25 @@
           const latestData = allData?.notes?.nuintek?.[latestPreviousDate];
           if (latestData && latestData.length > 0) {
             latestData.forEach(accountingItem => {
-              const currentDateData = allData?.notes?.nuintek?.[currentDate];
-              const currentDeliveryData = currentDateData?.find(data => data.deliveryNo === accountingItem.deliveryNo);
-              const depositAmount = currentDeliveryData?.depositAmount || '';
-              
-              rowsHTML += createNuintekRowHTML(
-                {
-                  deliveryNo: accountingItem.deliveryNo,
-                  ntinvoiceprice: accountingItem.todaySalesAmount,
-                  ntinvoicedue: accountingItem.dueDate
-                },
-                accountingItem,
-                true,
-                currentDate,
-                depositAmount,
-                latestPreviousDate
-              );
+              // todaySalesAmount가 0이면 표시하지 않음
+              if (accountingItem.todaySalesAmount && parseFloat(accountingItem.todaySalesAmount.toString().replace(/,/g, '')) > 0) {
+                const currentDateData = allData?.notes?.nuintek?.[currentDate];
+                const currentDeliveryData = currentDateData?.find(data => data.deliveryNo === accountingItem.deliveryNo);
+                const depositAmount = currentDeliveryData?.depositAmount || '';
+                
+                rowsHTML += createNuintekRowHTML(
+                  {
+                    deliveryNo: accountingItem.deliveryNo,
+                    ntinvoiceprice: accountingItem.todaySalesAmount,
+                    ntinvoicedue: accountingItem.dueDate
+                  },
+                  accountingItem,
+                  true,
+                  currentDate,
+                  depositAmount,
+                  latestPreviousDate
+                );
+              }
             });
           }
         }
@@ -2734,7 +2737,8 @@
                 item.deliveryNo === accountingItem.deliveryNo && 
                 item.ntinvoicedue === accountingItem.dueDate
               );
-              if (!isDuplicate) {
+              // todaySalesAmount가 0이면 표시하지 않음
+              if (!isDuplicate && accountingItem.todaySalesAmount && parseFloat(accountingItem.todaySalesAmount.toString().replace(/,/g, '')) > 0) {
                 // 5열은 현재 날짜 데이터에서 가져오기 (없으면 공란)
                 const currentDeliveryData = currentDateData?.find(data => data.deliveryNo === accountingItem.deliveryNo);
                 const depositAmount = currentDeliveryData?.depositAmount || '';
