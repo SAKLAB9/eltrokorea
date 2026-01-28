@@ -637,25 +637,19 @@ async function saveAllChanges() {
   const inputs = document.querySelectorAll('input[data-phd]');
   const updates = [];
   
-  // 모든 입력 필드의 변경사항 수집
+  // 모든 입력 필드의 변경사항 수집 (빈칸 포함)
   inputs.forEach(input => {
     const phd = parseFloat(input.dataset.phd);
     const month = parseInt(input.dataset.month);
     const newPrice = input.value.trim();
     
-    if (newPrice !== '') {
-      updates.push({
-        phd: phd,
-        month: month,
-        price: parseFloat(newPrice)
-      });
-    }
+    // 빈칸이면 빈 문자열로, 값이 있으면 숫자로 저장
+    updates.push({
+      phd: phd,
+      month: month,
+      price: newPrice === '' ? '' : parseFloat(newPrice)
+    });
   });
-  
-  if (updates.length === 0) {
-    alert('입력된 값이 없습니다.');
-    return;
-  }
   
   // 각 업데이트를 순차적으로 처리
   for (const update of updates) {
