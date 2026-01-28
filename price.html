@@ -534,8 +534,10 @@ async function loadPriceData() {
         
         if (monthData) {
           const priceItem = monthData.find(item => item.phd === phd);
-          if (priceItem) {
-            price = priceItem.price;
+          if (priceItem && priceItem.price !== undefined && priceItem.price !== null && priceItem.price !== '') {
+            // NaN 체크: 숫자가 아니면 빈 문자열
+            const numPrice = parseFloat(priceItem.price);
+            price = isNaN(numPrice) ? '' : priceItem.price;
           }
         }
         
@@ -723,20 +725,27 @@ async function generatePDF() {
       const currentPrice = currentMonthData.find(item => item.phd === phd);
       const previousPrice = previousMonthData.find(item => item.phd === phd);
       
-      const currentPriceValue = currentPrice ? parseFloat(currentPrice.price) : null;
-      const previousPriceValue = previousPrice ? parseFloat(previousPrice.price) : null;
+      // NaN 체크 추가
+      const currentPriceValue = currentPrice && currentPrice.price !== '' && currentPrice.price !== null && currentPrice.price !== undefined 
+        ? parseFloat(currentPrice.price) : null;
+      const previousPriceValue = previousPrice && previousPrice.price !== '' && previousPrice.price !== null && previousPrice.price !== undefined 
+        ? parseFloat(previousPrice.price) : null;
+      
+      // NaN 한 번 더 체크
+      const validCurrentPrice = currentPriceValue !== null && !isNaN(currentPriceValue) ? currentPriceValue : null;
+      const validPreviousPrice = previousPriceValue !== null && !isNaN(previousPriceValue) ? previousPriceValue : null;
       
       // 인상률 계산
       let increaseRate = '';
-      if (currentPriceValue && previousPriceValue) {
-        const rate = ((currentPriceValue - previousPriceValue) / previousPriceValue) * 100;
+      if (validCurrentPrice && validPreviousPrice) {
+        const rate = ((validCurrentPrice - validPreviousPrice) / validPreviousPrice) * 100;
         increaseRate = rate.toFixed(2) + '%';
       }
       
       tableData.push([
         phd.toString(), // 숫자만 표시
-        previousPriceValue ? previousPriceValue.toFixed(2) : '',
-        currentPriceValue ? currentPriceValue.toFixed(2) : '',
+        validPreviousPrice ? validPreviousPrice.toFixed(2) : '',
+        validCurrentPrice ? validCurrentPrice.toFixed(2) : '',
         increaseRate
       ]);
     });
