@@ -570,13 +570,15 @@
         expandButton.textContent = isExpanded ? '▼' : '▲';
       });
       
-      // 년도 옵션 생성 함수
+      // 년도 옵션 생성 함수 (2025년부터 현재년도+1년까지)
       function updateYearOptions() {
         const currentYear = new Date().getFullYear();
+        const startYear = 2025;
+        const endYear = currentYear + 1;
+        
         yearSelect.innerHTML = '';
         
-        for (let i = 0; i < 3; i++) {
-          const year = currentYear + i;
+        for (let year = startYear; year <= endYear; year++) {
           const option = document.createElement('option');
           option.value = year;
           option.textContent = year;
