@@ -530,7 +530,7 @@
             <td><input type="text" readonly class="readonly-input"></td>
           </tr>
           <tr>
-            <td><input type="text" value="TF비용합계" readonly class="readonly-input total-row"></td>
+            <td><input type="text" value="PO비용합계" readonly class="readonly-input total-row"></td>
             <td><input type="text" readonly class="readonly-input"></td>
             <td><input type="text" readonly class="readonly-input"></td>
             <td><input type="text"></td>
@@ -1169,7 +1169,7 @@
       // NT비용합계 계산 (창고료 + 운송료 + 통관수수료)
       calculateCostTotal();
       
-      // 총부대비용합계 계산 (NT비용합계 + TF비용합계)
+      // 총부대비용합계 계산 (NT비용합계 + PO비용합계)
       calculateTotalCost();
     }
     
@@ -1199,9 +1199,9 @@
 
     // 총부대비용합계 자동 계산 함수
     function calculateTotalCost() {
-      // NT비용합계와 TF비용합계의 각 열 값들을 가져와서 합산
+      // NT비용합계와 PO비용합계의 각 열 값들을 가져와서 합산
       const ntRow = document.querySelector('.cost-table tbody tr:nth-child(9)'); // NT비용합계 행
-      const tfRow = document.querySelector('.cost-table tbody tr:nth-child(10)'); // TF비용합계 행
+      const tfRow = document.querySelector('.cost-table tbody tr:nth-child(10)'); // PO비용합계 행
       const totalRow = document.querySelector('.cost-table tbody tr:nth-child(11)'); // 총부대비용합계 행
       
       if (ntRow && tfRow && totalRow) {
@@ -1407,7 +1407,7 @@
         });
       }
       
-      // TF비용합계 입력 필드에 콤마 포맷팅 및 자동 계산 추가
+      // PO비용합계 입력 필드에 콤마 포맷팅 및 자동 계산 추가
       setupCostInputCalculation(10, () => calculateTotalCost());
       
       // 창고료 입력 필드에 콤마 포맷팅 및 자동 계산 추가
@@ -1416,7 +1416,7 @@
         calculateTotalCost();
       });
       
-      // NT비용합계와 TF비용합계 값 변경 시 총부대비용합계 자동 계산
+      // NT비용합계와 PO비용합계 값 변경 시 총부대비용합계 자동 계산
       const ntInputs = document.querySelectorAll('.cost-table tbody tr:nth-child(9) input');
       const tfInputs = document.querySelectorAll('.cost-table tbody tr:nth-child(10) input');
       
