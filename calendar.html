@@ -838,8 +838,8 @@
                            'July', 'August', 'September', 'October', 'November', 'December'];
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-        // 날짜를 문자열 키로 변환하는 헬퍼 함수
-        function getDateKeys(date, padMonth = true, padDay = false) {
+        // 날짜를 문자열 키로 변환하는 헬퍼 함수 (정규화된 형식: 월은 "1"~"12", 일은 "1"~"31")
+        function getDateKeys(date, padMonth = false, padDay = false) {
             return {
                 year: date.getFullYear().toString(),
                 month: padMonth ? (date.getMonth() + 1).toString().padStart(2, '0') : (date.getMonth() + 1).toString(),
@@ -895,8 +895,8 @@
                         dayElement.classList.add('selected');
                     }
 
-                    // 해당 날짜의 이벤트 가져오기
-                    const { year: yearStr, month: monthStr, day: dayStr } = getDateKeys(date, true, false);
+                    // 해당 날짜의 이벤트 가져오기 (월은 padding 없이 "1"~"12" 형식)
+                    const { year: yearStr, month: monthStr, day: dayStr } = getDateKeys(date, false, false);
                     const dayEvents = getDayEvents(yearStr, monthStr, dayStr);
 
                     dayElement.innerHTML = `
@@ -1220,7 +1220,7 @@
 
             try {
                 await showEventModal('일정 선택', '', (inputValue) => {
-                    const { year, month, day } = getDateKeys(selectedDate);
+                    const { year, month, day } = getDateKeys(selectedDate, false, false);
                         
                         // 년/월/일 구조로 데이터 저장
                         if (!events[year]) events[year] = {};
