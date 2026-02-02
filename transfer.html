@@ -842,15 +842,23 @@
           fetch('/api/transfers').then(res => res.json())
         ]);
         
-        const dayPadded = day.padStart(2, '0');
-        const monthPadded = month.padStart(2, '0');
+        // 명시적으로 문자열로 변환 후 padding
+        const dayPadded = String(day).padStart(2, '0');
+        const monthPadded = String(month).padStart(2, '0');
         
         // 이벤트 데이터 확인 (양쪽 형식 모두 체크)
         let events = calendarData.events?.[year]?.[monthPadded]?.[dayPadded] || 
                      calendarData.events?.[year]?.[month]?.[day];
         
+        console.log('Debug Info:', {
+          year, month, day,
+          monthPadded, dayPadded,
+          eventsFound: events?.length || 0,
+          calendarStructure: calendarData.events?.[year]
+        });
+        
         if (!events?.length) {
-          alert('선택한 날짜에 등록된 이벤트가 없습니다.');
+          alert(`선택한 날짜(${year}년 ${month}월 ${day}일)에 등록된 이벤트가 없습니다.\n\nCalendar에서 해당 날짜에 이벤트를 먼저 등록해주세요.`);
           return;
         }
         
