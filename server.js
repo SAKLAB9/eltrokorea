@@ -541,12 +541,18 @@ function syncFromHardDrive() {
     calendarStore = loadJsonFile(CALENDAR_DATA_FILE, {}, "Calendar Data");
     // 로드 후 정렬하여 다시 저장 (월 정규화: "01" -> "1")
     if (calendarStore && Object.keys(calendarStore).length > 0) {
-      calendarStore = sortCalendarData(calendarStore);
       try {
-        fs.writeFileSync(CALENDAR_DATA_FILE, JSON.stringify(calendarStore, null, 2), 'utf8');
-        console.log('Calendar data sorted and saved');
+        const sortedCalendar = sortCalendarData(calendarStore);
+        if (sortedCalendar && Object.keys(sortedCalendar).length > 0) {
+          calendarStore = sortedCalendar;
+          fs.writeFileSync(CALENDAR_DATA_FILE, JSON.stringify(calendarStore, null, 2), 'utf8');
+          console.log('Calendar data sorted and saved');
+        } else {
+          console.warn('Sorted calendar data is empty, keeping original data');
+        }
       } catch (error) {
-        console.error('Error saving sorted calendar data:', error.message);
+        console.error('Error sorting calendar data:', error.message);
+        console.log('Keeping original calendar data');
       }
     }
   
