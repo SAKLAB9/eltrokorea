@@ -539,6 +539,16 @@ function syncFromHardDrive() {
   
   // 3. Calendar Data 동기화
     calendarStore = loadJsonFile(CALENDAR_DATA_FILE, {}, "Calendar Data");
+    // 로드 후 정렬하여 다시 저장 (월 정규화: "01" -> "1")
+    if (calendarStore && Object.keys(calendarStore).length > 0) {
+      calendarStore = sortCalendarData(calendarStore);
+      try {
+        fs.writeFileSync(CALENDAR_DATA_FILE, JSON.stringify(calendarStore, null, 2), 'utf8');
+        console.log('Calendar data sorted and saved');
+      } catch (error) {
+        console.error('Error saving sorted calendar data:', error.message);
+      }
+    }
   
     // 4. Credit Note Data 동기화
   creditNoteStore = loadJsonFile(CREDIT_NOTE_FILE, [], "Credit Note Data");
