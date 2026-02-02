@@ -1599,9 +1599,9 @@
                 }
             };
             
-            // 이벤트 추가 헬퍼 함수
+            // 이벤트 추가 헬퍼 함수 (정규화된 형식: 월은 "1"~"12")
             const addEventToDate = (y, m, d) => {
-                const monthStr = m.toString().padStart(2, '0');
+                const monthStr = m.toString();  // padding 제거 - "1"~"12" 형식
                 const dayStr = d.toString();
                 if (!events[y][monthStr]) events[y][monthStr] = {};
                 if (!events[y][monthStr][dayStr]) events[y][monthStr][dayStr] = [];
@@ -2006,9 +2006,9 @@
                 let deletedCount = 0;
                 let totalCount = 0;
                 
-                // 시작 월부터 12월까지 삭제
+                // 시작 월부터 12월까지 삭제 (정규화된 형식: 월은 "1"~"12")
                 for (let month = startMonth; month <= 12; month++) {
-                    const monthStr = month.toString().padStart(2, '0');
+                    const monthStr = month.toString();  // padding 제거 - "1"~"12" 형식
                     const dayStr = event.dateType === 'lastWeekday' 
                         ? getLastWeekday(year, month).toString()
                         : event.day.toString();

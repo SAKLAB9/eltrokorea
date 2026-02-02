@@ -2701,22 +2701,22 @@
             latestData.forEach(accountingItem => {
               // todaySalesAmount가 0이면 표시하지 않음
               if (accountingItem.todaySalesAmount && parseFloat(accountingItem.todaySalesAmount.toString().replace(/,/g, '')) > 0) {
-                const currentDateData = allData?.notes?.nuintek?.[currentDate];
-                const currentDeliveryData = currentDateData?.find(data => data.deliveryNo === accountingItem.deliveryNo);
-                const depositAmount = currentDeliveryData?.depositAmount || '';
-                
-                rowsHTML += createNuintekRowHTML(
-                  {
-                    deliveryNo: accountingItem.deliveryNo,
-                    ntinvoiceprice: accountingItem.todaySalesAmount,
-                    ntinvoicedue: accountingItem.dueDate
-                  },
-                  accountingItem,
-                  true,
-                  currentDate,
-                  depositAmount,
-                  latestPreviousDate
-                );
+              const currentDateData = allData?.notes?.nuintek?.[currentDate];
+              const currentDeliveryData = currentDateData?.find(data => data.deliveryNo === accountingItem.deliveryNo);
+              const depositAmount = currentDeliveryData?.depositAmount || '';
+              
+              rowsHTML += createNuintekRowHTML(
+                {
+                  deliveryNo: accountingItem.deliveryNo,
+                  ntinvoiceprice: accountingItem.todaySalesAmount,
+                  ntinvoicedue: accountingItem.dueDate
+                },
+                accountingItem,
+                true,
+                currentDate,
+                depositAmount,
+                latestPreviousDate
+              );
                 nuintekRowCount++;
               }
             });
