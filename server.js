@@ -430,7 +430,8 @@ function sortCalendarData(calendarData) {
     monthKeys.forEach(month => {
       const monthData = yearData[month];
       if (!monthData || typeof monthData !== 'object' || Array.isArray(monthData)) {
-        sortedMonths[month] = monthData;
+        const normalizedMonth = parseInt(month, 10).toString();
+        sortedMonths[normalizedMonth] = monthData;
         return;
       }
       
@@ -447,7 +448,9 @@ function sortCalendarData(calendarData) {
         sortedDays[normalizedDay] = monthData[day];
       });
       
-      sortedMonths[month] = sortedDays;
+      // 월도 정규화 ("01" -> "1", "02" -> "2", ...)
+      const normalizedMonth = parseInt(month, 10).toString();
+      sortedMonths[normalizedMonth] = sortedDays;
     });
     
     sortedEvents[year] = sortedMonths;
