@@ -613,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Email 내용 생성
       const emailContent = `안녕하세요.
 
-Treofan 원단의 ${selectedMonth}월 가격표 첨부합니다.
+Polyopt 원단의 ${selectedMonth}월 가격표 첨부합니다.
 ${selectedMonth}월 단가는 ${selectedMonth === 1 ? 12 : selectedMonth - 1}월 단가와 비교하여 ${lastAverageRate}% 의 가격변동이 있었습니다.
 
 감사합니다.`;
@@ -781,7 +781,7 @@ async function generatePDF() {
     
     // 제목
     doc.setFontSize(16);
-    doc.text(`Treofan Price for ${currentYear}.${currentMonth.toString().padStart(2, '0')}`, 20, 20);
+    doc.text(`Polyopt Price for ${currentYear}.${currentMonth.toString().padStart(2, '0')}`, 20, 20);
     
     // 평균 인상률 계산
     let totalRate = 0;
@@ -843,7 +843,7 @@ async function generatePDF() {
     });
     
     // 파일명 생성
-    const fileName = `Treofan_${selectedMode}_${currentMonth}월가격표.pdf`;
+    const fileName = `Polyopt_${selectedMode}_${currentMonth}월가격표.pdf`;
     
     // PDF 다운로드
     doc.save(fileName);

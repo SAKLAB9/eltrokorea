@@ -1801,7 +1801,7 @@
         <td><input type="text" value="${formatNumber(data.previousBalance || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
         <td><input type="text" value="${formatNumber(data.todayDeposit || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
         <td><input type="text" value="${formatNumber(data.todayWithdrawal || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
-        <td><input type="text" value="${formatNumber(data.todayBalance || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateCategory4TodayLoan(this);"></td>
+        <td><input type="text" value="${formatNumber(data.todayBalance || 0)}" style="${commonStyles.input}" oninput="formatAmountInput(this); calculateTodayBalance(this.closest('tr'));"></td>
       `;
     }
 
@@ -2111,6 +2111,19 @@
       return num.toLocaleString();
     }
 
+    function isForeignCurrencyAccount(name) {
+      return /(달러|유로|USD|EUR)/i.test(String(name || ''));
+    }
+
+    function formatCalculatedAmount(amount, fractionDigits = 0) {
+      const num = Number(amount);
+      if (!isFinite(num)) return '0';
+      return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: fractionDigits,
+        maximumFractionDigits: fractionDigits
+      }).format(num);
+    }
+
     // 금일잔액 자동 계산 (전일잔액 + 금일입금 - 금일출금) - 최적화
     function calculateTodayBalance(row) {
       const inputs = row.querySelectorAll('input');
@@ -2124,7 +2137,13 @@
       
       // 금일잔액 = 전일잔액 + 금일입금 - 금일출금
       const calculatedBalance = previousBalance + todayDeposit - todayWithdrawal;
-      todayBalanceInput.value = formatAmount(calculatedBalance);
+
+      // 외화 계정은 2자리로 고정(부동소수점 오차 방지), 원화는 정수 표시
+      const fractionDigits = isForeignCurrencyAccount(nameInput?.value) ? 2 : 0;
+      const rounded = fractionDigits > 0
+        ? Number(calculatedBalance.toFixed(fractionDigits))
+        : Math.round(calculatedBalance);
+      todayBalanceInput.value = formatCalculatedAmount(rounded, fractionDigits);
       
     }
 
